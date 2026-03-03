@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Management System - Add Employee</title>
-    <link rel="stylesheet" href="../../../static/css/addEmployee.css">
+    <link rel="stylesheet" href="../../../static/css/hr/employee_management/addEmployee.css">
 </head>
 <body>
 
@@ -107,42 +107,6 @@
         </main>
     </div>
 
-    <script>
-        function saveEmployee() {
-            // Validate required fields
-            const fName = document.getElementById('firstName').value;
-            const lName = document.getElementById('lastName').value;
-            const id = document.getElementById('empID').value;
-            const department = document.getElementById('dept').value;
-            const position = document.getElementById('pos').value;
-            const status = document.getElementById('empStatus').value;
-
-            if(!fName || !lName || !id) {
-                alert("Please fill in Name and Employee ID");
-                return;
-            }
-
-            // Create employee object
-            const newEmployee = {
-                id: id,
-                fullName: lName + ", " + fName,
-                dept: department,
-                pos: position,
-                status: status
-            };
-
-            // Get existing list or empty array
-            let employees = JSON.parse(localStorage.getItem('addedEmployees')) || [];
-            
-            // Add new record
-            employees.push(newEmployee);
-            
-            // Save to browser memory
-            localStorage.setItem('addedEmployees', JSON.stringify(employees));
-
-            // Go back to the list
-            window.location.href = 'list.html';
-        }
-    </script>
+    <script src="../../../static/js/hr/employee_management/add_employee.js"></script>
 </body>
 </html>
