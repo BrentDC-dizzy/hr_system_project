@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Glass Sidebar</title>
+    <link rel="stylesheet" href="../../static/css/dashboard/admin_dash.css">
+
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="sidebar" id="sidebar">
+
+        <!-- TOP -->
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="../../static/img/general/uph.png" class="logo">
+                <div class="open-icon">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <button class="close-btn" id="closeBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <!-- MENU -->
+        <ul class="menu">
+
+            <li class="menu-item active">
+                <i class="fas fa-border-all"></i>
+                <span>Dashboard</span>
+            </li>
+
+            <li class="menu-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </li>
+
+            <hr>
+
+            <li class="menu-item">
+                <i class="fas fa-file"></i>
+                <span>Application Management</span>
+            </li>
+
+            <li class="menu-item">
+                <i class="fas fa-database"></i>
+                <span>Employee Records</span>
+            </li>
+
+            <li class="menu-item">
+                <i class="fas fa-calendar"></i>
+                <span>Attendance Monitoring</span>
+            </li>
+
+            <li class="menu-item">
+                <i class="fas fa-briefcase"></i>
+                <span>Leave Management</span>
+            </li>
+
+            <li class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports/Analytics</span>
+            </li>
+
+        </ul>
+
+        <!-- LOGOUT -->
+        <div class="bottom-section">
+            <li class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </li>
+        </div>
+
+    </div>
+
+
+    <script src="../../static/js/dashboard/dashboard.js"></script>
+</body>
+</html>
