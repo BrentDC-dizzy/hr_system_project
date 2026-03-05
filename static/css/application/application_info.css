@@ -21,7 +21,7 @@ body {
 .background {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #a71d1a 0%, #3a0a09 100%); /* Gradient matching the red image */
+    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
     z-index: -1;
 }
 
