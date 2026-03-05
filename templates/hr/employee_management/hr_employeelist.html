@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Records</title>
+        <link rel="shortcut icon" type="image/png" href="../../../static/img/general/uph.png">
+    <link rel="stylesheet" href="../../../static/css/hr/employee_management/hr_employeelist.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            </div>
+        <div class="main">
+            <div class="header">
+                <h2>Employee Records</h2>
+                <div class="search-add">
+                    <input type="text" id="searchInput" placeholder="Search by Name / ID / Department / Position">
+                    <a href="hr_addemployee.html"><button class="add-btn">Add Employee</button></a>
+                </div>
+            </div>
+
+            <table id="employeeTable">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Full Name</th>
+                        <th>Department</th>
+                        <th>
+                            Position
+                            <select id="filterPosition">
+                                <option value="">All</option>
+                                <option value="Dean">Dean</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Admin Staff">Admin Staff</option>
+                            </select>
+                        </th>
+                        <th>
+                            Status
+                            <select id="filterStatus">
+                                <option value="">All</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../../../static/js/hr/employee_management/hr_employeelist.js"></script>
+</body>
+</html>
