@@ -7,18 +7,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const cvInput = document.getElementById("cvInput");
     const fileNameDisplay = document.getElementById("fileNameDisplay");
 
+    console.log("JS Loaded. Sidebar state:", sidebar ? "Found" : "Not Found");
+
     // 1. Sidebar Toggle Logic
-    closeBtn.addEventListener("click", () => {
-        sidebar.classList.add("collapsed");
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevents click bubbling
+            console.log("Close button clicked");
+            sidebar.classList.add("collapsed");
+        });
+    }
 
-    logoToggle.addEventListener("click", () => {
-        if (sidebar.classList.contains("collapsed")) {
-            sidebar.classList.remove("collapsed");
-        }
-    });
+    if (logoToggle) {
+        logoToggle.addEventListener("click", () => {
+            if (sidebar.classList.contains("collapsed")) {
+                console.log("Opening sidebar");
+                sidebar.classList.remove("collapsed");
+            }
+        });
+    }
 
-    // 2. Active State & Tooltips
+    // 2. Tooltips & Active States
     menuItems.forEach(item => {
         const span = item.querySelector("span");
         if (span) item.setAttribute("data-text", span.innerText);
@@ -29,15 +38,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 3. File Upload Logic
+    // 3. File Upload
     if (uploadBtn && cvInput) {
         uploadBtn.addEventListener("click", () => cvInput.click());
         cvInput.addEventListener("change", () => {
-            if (cvInput.files.length > 0) {
-                fileNameDisplay.textContent = cvInput.files[0].name;
-            } else {
-                fileNameDisplay.textContent = "File_Name.pdf";
-            }
+            fileNameDisplay.textContent = cvInput.files[0] ? cvInput.files[0].name : "File_Name.pdf";
         });
     }
 });
