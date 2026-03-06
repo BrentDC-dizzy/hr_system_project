@@ -3,75 +3,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
-    const menuItems = document.querySelectorAll(".menu-item");
-    
-    
-    // Select CV Elements
     const cvInput = document.getElementById("cv-upload");
     const fileNameDisplay = document.getElementById("file-name");
-
-    console.log("Dashboard Script: Initialized");
+    const menuItems = document.querySelectorAll(".menu-item");
 
     // 2. SIDEBAR LOGIC
-    if (sidebar && closeBtn && logoToggle) {
-        // Collapses the sidebar when clicking the chevron left
+    // Close sidebar
+    if (closeBtn) {
         closeBtn.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
-            console.log("Sidebar Status: Collapsed");
         });
+    }
 
-        // Expands the sidebar when clicking the logo wrapper while collapsed
+    // Open sidebar via logo
+    if (logoToggle) {
         logoToggle.addEventListener("click", () => {
             if (sidebar.classList.contains("collapsed")) {
                 sidebar.classList.remove("collapsed");
-                console.log("Sidebar Status: Expanded");
             }
         });
     }
 
-    // 3. UPLOAD CV LOGIC
-    // Since we used the <label for="cv-upload"> method in the HTML, 
-    // the browser handles the click automatically. We just need to update the text.
+    // 3. FILE UPLOAD LOGIC
+    // Updates the text to the chosen file name
     if (cvInput && fileNameDisplay) {
-        cvInput.addEventListener("change", (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                const name = e.target.files[0].name;
+        cvInput.addEventListener("change", function() {
+            if (this.files && this.files.length > 0) {
+                const name = this.files[0].name;
                 fileNameDisplay.textContent = name;
-                console.log("File Selected:", name);
+                fileNameDisplay.style.color = "#1a1a1a"; // Darker color to show it's set
             } else {
                 fileNameDisplay.textContent = "File_Name.pdf";
+                fileNameDisplay.style.color = "#666";
             }
         });
-    } else {
-        console.error("CV Upload elements missing. Check IDs: cv-upload, file-name");
     }
 
-    // 4. MENU ACTIVE STATES & TOOLTIPS
+    // 4. TOOLTIP SETUP (For collapsed mode)
     menuItems.forEach(item => {
-        // Set up tooltip text from the span content
         const spanText = item.querySelector("span")?.innerText;
         if (spanText) {
             item.setAttribute("data-text", spanText);
         }
-
-        item.addEventListener("click", (e) => {
-            // Remove active class from previous item
-            const currentActive = document.querySelector(".menu-item.active");
-            if (currentActive) {
-                currentActive.classList.remove("active");
-            }
-            
-            // Add active class to clicked item
-            item.classList.add("active");
-        });
     });
-
-    // 5. FORM SUBMISSION PREVENTER (Optional)
-    const applicantForm = document.getElementById("applicantForm");
-    if (applicantForm) {
-        applicantForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            alert("Application Saved Successfully!");
-        });
-    }
 });
