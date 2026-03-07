@@ -521,7 +521,7 @@ hr {
     height: 250px;
     overflow-y: auto;
     position: relative;
-    background: #fff;
+    background: url('../../img/sample.jpeg') no-repeat center/cover;
 }
 
 .doc-toolbar {
