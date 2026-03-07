@@ -537,6 +537,12 @@ hr {
     width: 100%;
     display: block;
     padding: 10px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.doc-image:not([src]), 
+.doc-image[src=""] {
+    opacity: 0;
 }
 
 /* Cursor pointers for pagination */
