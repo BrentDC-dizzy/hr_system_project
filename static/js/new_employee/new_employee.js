@@ -1,4 +1,5 @@
 /* --- UI Elements Initialization --- */
+
 // Sidebar
 const sidebar = document.getElementById("sidebar");
 const logoToggle = document.getElementById("logoToggle");
@@ -14,8 +15,8 @@ const slide2 = document.getElementById("slide2");
 
 // Log New Request Modal (Position Change Request)
 const posModal = document.getElementById("positionChangeModal");
-const posBtn = document.getElementById("posRequestBtn"); // Sidebar item
-const logNewBtn = document.querySelector(".plus-log-btn"); // + Log New Request button
+const posChangeTabBtn = document.getElementById("posChangeTabBtn"); // Targeted Tab Button
+const posClose = document.getElementById("posClose"); // Modal 'X' button
 const cancelReq = document.getElementById("cancelRequest");
 const posForm = document.getElementById("positionChangeForm");
 
@@ -39,7 +40,6 @@ if (logoToggle) {
 }
 
 /* --- Search Functionality --- */
-// Filters table rows based on Name, ID, Dept, or Position
 if (searchInput) {
     searchInput.addEventListener('keyup', function() {
         const searchTerm = this.value.toLowerCase().trim();
@@ -58,9 +58,7 @@ const closeAllModals = () => {
     if (posModal) posModal.style.display = "none";
 };
 
-/** * Applicant View Slide Control 
- * Swaps between details (1/2) and document view (2/2)
- */
+// Applicant View Slide Control 
 function showSlide(slideNumber) {
     if (slideNumber === 1) {
         slide1.classList.add("active");
@@ -85,24 +83,28 @@ document.querySelectorAll(".view-link").forEach(link => {
 
 /* --- Position Change Request Logic --- */
 
-// Open Log New Request Modal
+// Open Log New Request Modal when clicking the tab
 const openPosModal = (e) => {
     if (e) e.preventDefault();
-    if (posModal) posModal.style.display = "flex";
+    if (posModal) {
+        posModal.style.display = "flex";
+    }
 };
 
-if (posBtn) posBtn.addEventListener("click", openPosModal);
-if (logNewBtn) logNewBtn.addEventListener("click", openPosModal);
+if (posChangeTabBtn) {
+    posChangeTabBtn.addEventListener("click", openPosModal);
+}
 
-// Close triggers
+// Close triggers for the Log Request Modal
 if (closeModal) closeModal.addEventListener("click", closeAllModals);
+if (posClose) posClose.addEventListener("click", closeAllModals);
 if (cancelReq) cancelReq.addEventListener("click", closeAllModals);
 
 // Form Submission Action
 if (posForm) {
     posForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        // Here you would typically handle the data transmission
+        // Logic for handling data transmission goes here
         alert("Success: The position change request has been logged.");
         closeAllModals();
         posForm.reset();
