@@ -1,13 +1,18 @@
+/* --- Global Styles --- */
 * {
-    margin: 0; padding: 0; box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-body { height: 100vh; overflow: hidden;}
+body {
+    height: 100vh;
+    background-color: #f9f9f9; /* Light background for contrast */
+}
 
-/* Background Blur */
+/* --- Background Blur (Optional per your original code) --- */
 .background {
-    position: fixed; inset: 0;
     position: fixed;
     inset: 0;
     background: url('../../img/general/bg.jpeg') no-repeat center/cover;
@@ -16,23 +21,27 @@ body { height: 100vh; overflow: hidden;}
     z-index: -1;
 }
 
-/* Sidebar Styling */
+/* --- Sidebar Styling --- */
 .sidebar {
-    position: fixed; top: 20px; left: 20px;
-    height: calc(100% - 40px); width: 280px;
-    background: rgba(255, 255, 255, 0.1);
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: calc(100% - 40px);
+    width: 280px;
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
     padding: 20px;
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
 }
 
 .sidebar.collapsed { width: 85px; }
 
-/* Main Content Area */
+/* --- Main Content Area --- */
 .main-content {
     margin-left: 320px;
     padding: 40px;
@@ -41,42 +50,227 @@ body { height: 100vh; overflow: hidden;}
 
 .sidebar.collapsed ~ .main-content { margin-left: 120px; }
 
-/* Table Elements */
+/* --- Header & Tabs --- */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.header-container h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.tab-btn.active {
+    background: #632b2b; /* UPHSD Maroon */
+    color: white;
+    border-color: #632b2b;
+}
+
+.tab-btn:not(.active) {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* --- Search and Filter Section --- */
+.search-filter-section {
+    margin-bottom: 20px;
+}
+
+.search-bar-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.search-input-wrapper {
+    flex-grow: 1;
+    position: relative;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 1px solid #ccc;
+    border-radius: 30px; /* Fully rounded search bar */
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.filter-main-btn {
+    padding: 0 25px;
+    border: 1.5px solid #333;
+    background: white;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 15px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    gap: 10px;
+}
+
+.filter-tag i {
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* --- Table Design --- */
 .table-container {
     background: white;
-    border-radius: 15px;
-    margin-top: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     overflow: hidden;
 }
 
-table { width: 100%; border-collapse: collapse; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
 thead th {
-    background: #2c2c2c; color: white;
-    padding: 15px; text-align: left; font-size: 0.9rem;
+    background: #3d3d3d; /* Dark grey header */
+    color: white;
+    padding: 14px 15px;
+    text-align: left;
+    font-weight: 400;
+    font-size: 0.9rem;
 }
 
-tbody td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+tbody td {
+    padding: 14px 15px;
+    font-size: 0.9rem;
+    color: #333;
+}
 
-/* Status Pills */
+/* Zebra Striping */
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* --- Status Pills --- */
 .status-pill {
-    padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    min-width: 140px;
 }
-.pending { background: #fff4e5; color: #b7791f; }
 
-/* Header & Tabs */
-.tab-btn {
-    padding: 10px 20px; border: none; border-radius: 8px;
-    cursor: pointer; font-weight: 500; margin-right: 10px;
+/* Specific Pill Colors from Image */
+.pending-hr { background-color: #fdf2d2; color: #7d651a; } /* HR Evaluator / Dept Head */
+.pending-sd { background-color: #fdf2d2; color: #7d651a; }
+.rejected { background-color: #f8d7da; color: #721c24; }
+.approved { background-color: #d4edda; color: #155724; }
+
+/* --- Actions Column --- */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-.tab-btn.active { background: #4a1c1c; color: white; }
 
-/* Logo & Sidebar Items */
-.logo { width: 45px; border-radius: 50%; transition: 0.3s; }
+.view-link {
+    color: #632b2b;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.view-link:hover { text-decoration: underline; }
+
+.update-link {
+    background: none;
+    border: none;
+    color: #632b2b;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* --- Dropdown Simulation --- */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    min-width: 110px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    z-index: 10;
+    border-radius: 8px;
+    padding: 5px 0;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    padding: 8px 15px;
+    display: block;
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #f9f9f9;
+}
+
+/* --- Sidebar Menu Helpers --- */
+.logo { width: 45px; border-radius: 50%; }
 .menu-item {
-    display: flex; align-items: center; padding: 12px;
-    color: white; text-decoration: none; border-radius: 10px; margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    margin-bottom: 5px;
 }
 .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.2); }
 .menu-item span { margin-left: 15px; transition: opacity 0.2s; }
