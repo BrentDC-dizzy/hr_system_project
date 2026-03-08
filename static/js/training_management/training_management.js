@@ -9,17 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Table & Search Elements
     const searchInput = document.getElementById('searchInput');
-    const tableRows = () => document.querySelectorAll('#trainingTable tbody tr');
+    const trainingTableBody = document.querySelector('#trainingTable tbody');
 
     // Modal Elements
     const modal = document.getElementById('trainingModal');
     const openModalBtn = document.getElementById('openModalBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const addForm = document.getElementById('addTrainingForm');
-
-    // CV Upload Elements (if applicable to your page)
-    const cvInput = document.getElementById("cv-upload");
-    const fileNameDisplay = document.getElementById("file-name");
 
     console.log("System Initialized: All modules active.");
 
@@ -38,16 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 3. MENU INTERACTION (Active States & Tooltips) ---
+    // --- 3. MENU INTERACTION ---
     menuItems.forEach(item => {
-        // Set Tooltip Text for collapsed mode based on the <span> content
-        const span = item.querySelector("span");
-        if (span) {
-            item.setAttribute("data-text", span.innerText);
-        }
-
         item.addEventListener("click", (e) => {
-            // Prevent 'active' highlight if it's the logout button
             if (item.classList.contains("logout")) return;
 
             const currentActive = document.querySelector(".menu-item.active");
@@ -58,29 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- 4. LOGOUT LOGIC (Immediate Redirect) ---
+    // --- 4. LOGOUT LOGIC ---
     if (logoutBtn) {
         logoutBtn.addEventListener("click", (e) => {
             e.preventDefault(); 
-            console.log("Action: Logging out user immediately.");
-            // Redirects straight to login page path provided in your HTML
             window.location.href = "../login/login.html";
         });
     }
 
-    // --- 5. SEARCH LOGIC (Training Table) ---
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            tableRows().forEach(row => {
-                const text = row.innerText.toLowerCase();
-                // Show row if it matches query, otherwise hide it
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        });
-    }
-
-    // --- 6. MODAL LOGIC (Add Training) ---
+    // --- 5. MODAL TOGGLE ---
     if (openModalBtn && modal) {
         openModalBtn.addEventListener('click', () => {
             modal.style.display = 'flex';
@@ -90,7 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
             modal.style.display = 'none';
         });
 
-        // Close modal if user clicks on the dark background area
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 modal.style.display = 'none';
@@ -98,29 +72,73 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 7. FORM SUBMISSIONS ---
-    // Add Training Form Logic
+    // --- 6. ADD TRAINING (DYNAMICAL TABLE UPDATE) ---
     if (addForm) {
         addForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = document.getElementById('newTrainingName')?.value || "New Training";
-            alert(`Success: ${name} has been added.`);
-            
-            // Clear form and close modal after "saving"
+
+            // Get form values
+            const name = document.getElementById('newTrainingName').value;
+            const category = document.getElementById('newCategory').value;
+            const date = document.getElementById('newDate').value;
+            const mode = document.getElementById('newMode').value;
+
+            // Generate ID based on current row count
+            const rowCount = trainingTableBody.getElementsByTagName('tr').length;
+            const nextID = (rowCount + 1).toString().padStart(3, '0');
+
+            // Format date (convert yyyy-mm-dd to mm/dd/yyyy if needed)
+            const dateObj = new Date(date);
+            const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getDate().toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+            // Create new row HTML string
+            const newRowHTML = `
+                <tr>
+                    <td>${nextID}</td>
+                    <td>${name}</td>
+                    <td>${category}</td>
+                    <td>${formattedDate}</td>
+                    <td>${mode}</td>
+                    <td>0 / 30</td>
+                    <td><span class="status open">Open</span></td>
+                    <td class="actions">
+                        <a href="#" class="view-link">View</a>
+                        <a href="#" class="edit-link">Edit</a>
+                        <a href="#" class="close-link">Close</a>
+                    </td>
+                </tr>
+            `;
+
+            // Append new row to table body
+            trainingTableBody.insertAdjacentHTML('beforeend', newRowHTML);
+
+            // UI Feedback and Reset
             addForm.reset();
             modal.style.display = 'none';
+            console.log(`Training "${name}" added successfully.`);
         });
     }
 
-    // CV Upload Module (Used in Employee Profile/Application pages)
-    if (cvInput && fileNameDisplay) {
-        cvInput.addEventListener("change", (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                fileNameDisplay.textContent = e.target.files[0].name;
-            } else {
-                fileNameDisplay.textContent = "No file chosen";
+    // --- 7. SEARCH LOGIC ---
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            const rows = trainingTableBody.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
+
+    // --- 8. DELETE ROW LOGIC (Delegated Event) ---
+    trainingTableBody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('close-link')) {
+            e.preventDefault();
+            if (confirm("Are you sure you want to remove this training?")) {
+                e.target.closest('tr').remove();
             }
-        });
-    }
-
+        }
+    });
 });
