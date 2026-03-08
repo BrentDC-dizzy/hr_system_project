@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Employee Dashboard</title>
+    <title>Training Management</title>
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
     <link rel="stylesheet" href="../../static/css/training_management/training_management.css">
 
@@ -103,73 +103,86 @@
     </div>
 
     </div>
-    <div class="main-content" id="mainContent">
-        <header class="content-header">
-            <h1>Training Management</h1>
-            <div class="header-actions">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search">
-                </div>
-                <button class="filter-btn"><i class="fas fa-filter"></i> Filter</button>
-            </div>
-        </header>
-
-        <div class="toolbar">
-            <div class="active-filters">
-                <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
-            </div>
-            <button class="add-btn">+ Add Training</button>
+   <div class="main-content app-management-theme">
+    <header class="content-header">
+        <h1>Applications Management</h1>
+        <div class="top-nav-buttons">
+            <button class="nav-btn ghost">New Employee Applications</button>
+            <button class="nav-btn solid">Position Change Requests</button>
         </div>
+    </header>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Training ID</th>
-                        <th>Training Name</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th>Mode</th>
-                        <th>Slots</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>001</td>
-                        <td>Outcomes-Based Education Workshop</td>
-                        <td>Teaching</td>
-                        <td>03/12/2026</td>
-                        <td>Onsite</td>
-                        <td>25 / 30</td>
-                        <td><span class="status-badge open">Open</span></td>
-                        <td class="actions">
-                            <a href="#" class="view">View</a>
-                            <a href="#" class="edit">Edit</a>
-                            <a href="#" class="close">Close</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="6"></td>
-                        <td><span class="status-badge full">Full</span></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td colspan="6"></td>
-                        <td><span class="status-badge completed">Completed</span></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td colspan="6"></td>
-                        <td><span class="status-badge cancelled">Cancelled</span></td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="search-bar-row">
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by Name / ID / Department / Position">
         </div>
+        <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
     </div>
+
+    <div class="filter-tag-row">
+        <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Full Name</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Submitted</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>001</td>
+                    <td>Dela Cruz, Juan</td>
+                    <td>CCS</td>
+                    <td>Instructor</td>
+                    <td>02/12/2026</td>
+                    <td>Stage 2 of 4</td>
+                    <td><span class="status-pill pending">Pending - HR Evaluator</span></td>
+                    <td class="actions">
+                        <a href="#" class="view-link">View</a>
+                        <div class="dropdown-action">
+                            <a href="#" class="update-link">Update <i class="fas fa-caret-down"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>Santos, Maria</td>
+                    <td>CBA</td>
+                    <td>Professor</td>
+                    <td>02/15/2026</td>
+                    <td>Stage 1 of 4</td>
+                    <td><span class="status-pill pending">Pending - Dept. Head</span></td>
+                    <td class="actions">
+                        <a href="#" class="view-link">View</a>
+                        <a href="#" class="update-link">Update <i class="fas fa-caret-down"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>003</td>
+                    <td>Reyes, Ricardo</td>
+                    <td>COE</td>
+                    <td>Registrar</td>
+                    <td>02/10/2026</td>
+                    <td>Completed</td>
+                    <td><span class="status-pill approved">Approved</span></td>
+                    <td class="actions">
+                        <a href="#" class="view-link">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
     <script src="../../static/js/training_management/training_management.js"></script>
 </body>
 </html>
