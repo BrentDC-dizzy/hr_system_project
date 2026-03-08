@@ -8,14 +8,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const posModal = document.getElementById("positionChangeModal");
     const posForm = document.getElementById("positionChangeForm");
 
-    // Dynamic Display Elements
+    // Tab Buttons
+    const newEmpTabBtn = document.getElementById("newEmpTabBtn");
+    const posChangeTabBtn = document.getElementById("posChangeTabBtn");
+
+    const positionSelect = document.querySelector('#positionChangeForm select');
     const statusBanner = document.querySelector(".timeline-status-banner");
     const timelineList = document.querySelector(".timeline-list");
-    const positionSelect = document.querySelector('#positionChangeForm select');
-    
-    // Status Timeline Elements (New)
     const statusTimelineBox = document.getElementById("statusTimelineBox");
     const submissionTimestamp = document.getElementById("submissionTimestamp");
+
+    /* --- Tab Switching Logic --- */
+    const setActiveTab = (clickedBtn, otherBtn) => {
+        clickedBtn.classList.add("active");
+        clickedBtn.classList.remove("secondary");
+        
+        otherBtn.classList.add("secondary");
+        otherBtn.classList.remove("active");
+    };
+
+    if (newEmpTabBtn) {
+        newEmpTabBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            setActiveTab(newEmpTabBtn, posChangeTabBtn);
+            // Add logic here if you want to filter the table for New Employees
+        });
+    }
+
+    if (posChangeTabBtn) {
+        posChangeTabBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            setActiveTab(posChangeTabBtn, newEmpTabBtn);
+            openPosModal(); // Opens the modal as requested
+        });
+    }
 
     /* --- Sidebar Logic --- */
     if (closeBtn) {
@@ -27,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* --- Modal Navigation & Display --- */
+    /* --- Modal Navigation --- */
     const openViewModal = () => {
         if (viewModal) {
             showSlide(1); 
@@ -44,22 +70,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (posModal) posModal.style.display = "none";
     };
 
-    // Event Listeners for Opening/Closing
     document.querySelectorAll(".view-link").forEach(link => link.addEventListener("click", (e) => {
         e.preventDefault();
         openViewModal();
     }));
 
-    document.getElementById("posChangeTabBtn")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        openPosModal();
-    });
-
     document.getElementById("modalClose")?.addEventListener("click", closeAllModals);
     document.getElementById("posClose")?.addEventListener("click", closeAllModals);
     document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
 
-    /* --- Slide Control (Pagination) --- */
+    /* --- Slide Control --- */
     function showSlide(n) {
         const s1 = document.getElementById("slide1");
         const s2 = document.getElementById("slide2");
@@ -75,12 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nextSlide")?.addEventListener("click", () => showSlide(2));
     document.getElementById("prevSlide")?.addEventListener("click", () => showSlide(1));
 
-    /* --- Position Change & Status Timeline Logic --- */
+    /* --- Form Submission --- */
     if (posForm) {
         posForm.addEventListener("submit", (e) => {
             e.preventDefault();
-
-            // 1. Generate Timestamp (Format: April 03, 2026 - 10:12 A.M.)
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
@@ -88,31 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const fullTimestamp = `${dateStr} - ${timeStr}`;
 
-            // 2. Update Status Timeline in View Modal
             if (statusTimelineBox && submissionTimestamp) {
                 submissionTimestamp.innerText = fullTimestamp;
                 statusTimelineBox.style.display = "block"; 
             }
 
-            // 3. Update Approval Timeline Based on Selection
             const selectedPos = positionSelect.value;
             if (statusBanner) {
                 statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
-            }
-
-            if (timelineList) {
-                timelineList.innerHTML = `
-                    <div class="timeline-item">
-                        <span>HR Evaluator</span> 
-                        <span class="status-ok"><i class="fas fa-check-square"></i> Approved - Feb 18</span>
-                    </div>
-                    <div class="timeline-item">
-                        <span>${selectedPos}</span> 
-                        <span class="status-pending"><i class="fas fa-hourglass-half"></i> Pending</span>
-                    </div>
-                    <div class="timeline-item"><span>HR Head</span> <span>-</span></div>
-                    <div class="timeline-item"><span>SD</span> <span>-</span></div>
-                `;
             }
 
             alert("Success: The position change request has been logged.");
@@ -120,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Global Close Listeners
+    // Global Close
     window.addEventListener("click", (e) => {
         if (e.target === viewModal || e.target === posModal) closeAllModals();
     });
