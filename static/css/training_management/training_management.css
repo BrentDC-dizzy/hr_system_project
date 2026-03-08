@@ -179,166 +179,137 @@ hr {
     margin-top: auto;
 }
 
-/* Container & Background */
-.app-management-theme {
-    background: linear-gradient(to bottom, #7d1406, #bc391a); /* Deep red gradient */
-    min-height: 100vh;
-    padding: 30px 50px;
-    color: white;
+/* ... Keep your existing CSS for *, body, .background, and .sidebar ... */
+
+.main-content {
+    margin-left: 340px; /* Accounts for sidebar + gap */
+    padding: 40px;
+    transition: margin-left 0.35s ease;
 }
 
-/* Header & Top Buttons */
-.app-management-theme h1 {
-    font-size: 32px;
-    font-weight: bold;
-    margin-bottom: 20px;
+.sidebar.collapsed + .main-content {
+    margin-left: 110px;
 }
 
-.top-nav-buttons {
+.header-container {
     display: flex;
-    gap: 15px;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 25px;
-    justify-content: flex-end;
 }
 
-.nav-btn {
+.page-title {
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.header-buttons button {
     padding: 10px 20px;
     border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
     border: none;
+    cursor: pointer;
+    font-weight: 500;
+    margin-left: 10px;
 }
 
-.nav-btn.ghost {
-    background: rgba(0, 0, 0, 0.2);
-    color: #efefef;
-    border: 1px solid rgba(255,255,255,0.1);
+.btn-primary { background: white; color: #333; }
+.btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3) !important; }
+
+/* Table Panel */
+.table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    min-height: 500px;
 }
 
-.nav-btn.solid {
-    background: #e0e0e0;
-    color: #333;
-}
-
-/* Search Area */
-.search-bar-row {
+.search-bar-container {
     display: flex;
     gap: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-.search-container {
-    flex-grow: 1;
+.search-input-wrapper {
+    flex: 1;
     position: relative;
 }
 
-.search-container input {
-    width: 100%;
-    padding: 12px 15px 12px 45px;
-    border-radius: 25px;
-    border: none;
-    font-size: 15px;
-}
-
-.search-container i {
+.search-input-wrapper i {
     position: absolute;
-    left: 18px;
+    left: 15px;
     top: 50%;
     transform: translateY(-50%);
     color: #888;
 }
 
-.filter-main-btn {
-    background: white;
-    color: black;
-    border: none;
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+.filter-btn {
     padding: 0 25px;
-    border-radius: 8px;
-    font-weight: 500;
+    border-radius: 25px;
+    border: 1px solid #333;
+    background: white;
     cursor: pointer;
 }
 
-/* Filter Tag */
-.filter-tag-row { margin-bottom: 20px; }
 .filter-tag {
-    background: white;
-    color: black;
+    background: #f0f0f0;
     padding: 5px 15px;
     border-radius: 20px;
     font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    display: inline-block;
+    border: 1px solid #ccc;
 }
 
-/* Table Design */
-.table-container {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-table {
+/* Table Style */
+.data-table {
     width: 100%;
     border-collapse: collapse;
-    color: #333;
+    margin-top: 20px;
 }
 
-thead tr {
-    background: #333333;
+.data-table thead tr {
+    background: #333;
     color: white;
     text-align: left;
 }
 
-th, td {
-    padding: 15px 20px;
+.data-table th, .data-table td {
+    padding: 15px;
     font-size: 14px;
 }
 
-tbody tr {
-    border-bottom: 1px solid #f0f0f0;
+.data-table tbody tr {
+    border-bottom: 1px solid #eee;
 }
 
-tbody tr:last-child { border-bottom: none; }
-
-/* Status Pills */
-.status-pill {
+/* Status Badges */
+.status-badge {
     padding: 6px 15px;
     border-radius: 15px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: bold;
     display: inline-block;
 }
 
-.status-pill.pending {
-    background: #f5e8c1; /* Light tan/yellow */
-    color: #5c4a16;
-}
+.open { background: #fdf2d2; color: #856404; }
+.full { background: #f8d7da; color: #721c24; }
+.completed { background: #d4edda; color: #155724; }
+.cancelled { background: #e2e3e5; color: #383d41; }
 
-.status-pill.approved {
-    background: #cbf7d3; /* Light green */
-    color: #1e5c26;
-}
-
-/* Actions Links */
-.actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.view-link {
-    color: #9c2a1d;
+.action-links a {
     text-decoration: none;
-    font-weight: 500;
+    margin-right: 10px;
+    font-size: 13px;
 }
-
-.update-link {
-    color: #9c2a1d;
-    text-decoration: none;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+.view { color: #a52a2a; }
+.edit { color: #a52a2a; }
+.close-act { color: #a52a2a; }
