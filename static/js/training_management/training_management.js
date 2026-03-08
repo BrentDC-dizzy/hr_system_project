@@ -1,65 +1,127 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Sidebar Elements ---
+document.addEventListener("DOMContentLoaded", () => {
+
+    // --- 1. SELECT ELEMENTS ---
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
+    const menuItems = document.querySelectorAll(".menu-item");
+    const logoutBtn = document.querySelector(".logout");
 
-    // --- Search & Table Elements ---
+    // Table & Search Elements
     const searchInput = document.getElementById('searchInput');
     const tableRows = () => document.querySelectorAll('#trainingTable tbody tr');
 
-    // --- Modal Elements ---
+    // Modal Elements
     const modal = document.getElementById('trainingModal');
     const openModalBtn = document.getElementById('openModalBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const addForm = document.getElementById('addTrainingForm');
 
-    /* --- Sidebar Logic --- */
-    closeBtn.addEventListener('click', () => {
-        sidebar.classList.add("collapsed");
-    });
+    // CV Upload Elements
+    const cvInput = document.getElementById("cv-upload");
+    const fileNameDisplay = document.getElementById("file-name");
 
-    logoToggle.addEventListener('click', () => {
-        if (sidebar.classList.contains("collapsed")) {
-            sidebar.classList.remove("collapsed");
+    console.log("System Initialized: All modules active.");
+
+    // --- 2. SIDEBAR LOGIC ---
+    if (sidebar && closeBtn && logoToggle) {
+        // Collapse sidebar
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.add("collapsed");
+        });
+
+        // Expand sidebar via logo
+        logoToggle.addEventListener("click", () => {
+            if (sidebar.classList.contains("collapsed")) {
+                sidebar.classList.remove("collapsed");
+            }
+        });
+    }
+
+    // --- 3. MENU INTERACTION (Active States & Tooltips) ---
+    menuItems.forEach(item => {
+        // Set Tooltip Text for collapsed mode
+        const span = item.querySelector("span");
+        if (span) {
+            item.setAttribute("data-text", span.innerText);
         }
-    });
 
-    /* --- Search Logic --- */
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase();
-        
-        tableRows().forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
+        item.addEventListener("click", (e) => {
+            // If it's the logout button, we handle navigation separately
+            if (item.classList.contains("logout")) return;
+
+            const currentActive = document.querySelector(".menu-item.active");
+            if (currentActive) {
+                currentActive.classList.remove("active");
+            }
+            item.classList.add("active");
         });
     });
 
-    /* --- Modal Logic --- */
-    openModalBtn.addEventListener('click', () => {
-        modal.style.display = 'flex';
-    });
+    // --- 4. LOGOUT LOGIC ---
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault(); // Stop immediate redirection
+            
+            const confirmLogout = confirm("Are you sure you want to log out?");
+            if (confirmLogout) {
+                console.log("Action: Logging out user.");
+                // Ensure this path matches your folder structure
+                window.location.href = "../login/login.html";
+            }
+        });
+    }
 
-    closeModalBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    // --- 5. SEARCH LOGIC (Training Table) ---
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            tableRows().forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
 
-    // Close on outside click
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
+    // --- 6. MODAL LOGIC (Add Training) ---
+    if (openModalBtn && modal) {
+        openModalBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        closeModalBtn.addEventListener('click', () => {
             modal.style.display = 'none';
-        }
-    });
+        });
 
-    /* --- Form Submission Logic (Dummy) --- */
-    addForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // This is where you would normally send data to a server
-        const name = document.getElementById('newTrainingName').value;
-        alert(`New Training "${name}" added to system!`);
-        
-        addForm.reset();
-        modal.style.display = 'none';
-    });
+        // Close modal if user clicks outside the box
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    // --- 7. FORM SUBMISSIONS ---
+    // Add Training Form
+    if (addForm) {
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newTrainingName')?.value || "New Training";
+            alert(`Success: ${name} has been added.`);
+            addForm.reset();
+            modal.style.display = 'none';
+        });
+    }
+
+    // CV Upload (Optional Module)
+    if (cvInput && fileNameDisplay) {
+        cvInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                fileNameDisplay.textContent = e.target.files[0].name;
+            } else {
+                fileNameDisplay.textContent = "No file chosen";
+            }
+        });
+    }
+
 });
