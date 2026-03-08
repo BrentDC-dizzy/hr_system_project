@@ -104,64 +104,73 @@
 
     </div>
    <div class="main-content">
-        <div class="header-container">
-            <h1 class="page-title">Training Management</h1>
-            <div class="header-buttons">
-                <button class="btn-secondary">New Employee Applications</button>
-                <button class="btn-primary">+ Add Training</button>
+    <h1 class="page-title">Training Management</h1>
+
+    <div class="table-container">
+        <div class="search-bar-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search">
             </div>
+            <button class="filter-btn"><i class="fas fa-filter"></i> Filter</button>
         </div>
 
-        <div class="table-container">
-            <div class="search-bar-container">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search by Name / ID / Department / Position">
-                </div>
-                <button class="filter-btn"><i class="fas fa-filter"></i> Filter</button>
-            </div>
-
+        <div class="filter-actions-row">
             <div class="active-filters">
                 <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
             </div>
-
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Training ID</th>
-                        <th>Training Name</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th>Mode</th>
-                        <th>Slots</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>001</td>
-                        <td>Outcomes-Based Education Workshop</td>
-                        <td>Teaching</td>
-                        <td>03/12/2026</td>
-                        <td>Onsite</td>
-                        <td>25 / 30</td>
-                        <td><span class="status-badge open">Open</span></td>
-                        <td>
-                            <span class="action-links">
-                                <a href="#" class="view">View</a>
-                                <a href="#" class="edit">Edit</a>
-                                <a href="#" class="close-act">Close</a>
-                            </span>
-                        </td>
-                    </tr>
-                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td><span class="status-badge full">Full</span></td><td></td></tr>
-                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td><span class="status-badge completed">Completed</span></td><td></td></tr>
-                    <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td><span class="status-badge cancelled">Cancelled</span></td><td></td></tr>
-                </tbody>
-            </table>
+            <button class="btn-add-training">+ Add Training</button>
         </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="border-top-left-radius: 10px;">Training ID</th>
+                    <th>Training Name</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Mode</th>
+                    <th>Slots</th>
+                    <th>Status</th>
+                    <th style="border-top-right-radius: 10px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>001</td>
+                    <td class="training-name">Outcomes-Based Education Workshop</td>
+                    <td>Teaching</td>
+                    <td>03/12/2026</td>
+                    <td>Onsite</td>
+                    <td>25 / 30</td>
+                    <td><span class="status-badge open">Open</span></td>
+                    <td class="action-links">
+                        <a href="#" class="view">View</a>
+                        <a href="#" class="edit">Edit</a>
+                        <a href="#" class="close-act">Close</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                    <td><span class="status-badge full">Full</span></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                    <td><span class="status-badge completed">Completed</span></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                    <td><span class="status-badge cancelled">Cancelled</span></td>
+                    <td></td>
+                </tr>
+                <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+        </table>
     </div>
+</div>
     <script src="../../static/js/training_management/training_management.js"></script>
 </body>
 </html>

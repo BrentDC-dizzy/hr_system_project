@@ -199,11 +199,11 @@ hr {
 }
 
 .page-title {
-    color: white;
-    font-size: 28px;
-    font-weight: 600;
+    color: #000; /* Matching the black text in image */
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 700;
 }
-
 .header-buttons button {
     padding: 10px 20px;
     border-radius: 8px;
@@ -219,12 +219,11 @@ hr {
 /* Table Panel */
 .table-container {
     background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    min-height: 500px;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-top: 10px;
 }
-
 .search-bar-container {
     display: flex;
     gap: 15px;
@@ -246,18 +245,24 @@ hr {
 
 .search-input-wrapper input {
     width: 100%;
-    padding: 12px 12px 12px 45px;
-    border-radius: 25px;
-    border: 1px solid #ddd;
-    outline: none;
+    padding: 10px 15px 10px 45px;
+    border-radius: 30px; /* Fully rounded */
+    border: 1px solid #ccc;
+    background: #fff;
+}
+.filter-btn {
+    border-radius: 12px;
+    border: 1px solid #666;
+    padding: 8px 20px;
+    background: #fff;
+    font-weight: 500;
 }
 
-.filter-btn {
-    padding: 0 25px;
-    border-radius: 25px;
-    border: 1px solid #333;
-    background: white;
-    cursor: pointer;
+.filter-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
 }
 
 .filter-tag {
@@ -269,45 +274,63 @@ hr {
     border: 1px solid #ccc;
 }
 
-/* Table Style */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.data-table thead tr {
-    background: #333;
-    color: white;
-    text-align: left;
-}
-
-.data-table th, .data-table td {
-    padding: 15px;
-    font-size: 14px;
-}
-
-.data-table tbody tr {
-    border-bottom: 1px solid #eee;
-}
-
-/* Status Badges */
-.status-badge {
+.btn-add-training {
+    background: #e0e0e0;
+    border: 1px solid #999;
+    border-radius: 8px;
     padding: 6px 15px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: bold;
-    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
 }
 
-.open { background: #fdf2d2; color: #856404; }
-.full { background: #f8d7da; color: #721c24; }
-.completed { background: #d4edda; color: #155724; }
-.cancelled { background: #e2e3e5; color: #383d41; }
+/* Table Header Dark Style */
+.data-table thead tr {
+    background: #3d3a3a; /* Dark charcoal */
+    color: #fff;
+}
 
+.data-table th {
+    font-weight: 400;
+    font-size: 13px;
+    padding: 12px 15px;
+}
+
+/* Table Body */
+.data-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.data-table td {
+    padding: 12px 15px;
+    color: #333;
+    font-size: 13px;
+}
+
+.training-name {
+    max-width: 200px;
+    line-height: 1.2;
+}
+
+/* Status Badges - Exact Colors from Image */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.open { background: #f5e9be; color: #5c4d1a; }
+.full { background: #f2b8a2; color: #7a3a24; }
+.completed { background: #c6f7d0; color: #1e5628; }
+.cancelled { background: #ebadaf; color: #7a2b2d; }
+
+/* Action Links - Reddish color */
 .action-links a {
+    color: #8b3d3d; 
     text-decoration: none;
-    margin-right: 10px;
+    margin-right: 8px;
     font-size: 13px;
 }
 .view { color: #a52a2a; }
