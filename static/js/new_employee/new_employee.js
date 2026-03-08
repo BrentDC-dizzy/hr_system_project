@@ -8,36 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const posModal = document.getElementById("positionChangeModal");
     const posForm = document.getElementById("positionChangeForm");
 
-    // Tab Buttons
-    const newEmpTabBtn = document.getElementById("newEmpTabBtn");
-    const posChangeTabBtn = document.getElementById("posChangeTabBtn");
-
     // Dynamic Display Elements
     const statusBanner = document.querySelector(".timeline-status-banner");
     const timelineList = document.querySelector(".timeline-list");
     const positionSelect = document.querySelector('#positionChangeForm select');
     
-    // Status Timeline Elements
+    // Status Timeline Elements (New)
     const statusTimelineBox = document.getElementById("statusTimelineBox");
     const submissionTimestamp = document.getElementById("submissionTimestamp");
-
-    /* --- Tab Switching Logic --- */
-    const activateTab = (activeBtn, inactiveBtn) => {
-        activeBtn.classList.add("active");
-        inactiveBtn.classList.remove("active");
-    };
-
-    if (newEmpTabBtn && posChangeTabBtn) {
-        newEmpTabBtn.addEventListener("click", () => {
-            activateTab(newEmpTabBtn, posChangeTabBtn);
-            // Add logic here if you want to filter the table for New Apps
-        });
-
-        posChangeTabBtn.addEventListener("click", () => {
-            activateTab(posChangeTabBtn, newEmpTabBtn);
-            // Add logic here if you want to filter the table for Change Requests
-        });
-    }
 
     /* --- Sidebar Logic --- */
     if (closeBtn) {
@@ -66,15 +44,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (posModal) posModal.style.display = "none";
     };
 
-    // Table "View" links
-    document.querySelectorAll(".view-link").forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            openViewModal();
-        });
+    // Event Listeners for Opening/Closing
+    document.querySelectorAll(".view-link").forEach(link => link.addEventListener("click", (e) => {
+        e.preventDefault();
+        openViewModal();
+    }));
+
+    document.getElementById("posChangeTabBtn")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        openPosModal();
     });
 
-    // Modal Close Buttons
     document.getElementById("modalClose")?.addEventListener("click", closeAllModals);
     document.getElementById("posClose")?.addEventListener("click", closeAllModals);
     document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
@@ -100,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         posForm.addEventListener("submit", (e) => {
             e.preventDefault();
 
-            // 1. Generate Timestamp (Format: March 08, 2026 - 01:19 P.M.)
+            // 1. Generate Timestamp (Format: April 03, 2026 - 10:12 A.M.)
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
@@ -115,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // 3. Update Approval Timeline Based on Selection
-            const selectedPos = positionSelect.value || "Dept. Head";
+            const selectedPos = positionSelect.value;
             if (statusBanner) {
                 statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
             }
@@ -140,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Global Close Listeners (Click outside or ESC key)
+    // Global Close Listeners
     window.addEventListener("click", (e) => {
         if (e.target === viewModal || e.target === posModal) closeAllModals();
     });

@@ -95,16 +95,13 @@ body {
     cursor: pointer;
     font-weight: 500;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
-    border: 1.5px solid #ccc;
-    background-color: #e0e0e0; /* Default Gray */
-    color: #333;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .tab-btn.active {
-  background-color: #632b2b;
-    color: white;
-    border-color: #632b2b;
+   background-color: #632b2b !important;
+    color: white !important;
+    border-color: #632b2b !important;
 }
 
 .tab-btn.secondary {
@@ -116,10 +113,6 @@ body {
 .tab-btn:not(.active) {
     background: #e0e0e0;
     color: #333;
-}
-
-.tab-btn:not(.active):hover {
-    background-color: #d0d0d0;
 }
 
 /* --- Search and Filter Section --- */
@@ -468,20 +461,6 @@ hr {
     background: #fdfdfd;
 }
 
-.timeline-box h3 {
-    background-color: #e9e9e9;
-    margin: -15px -15px 10px -15px;
-    padding: 8px 15px;
-    border-radius: 13px 13px 0 0;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #dcdcdc;
-}
-
-.status-timeline-content {
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #eee;
-}
 .pagination { text-align: right; font-size: 0.85rem; margin-bottom: 5px; }
 
 .info-grid {
