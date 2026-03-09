@@ -213,6 +213,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('profStatusText').textContent = empData.status;
         document.getElementById('profPos').textContent = empData.pos;
         document.getElementById('profDept').textContent = empData.dept;
+        document.getElementById('profType').textContent = empData.empType || "---";
+    document.getElementById('profDateHired').textContent = empData.dateHired || "---";
         document.getElementById('profEmail').textContent = empData.email || "N/A";
         document.getElementById('profContact').textContent = empData.contact || "N/A";
         document.getElementById('profAddress').textContent = empData.address || "N/A";
