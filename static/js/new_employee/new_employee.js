@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- UI Elements ---
     const sidebar = document.getElementById("sidebar");
-    const mainContent = document.getElementById("mainContent"); // Target for expansion
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
 
@@ -17,35 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const newEmpTabBtn = document.getElementById("newEmpTabBtn");
     const posChangeTabBtn = document.getElementById("posChangeTabBtn");
 
-    const statusBanner = document.getElementById("statusBanner");
+    const statusBanner = document.querySelector(".timeline-status-banner");
     const statusTimelineBox = document.getElementById("statusTimelineBox");
     const submissionTimestamp = document.getElementById("submissionTimestamp");
-
-    // --- Sidebar Logic (Expansion/Collapse) ---
-    const toggleSidebar = (isCollapsed) => {
-        if (isCollapsed) {
-            sidebar.classList.add("collapsed");
-            // If you used the CSS sibling selector (+), the margin updates automatically.
-            // But we can add a class to mainContent for explicit control if needed:
-            mainContent.classList.add("expanded");
-        } else {
-            sidebar.classList.remove("collapsed");
-            mainContent.classList.remove("expanded");
-        }
-    };
-
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => toggleSidebar(true));
-    }
-
-    if (logoToggle) {
-        logoToggle.addEventListener("click", () => {
-            // Only toggle if currently collapsed (acting as an 'open' trigger)
-            if (sidebar.classList.contains("collapsed")) {
-                toggleSidebar(false);
-            }
-        });
-    }
 
     // --- Search Functionality ---
     if (searchInput) {
@@ -63,25 +36,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
+            // Toggle "No Results" row
             if (noResultsRow) {
                 noResultsRow.style.display = visibleCount === 0 ? "" : "none";
             }
         });
     }
 
+    // --- Sidebar Logic ---
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => sidebar.classList.add("collapsed"));
+    }
+    if (logoToggle) {
+        logoToggle.addEventListener("click", () => {
+            if (sidebar.classList.contains("collapsed")) {
+                sidebar.classList.remove("collapsed");
+            }
+        });
+    }
+
     // --- Modal Management ---
     const openModal = (modal) => {
-        if (modal) {
-            modal.style.display = "flex";
-            document.body.style.overflow = "hidden"; // Prevent background scroll
-        }
+        if (modal) modal.style.display = "flex";
     };
 
     const closeAllModals = () => {
-        [viewModal, posModal].forEach(m => { 
-            if (m) m.style.display = "none"; 
-        });
-        document.body.style.overflow = "auto";
+        [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
     };
 
     // View Modal Trigger
@@ -98,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", closeAllModals);
     });
 
-    // --- Tab Switching & Logical Redirects ---
+    // --- Tab Switching ---
     const setActiveTab = (clicked, other) => {
         clicked.classList.add("active");
         clicked.classList.remove("secondary");
@@ -107,11 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (newEmpTabBtn && posChangeTabBtn) {
-        newEmpTabBtn.addEventListener("click", () => {
-            setActiveTab(newEmpTabBtn, posChangeTabBtn);
-            // Logic to show New Employee table content if separate
-        });
-
+        newEmpTabBtn.addEventListener("click", () => setActiveTab(newEmpTabBtn, posChangeTabBtn));
         posChangeTabBtn.addEventListener("click", () => {
             setActiveTab(posChangeTabBtn, newEmpTabBtn);
             openModal(posModal);
@@ -123,11 +99,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const s1 = document.getElementById("slide1");
         const s2 = document.getElementById("slide2");
         if (n === 1) {
-            if(s1) s1.classList.add("active");
-            if(s2) s2.classList.remove("active");
+            s1?.classList.add("active");
+            s2?.classList.remove("active");
         } else {
-            if(s1) s1.classList.remove("active");
-            if(s2) s2.classList.add("active");
+            s1?.classList.remove("active");
+            s2?.classList.add("active");
         }
     }
 
@@ -139,23 +115,23 @@ document.addEventListener("DOMContentLoaded", () => {
         posForm.addEventListener("submit", (e) => {
             e.preventDefault();
             
+            // Generate Timestamp
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
             
-            if (submissionTimestamp) submissionTimestamp.innerText = `${dateStr} - ${timeStr}`;
-            if (statusTimelineBox) statusTimelineBox.style.display = "block";
+            if (submissionTimestamp && statusTimelineBox) {
+                submissionTimestamp.innerText = `${dateStr} - ${timeStr}`;
+                statusTimelineBox.style.display = "block";
+            }
 
-            const selectEl = posForm.querySelector('select');
-            const selectedPos = selectEl ? selectEl.value : "Position";
-            
-            if (statusBanner) {
+            const selectedPos = posForm.querySelector('select').value;
+            if (statusBanner && selectedPos) {
                 statusBanner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending - For ${selectedPos} Approval`;
             }
 
             alert("Success: Position change request logged.");
             closeAllModals();
-            posForm.reset();
         });
     }
 
