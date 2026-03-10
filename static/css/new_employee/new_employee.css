@@ -8,7 +8,7 @@
 
 body {
     height: 100vh;
-    overflow-x: hidden; /* Prevent horizontal scroll during transitions */
+    overflow-x: hidden;
     background-color: #f9f9f9;
 }
 
@@ -41,7 +41,6 @@ body {
     z-index: 100;
 }
 
-/* Sidebar Collapsed State */
 .sidebar.collapsed {
     width: 85px;
     padding: 25px 15px;
@@ -63,170 +62,6 @@ body {
     cursor: pointer;
 }
 
-/* --- Main Content Area --- */
-.main-content {
-    margin-left: 320px; /* Default: Sidebar (300px) + Gap (20px) */
-    padding: 40px;
-    transition: margin-left 0.35s ease;
-    min-width: 0; /* Prevents flex/grid items from breaking layout */
-}
-
-/* This class is toggled via JavaScript when sidebar is collapsed */
-.main-content.sidebar-collapsed {
-    margin-left: 105px; /* Collapsed Sidebar (85px) + Gap (20px) */
-}
-
-/* --- Header & Tabs --- */
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.header-container h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #ffffff;
-}
-
-.tab-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.tab-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-
-.tab-btn.active {
-    background-color: #632b2b !important;
-    color: white !important;
-    border-color: #632b2b !important;
-}
-
-.tab-btn.secondary {
-    background-color: #e0e0e0 !important;
-    color: #333 !important;
-    border-color: #ccc !important;
-}
-
-/* --- Search and Filter Section --- */
-.search-filter-section {
-    margin-bottom: 20px;
-}
-
-.search-bar-container {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.search-input-wrapper {
-    flex-grow: 1;
-    position: relative;
-}
-
-.search-input-wrapper i {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #999;
-}
-
-.search-input-wrapper input {
-    width: 100%;
-    padding: 12px 15px 12px 45px;
-    border: 1px solid #ccc;
-    border-radius: 30px;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.search-input-wrapper input:focus {
-    border-color: #632b2b;
-}
-
-.filter-main-btn {
-    padding: 0 25px;
-    border: 1.5px solid #333;
-    background: white;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.filter-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 15px;
-    background: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    gap: 10px;
-}
-
-/* --- Table Design --- */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    overflow-x: auto; /* Allows table to scroll if it gets too cramped */
-    margin-top: 10px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead th {
-    background: #333333;
-    color: #ffffff;
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 500;
-    font-size: 0.95rem;
-}
-
-tbody td {
-    padding: 12px 15px;
-    font-size: 0.9rem;
-    color: #333;
-    height: 50px;
-}
-
-tbody tr:nth-child(even) {
-    background-color: #f0f0f0;
-}
-
-/* --- Status Pills --- */
-.status-pill {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    display: inline-block;
-    text-align: center;
-    min-width: 160px;
-}
-
-.pending-hr { background-color: #f7e9c3; color: #4d3d0f; }
-.approved { background-color: #c9f7c9; color: #1b4d1b; }
-
-/* --- Sidebar Menu Helpers --- */
 .logo {
     width: 100%;
     border-radius: 50%;
@@ -274,11 +109,12 @@ tbody tr:nth-child(even) {
     border-radius: 12px;
     transition: background 0.3s;
     text-decoration: none;
+    margin-bottom: 5px;
 }
 
 .menu-item i {
     width: 50px;
-    min-width: 50px; /* Prevents icon from shrinking in collapsed mode */
+    min-width: 50px;
     text-align: center;
 }
 
@@ -302,13 +138,80 @@ hr {
     margin: 10px 0;
 }
 
-/* --- Modal Styles --- */
+/* --- Main Content Area --- */
+.main-content {
+    margin-left: 340px;
+    padding: 40px;
+    transition: margin-left 0.35s ease;
+}
+
+.main-content.sidebar-collapsed {
+    margin-left: 105px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.header-container h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* --- Tabs & Tables --- */
+.tab-buttons { display: flex; gap: 10px; }
+
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+
+.tab-btn.active { background-color: #632b2b; color: white; }
+.tab-btn.secondary { background-color: #e0e0e0; color: #333; }
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+    background: #333;
+    color: white;
+    padding: 15px;
+    text-align: left;
+}
+
+tbody td { padding: 15px; border-bottom: 1px solid #eee; }
+
+.status-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pending-hr { background: #fff3cd; color: #856404; }
+.approved { background: #d4edda; color: #155724; }
+
+/* --- VIEW MODAL LAYOUT (The Split View) --- */
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -316,8 +219,131 @@ hr {
 
 .modal-content {
     background: white;
-    width: 850px;
+    width: 950px; /* Wider for the split view */
     border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    padding: 25px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
 }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.applicant-name { font-size: 1.4rem; font-weight: 700; color: #333; }
+
+.info-approval-container {
+    display: flex;
+    gap: 25px; /* Space between Info and Timeline */
+}
+
+/* Left Column: Info/Slides */
+.info-section {
+    flex: 1.8;
+    background: #f1f3f5;
+    border-radius: 15px;
+    padding: 20px;
+    min-height: 400px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.info-label { font-weight: 700; color: #666; font-size: 0.9rem; }
+.info-value { color: #333; font-size: 1rem; }
+
+/* Right Column: Timeline/Actions */
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.timeline-box, .quick-actions {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.timeline-box h3, .quick-actions h3 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.timeline-status-banner {
+    background: #632b2b;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.timeline-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+/* Document Slide Styles */
+.modal-slide { display: none; }
+.modal-slide.active { display: block; }
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.document-preview-container {
+    margin-top: 15px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+}
+
+.doc-image { max-width: 100%; border-radius: 5px; }
+
+/* Action Buttons */
+.action-btns { display: flex; gap: 10px; }
+.action-btns button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.remarks-input-section {
+    margin-top: 25px;
+}
+
+.remarks-input-section input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+.modal-close { font-size: 2rem; cursor: pointer; border: none; background: none; }
