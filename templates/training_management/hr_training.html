@@ -208,6 +208,100 @@
         </div>
     </div>
 
+
+    <!-- View Training Modal -->
+    <div id="viewTrainingModal" class="modal-overlay">
+        <div class="modal-content modal-content--view">
+            <div class="view-modal-body">
+
+                <!-- Left Panel: Training Info -->
+                <div class="view-left-panel">
+                    <h2 class="view-training-name" id="viewTrainingName">Outcomes-Based Education Workshop</h2>
+                    <p class="view-training-meta" id="viewTrainingMeta">Teaching &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; March 12, 2026</p>
+                    <span class="status-badge open view-status-badge" id="viewTrainingStatus">Open</span>
+
+                    <div class="view-info-table">
+                        <p class="view-info-section-label">Training Information</p>
+                        <div class="view-info-row">
+                            <span class="view-info-key">Description</span>
+                            <span class="view-info-val" id="viewDescription">College of Computer Studies</span>
+                        </div>
+                        <div class="view-info-row">
+                            <span class="view-info-key">Trainer/Provider</span>
+                            <span class="view-info-val" id="viewTrainer">CCS - 201</span>
+                        </div>
+                        <div class="view-info-row">
+                            <span class="view-info-key">Location/Link</span>
+                            <span class="view-info-val" id="viewLocation">Main building 2nd floor</span>
+                        </div>
+                        <div class="view-info-row">
+                            <span class="view-info-key">Max Participants</span>
+                            <span class="view-info-val" id="viewMaxSlots">ccs.admin@email.com</span>
+                        </div>
+                        <div class="view-info-row">
+                            <span class="view-info-key">Slots Filled</span>
+                            <span class="view-info-val" id="viewSlotsFilled">+ 63 987 654 3210</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Participants List -->
+                <div class="view-right-panel">
+                    <div class="view-right-header">
+                        <h3>Participants List</h3>
+                        <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
+                    </div>
+
+                    <div class="participants-table-wrap">
+                        <table class="participants-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee Name</th>
+                                    <th>Dept</th>
+                                    <th>Status</th>
+                                    <th>Registered Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Dela Cruz, Juan</td>
+                                    <td>CCS</td>
+                                    <td><span class="status-badge open">Registered</span></td>
+                                    <td>Feb. 20, 2026 <i class="fas fa-pencil-alt edit-icon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Santos, Maria</td>
+                                    <td>CBA</td>
+                                    <td><span class="status-badge completed">Completed</span></td>
+                                    <td>Feb. 21, 2026 <i class="fas fa-pencil-alt edit-icon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Reyes, Carlo</td>
+                                    <td>COE</td>
+                                    <td><span class="status-badge full">No Show</span></td>
+                                    <td>Feb. 22, 2026 <i class="fas fa-pencil-alt edit-icon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Lopez, Ana</td>
+                                    <td>CAS</td>
+                                    <td><span class="status-badge cancelled">Cancelled</span></td>
+                                    <td>Feb. 23, 2026 <i class="fas fa-pencil-alt edit-icon"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="view-modal-footer">
+                        <button class="btn-view-edit">Edit</button>
+                        <button class="btn-view-close" id="viewModalCloseStatus">Close</button>
+                        <button class="btn-cancel" id="viewModalCancel">Cancel</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="../../static/js/training_management/hr_training.js"></script>
 </body>
 </html>
