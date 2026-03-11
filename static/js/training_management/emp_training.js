@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Sidebar Toggle ---
     closeBtn.addEventListener("click", () => {
         sidebar.classList.add("collapsed");
-        if (mainContent) mainContent.style.marginLeft = "110px";
+        if (mainContent) mainContent.style.marginLeft = "100px";
     });
 
     logoToggle.addEventListener("click", () => {
