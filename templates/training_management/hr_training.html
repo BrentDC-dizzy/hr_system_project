@@ -44,101 +44,104 @@
 
     <div class="main-content" id="mainContent">
 
-        <div class="header-container">
-            <h1>Training Management</h1>
+        <div class="content-card">
+
+            <div class="card-top-row">
+                <h1 class="page-title">Training Management</h1>
+            </div>
+
+            <div class="search-filter-section">
+                <div class="search-bar-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" placeholder="Search by Training Name / ID / Category">
+                    </div>
+                    <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
+                </div>
+                <div class="filter-actions-row">
+                    <div class="active-filters">
+                        <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
+                    </div>
+                    <button class="btn-add-training" id="addTrainingBtn">+ Add Training</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Training ID</th>
+                            <th>Training Name</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Mode</th>
+                            <th>Slots</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trainingTableBody">
+                        <tr>
+                            <td>001</td>
+                            <td>Outcomes-Based Education Workshop</td>
+                            <td>Teaching</td>
+                            <td>03/12/2026</td>
+                            <td>Onsite</td>
+                            <td>25 / 30</td>
+                            <td><span class="status-badge open">Open</span></td>
+                            <td class="action-links">
+                                <a href="#">View</a>
+                                <a href="#">Edit</a>
+                                <a href="#">Close</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>002</td>
+                            <td>Research Writing Seminar</td>
+                            <td>Research</td>
+                            <td>03/20/2026</td>
+                            <td>Online</td>
+                            <td>30 / 30</td>
+                            <td><span class="status-badge full">Full</span></td>
+                            <td class="action-links">
+                                <a href="#">View</a>
+                                <a href="#">Edit</a>
+                                <a href="#">Close</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>003</td>
+                            <td>Faculty Development Program</td>
+                            <td>Development</td>
+                            <td>02/28/2026</td>
+                            <td>Onsite</td>
+                            <td>20 / 20</td>
+                            <td><span class="status-badge completed">Completed</span></td>
+                            <td class="action-links">
+                                <a href="#">View</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>004</td>
+                            <td>Safety & Emergency Response Training</td>
+                            <td>Safety</td>
+                            <td>03/05/2026</td>
+                            <td>Onsite</td>
+                            <td>15 / 25</td>
+                            <td><span class="status-badge cancelled">Cancelled</span></td>
+                            <td class="action-links">
+                                <a href="#">View</a>
+                            </td>
+                        </tr>
+                        <tr id="noResultsRow" class="no-results-row">
+                            <td colspan="8">No trainings match your search.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
-        <div class="search-filter-section">
-            <div class="search-bar-container">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="tableSearch" placeholder="Search by Training Name / ID / Category">
-                </div>
-                <button class="filter-main-btn"><i class="fas fa-filter"></i> Filter</button>
-            </div>
-            <div class="filter-actions-row">
-                <div class="active-filters">
-                    <span class="filter-tag">Sample Filter <i class="fas fa-times"></i></span>
-                </div>
-                <button class="btn-add-training" id="addTrainingBtn">+ Add Training</button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Training ID</th>
-                        <th>Training Name</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th>Mode</th>
-                        <th>Slots</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="trainingTableBody">
-                    <tr>
-                        <td>001</td>
-                        <td>Outcomes-Based Education Workshop</td>
-                        <td>Teaching</td>
-                        <td>03/12/2026</td>
-                        <td>Onsite</td>
-                        <td>25 / 30</td>
-                        <td><span class="status-badge open">Open</span></td>
-                        <td class="action-links">
-                            <a href="#">View</a>
-                            <a href="#">Edit</a>
-                            <a href="#">Close</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>002</td>
-                        <td>Research Writing Seminar</td>
-                        <td>Research</td>
-                        <td>03/20/2026</td>
-                        <td>Online</td>
-                        <td>30 / 30</td>
-                        <td><span class="status-badge full">Full</span></td>
-                        <td class="action-links">
-                            <a href="#">View</a>
-                            <a href="#">Edit</a>
-                            <a href="#">Close</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>003</td>
-                        <td>Faculty Development Program</td>
-                        <td>Development</td>
-                        <td>02/28/2026</td>
-                        <td>Onsite</td>
-                        <td>20 / 20</td>
-                        <td><span class="status-badge completed">Completed</span></td>
-                        <td class="action-links">
-                            <a href="#">View</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>004</td>
-                        <td>Safety & Emergency Response Training</td>
-                        <td>Safety</td>
-                        <td>03/05/2026</td>
-                        <td>Onsite</td>
-                        <td>15 / 25</td>
-                        <td><span class="status-badge cancelled">Cancelled</span></td>
-                        <td class="action-links">
-                            <a href="#">View</a>
-                        </td>
-                    </tr>
-                    <tr id="noResultsRow" style="display: none;">
-                        <td colspan="8" style="text-align: center; padding: 30px; color: #888; font-style: italic;">
-                            No trainings match your search.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 
     <!-- Add Training Modal -->

@@ -152,29 +152,47 @@ hr {
 /* --- Main Content --- */
 .main-content {
     margin-left: 340px;
-    padding: 40px;
+    padding: 20px;
     transition: margin-left 0.35s ease;
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- Header --- */
-.header-container {
+.sidebar.collapsed ~ .main-content {
+    margin-left: 110px;
+}
+
+/* --- White Content Card --- */
+.content-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 35px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- Card Top Row (Title + optional actions) --- */
+.card-top-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
 }
 
-.header-container h1 {
+/* --- Page Title (inside card) --- */
+.page-title {
+    color: #1a1a1a;
     font-size: 1.8rem;
     font-weight: 700;
-    color: #ffffff;
 }
 
 /* --- Search & Filter --- */
 .search-filter-section {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .search-bar-container {
@@ -199,10 +217,11 @@ hr {
 .search-input-wrapper input {
     width: 100%;
     padding: 12px 15px 12px 45px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 30px;
     font-size: 0.95rem;
     outline: none;
+    background: #f5f5f5;
     transition: border-color 0.3s ease;
 }
 
@@ -267,10 +286,10 @@ hr {
 /* --- Table --- */
 .table-container {
     background: white;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
     overflow: hidden;
-    margin-top: 10px;
+    flex: 1;
 }
 
 table {
@@ -295,6 +314,18 @@ tbody td {
 }
 
 tbody tr:nth-child(even) { background-color: #f0f0f0; }
+
+/* --- No Results Row --- */
+.no-results-row {
+    display: none;
+}
+
+.no-results-row td {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-style: italic;
+}
 
 /* --- Status Badges --- */
 .status-badge {
