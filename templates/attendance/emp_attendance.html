@@ -103,7 +103,79 @@
     </div>
 
     </div>
+    <main class="main-content" id="mainContent">
+    <header class="header-banner">
+        <h1>Good morning, Juan! ☀️</h1>
+    </header>
 
+    <section class="dashboard-grid">
+        <div class="card attendance-card">
+            <div class="card-header">
+                <h2>Attendance</h2>
+                <span class="date-time">Monday, February 8 | 8:14 AM</span>
+            </div>
+            <p class="subtitle">Let's get it started</p>
+            <div class="attendance-stats">
+                <p>Working for: 0h</p>
+                <p>Time In: --</p>
+            </div>
+            <button class="btn-clock-in">Clock in</button>
+        </div>
+
+        <div class="card profile-card">
+            <div class="profile-info">
+                <div class="avatar-container">
+                    <img src="https://via.placeholder.com/100" alt="Juan"> </div>
+                <div class="profile-details">
+                    <h3>Juan Dela Cruz</h3>
+                    <p>Department Head</p>
+                    <p>Employee ID: 001</p>
+                    <button class="btn-outline">View Profile</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="summary-section">
+        <div class="summary-header">
+            <h2>Weekly Summary</h2>
+            <div class="week-nav">
+                <i class="fas fa-chevron-left"></i>
+                <span>Week 5</span>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Sunday</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Saturday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="week-range">February 3 — February 10</td>
+                        <td>2</td>
+                        <td><span class="status-pill status-yellow">4h 36m</span></td>
+                        <td><span class="status-pill status-purple">Leave</span></td>
+                        <td><span class="status-pill status-green-check">8h 39m</span></td>
+                        <td><span class="status-pill status-green-check">8 hours</span></td>
+                        <td><span class="status-pill status-green">Active</span></td>
+                        <td>8</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-history">View Full History</button>
+    </section>
+</main>
     <script src="../../static/js/attendance/emp_attendance.js"></script>
 </body>
 </html>
