@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Handle Active States and Tooltips
     menuItems.forEach(item => {
         const span = item.querySelector("span");
         if (span) {
@@ -61,20 +60,15 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Set Default View
             switchAttendanceView('weekly');
-
-            // Open with FLEX to enable the CSS centering
-            modal.style.display = "flex";
+            modal.style.display = "block";
         });
     });
 
     // Close Modal Logic
     if (closeSpan) {
-        closeSpan.onclick = () => {
-            modal.style.display = "none";
-        };
+        closeSpan.onclick = () => modal.style.display = "none";
     }
 
-    // Close when clicking outside the modal content
     window.onclick = (event) => {
         if (event.target == modal) {
             modal.style.display = "none";
@@ -105,17 +99,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (type === 'weekly') {
             weeklyBtn.classList.add("active");
             monthlyBtn.classList.remove("active");
-            rangeText.innerText = "February 4 - 10, 2026"; 
+            rangeText.innerText = "February 4 - 10, 2026"; // Matches design
             periodText.innerText = "Week";
-            totalValue.innerText = "42h 15m";
+            totalValue.innerText = "42h 15m"; // Sample total
             renderModalTableRows(7); 
         } else {
             monthlyBtn.classList.add("active");
             weeklyBtn.classList.remove("active");
             rangeText.innerText = "February 2026";
             periodText.innerText = "Month";
-            totalValue.innerText = "168h 30m";
-            renderModalTableRows(28); // Full month view
+            totalValue.innerText = "160h 00m"; // Sample total
+            renderModalTableRows(20); 
         }
     }
 
@@ -129,14 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tbody.innerHTML = ""; 
         for (let i = 1; i <= rowCount; i++) {
-            const dayNum = i; 
+            const dayNum = i + 3; // Starting from Feb 4
             tbody.innerHTML += `
                 <tr>
                     <td>February ${dayNum}, 2026</td>
                     <td>${getDayName(dayNum)}</td>
-                    <td>8:00 AM</td>
-                    <td>5:00 PM</td>
-                    <td>9h 00m</td>
+                    <td>8:03 AM</td>
+                    <td>5:02 PM</td>
+                    <td>8h 59m</td>
                     <td><span class="pill pill-green">Present</span></td>
                 </tr>
             `;
@@ -145,8 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getDayName(day) {
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        // February 1, 2026 is a Sunday (index 0)
-        return days[(day - 1) % 7]; 
+        // Simple mock: February 4, 2026 is a Wednesday (index 3)
+        return days[(day + 1) % 7]; 
     }
 
     // --- 4. FILTER TAG DISMISSAL ---
