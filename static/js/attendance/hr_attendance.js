@@ -3,7 +3,7 @@
    Place at: static/js/attendance/hr_attendance.js
    ========================================================= */
 
-// ── SIDEBAR ──────────────────────────────────────────────
+// ── SIDEBAR TOGGLE ────────────────────────────────────────
 const sidebar = document.getElementById("sidebar");
 
 document.getElementById("closeBtn").addEventListener("click", () => {
@@ -32,7 +32,7 @@ const employees = [
     { id: "004", first: "Ana",    last: "Garcia",    position: "Instructor", dept: "College of Computer Studies", type: "Part-Time",  tag: "CCS" },
 ];
 
-// Weekly calendar grid data  [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+// Weekly grid  [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
 const attendanceGrid = {
     "001": [null, { h: "8h 00m", s: "present" }, { h: "4h 36m", s: "late"    }, { h: "",       s: "leave"   }, { h: "8h 39m", s: "present" }, { h: "", s: "active" }, null],
     "002": [null, { h: "6h 24m", s: "late"    }, { h: "8h 00m", s: "present" }, { h: "8h 00m", s: "present" }, { h: "",       s: "absent"  }, { h: "", s: "active" }, null],
@@ -40,7 +40,6 @@ const attendanceGrid = {
     "004": [null, { h: "8h 15m", s: "present" }, { h: "8h 00m", s: "present" }, { h: "8h 23m", s: "present" }, { h: "7h 24m", s: "late"    }, { h: "", s: "active" }, null],
 };
 
-// Detail log data  { employeeId: { weekKey: [ rows ] } }
 const weeklyLogs = {
     "001": {
         "Feb 4 - 10": [
@@ -50,7 +49,7 @@ const weeklyLogs = {
             { date: "February 7, 2026",  day: "Thursday",  in: "8:00 AM", out: "4:39 PM", total: "8h 39m", status: "present" },
         ],
         "Feb 11 - 17": [
-            { date: "February 11, 2026", day: "Monday",    in: "8:20 AM", out: "5:05 PM", total: "8h 45m", status: "late"    },
+            { date: "February 11, 2026", day: "Monday",    in: "8:20 AM", out: "5:05 PM", total: "8h 45m", status: "late" },
         ],
     },
     "002": {
@@ -79,8 +78,8 @@ const weeklyLogs = {
     },
 };
 
-const WEEK_KEYS   = ["Feb 4 - 10", "Feb 11 - 17", "Feb 18 - 24", "Feb 25 - Mar 3"];
-const MONTH_KEYS  = ["January 2026", "February 2026", "March 2026", "April 2026"];
+const WEEK_KEYS  = ["Feb 4 - 10", "Feb 11 - 17", "Feb 18 - 24", "Feb 25 - Mar 3"];
+const MONTH_KEYS = ["January 2026", "February 2026", "March 2026", "April 2026"];
 
 
 // ── HELPERS ───────────────────────────────────────────────
@@ -98,13 +97,13 @@ function calcTotal(rows) {
     const mins = rows
         .filter(r => r.total !== "—")
         .reduce((acc, r) => {
-            const parts = r.total.replace("m", "").split("h ");
-            return acc + (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+            const p = r.total.replace("m", "").split("h ");
+            return acc + (parseInt(p[0]) || 0) * 60 + (parseInt(p[1]) || 0);
         }, 0);
     return mins ? `${Math.floor(mins / 60)}h ${mins % 60}m` : "—";
 }
 
-function buildLogRows(rows) {
+function buildRows(rows) {
     if (!rows.length) {
         return `<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;">No records found.</td></tr>`;
     }
@@ -116,7 +115,8 @@ function buildLogRows(rows) {
             <td>${r.out}</td>
             <td>${r.total}</td>
             <td><span class="status-pill ${r.status}">${r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span></td>
-        </tr>`).join("");
+        </tr>
+    `).join("");
 }
 
 
@@ -127,7 +127,6 @@ let currentWeek = 5;
 function renderTable(data) {
     const tbody = document.getElementById("attendanceBody");
     tbody.innerHTML = "";
-
     data.forEach(emp => {
         const rec = attendanceGrid[emp.id] || [];
         const tr  = document.createElement("tr");
@@ -147,7 +146,6 @@ function renderTable(data) {
         tbody.appendChild(tr);
     });
 
-    // Click employee row → open detail
     document.querySelectorAll(".emp-cell").forEach(cell => {
         cell.addEventListener("click", () => {
             const emp = employees.find(e => e.id === cell.dataset.id);
@@ -156,7 +154,6 @@ function renderTable(data) {
     });
 }
 
-// Week navigation
 document.getElementById("weekLabel").textContent = `Week ${currentWeek}`;
 
 document.getElementById("prevWeek").addEventListener("click", () => {
@@ -169,7 +166,6 @@ document.getElementById("nextWeek").addEventListener("click", () => {
     document.getElementById("weekLabel").textContent = `Week ${currentWeek}`;
 });
 
-// Live search
 document.getElementById("searchInput").addEventListener("input", function () {
     const q = this.value.toLowerCase();
     renderTable(employees.filter(e =>
@@ -181,50 +177,45 @@ document.getElementById("searchInput").addEventListener("input", function () {
     ));
 });
 
-// Initial render
 renderTable(employees);
 
 
 // ── EMPLOYEE DETAIL ───────────────────────────────────────
 
-let activeEmp  = null;
-let weekIdx    = 0;
-let monthIdx   = 1; // default: February 2026
+let activeEmp = null;
+let weekIdx   = 0;
+let monthIdx  = 1;
 
 function openDetail(emp) {
     activeEmp = emp;
     weekIdx   = 0;
     monthIdx  = 1;
 
-    // Swap views
-    document.getElementById("attendancePage").style.display  = "none";
-    document.getElementById("employeeDetail").style.display  = "block";
+    document.getElementById("attendancePage").style.display = "none";
+    document.getElementById("employeeDetail").style.display = "block";
 
-    // Populate info panel
     document.getElementById("detailName").textContent     = `${emp.last}, ${emp.first}`;
     document.getElementById("detailId").textContent       = emp.id;
     document.getElementById("detailPosition").textContent = emp.position;
     document.getElementById("detailDept").textContent     = emp.dept;
     document.getElementById("detailType").textContent     = emp.type;
 
-    renderWeeklyDetail();
+    renderWeekly();
     switchView("weekly");
 }
 
-function renderWeeklyDetail() {
+function renderWeekly() {
     const key  = WEEK_KEYS[weekIdx] || WEEK_KEYS[0];
     const rows = (weeklyLogs[activeEmp?.id] || {})[key] || [];
-
     document.getElementById("detailWeekLabel").textContent = key;
-    document.getElementById("weeklyBody").innerHTML        = buildLogRows(rows);
+    document.getElementById("weeklyBody").innerHTML        = buildRows(rows);
     document.getElementById("weeklyTotal").textContent     = calcTotal(rows);
 }
 
-function renderMonthlyDetail() {
+function renderMonthly() {
     const rows = Object.values(weeklyLogs[activeEmp?.id] || {}).flat();
-
     document.getElementById("detailMonthLabel").textContent = MONTH_KEYS[monthIdx] || MONTH_KEYS[1];
-    document.getElementById("monthlyBody").innerHTML         = buildLogRows(rows);
+    document.getElementById("monthlyBody").innerHTML         = buildRows(rows);
     document.getElementById("monthlyTotal").textContent      = calcTotal(rows);
 }
 
@@ -233,30 +224,26 @@ function switchView(view) {
     document.getElementById("monthlyView").style.display = view === "monthly" ? "block" : "none";
     document.getElementById("weeklyViewBtn").classList.toggle("active",  view === "weekly");
     document.getElementById("monthlyViewBtn").classList.toggle("active", view === "monthly");
-    if (view === "monthly") renderMonthlyDetail();
+    if (view === "monthly") renderMonthly();
 }
 
-// View toggle buttons
 document.getElementById("weeklyViewBtn").addEventListener("click",  () => switchView("weekly"));
 document.getElementById("monthlyViewBtn").addEventListener("click", () => switchView("monthly"));
 
-// Weekly navigation
 document.getElementById("detailPrevWeek").addEventListener("click", () => {
-    if (weekIdx > 0) { weekIdx--; renderWeeklyDetail(); }
+    if (weekIdx > 0) { weekIdx--; renderWeekly(); }
 });
 document.getElementById("detailNextWeek").addEventListener("click", () => {
-    if (weekIdx < WEEK_KEYS.length - 1) { weekIdx++; renderWeeklyDetail(); }
+    if (weekIdx < WEEK_KEYS.length - 1) { weekIdx++; renderWeekly(); }
 });
 
-// Monthly navigation
 document.getElementById("detailPrevMonth").addEventListener("click", () => {
-    if (monthIdx > 0) { monthIdx--; renderMonthlyDetail(); }
+    if (monthIdx > 0) { monthIdx--; renderMonthly(); }
 });
 document.getElementById("detailNextMonth").addEventListener("click", () => {
-    if (monthIdx < MONTH_KEYS.length - 1) { monthIdx++; renderMonthlyDetail(); }
+    if (monthIdx < MONTH_KEYS.length - 1) { monthIdx++; renderMonthly(); }
 });
 
-// Back button
 document.getElementById("backBtn").addEventListener("click", () => {
     document.getElementById("attendancePage").style.display = "block";
     document.getElementById("employeeDetail").style.display = "none";
