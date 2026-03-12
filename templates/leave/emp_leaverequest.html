@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leave Management | Employee System</title>
+    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <link rel="stylesheet" href="../../static/css/leave/emp_leaverequest.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="../../static/img/general/uph.png" class="logo">
+                <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
+        </div>
+
+        <ul class="menu">
+            <li><a href="../dashboards/emp_dash.html" class="menu-item"><i class="fas fa-border-all"></i> <span>Dashboard</span></a></li>
+            <li><a href="../accounts/emp_profile_view.html" class="menu-item"><i class="fas fa-user"></i> <span>Profile</span></a></li>
+            <hr>
+            <li><a href="ENTER" class="menu-item"><i class="fas fa-user-edit"></i> <span>Position Change Request</span></a></li>
+            <li><a href="ENTER" class="menu-item"><i class="fas fa-calendar-check"></i> <span>Attendance</span></a></li>
+            <li><a href="emp_leaveselect.html" class="menu-item active"><i class="fas fa-plane-departure"></i> <span>Leave Request</span></a></li>
+            <li><a href="ENTER" class="menu-item"><i class="fas fa-star"></i> <span>Performance Evaluation</span></a></li>
+            <li><a href="ENTER" class="menu-item"><i class="fas fa-folder-open"></i> <span>Documents</span></a></li>
+            <li><a href="ENTER" class="menu-item"><i class="fas fa-chalkboard-teacher"></i> <span>Trainings</span></a></li>
+        </ul>
+
+        <div class="bottom-section">
+            <a href="../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+        </div>
+    </div>
+
+    <div class="dashboard-viewport">
+        <main class="main-content">
+            <div class="leave-card">
+                <div class="title-header">
+                    <h1>Leave Management</h1>
+                    <div class="emp-identity">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="display-emp-name">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="header-controls">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" placeholder="Search by Leave Type / Date / Status">
+                    </div>
+                    <div class="tab-group">
+                        <button class="tab-btn active" id="tab-requests">Leave Requests</button>
+                        <button class="tab-btn" id="tab-history">Leave History</button>
+                    </div>
+                </div>
+
+                <div class="table-body" id="requests-content">
+                    <table class="request-table">
+                        <thead>
+                            <tr>
+                                <th>Date Filed</th>
+                                <th>Leave Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>No. of Days</th>
+                                <th>Status</th>
+                                <th>Reviewed by</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-body" id="history-content" style="display: none;">
+                    <table class="request-table">
+                        <thead>
+                            <tr>
+                                <th>Date Filed</th>
+                                <th>Leave Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>No. of Days</th>
+                                <th>Status</th>
+                                <th>Reviewed by</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="viewModal" class="modal-overlay">
+        <div class="view-modal-content">
+            <div class="modal-grid">
+                <div class="doc-preview">
+                    <div class="doc-label">My Leave Document</div>
+                    <div class="doc-filename" id="modalFileName">Document.pdf</div>
+                    <div class="pdf-viewer">
+                        <div class="pdf-controls"><i class="fas fa-file-pdf"></i> <span>Preview Mode</span></div>
+                        <img src="../../static/img/general/sample_form.png" style="width:100%;">
+                    </div>
+                </div>
+                <div class="status-panel">
+                    <div class="info-box">
+                        <label>Application Status</label>
+                        <div style="padding: 10px 15px;" id="modalStatusContainer"></div>
+                        <p id="modalReviewer" style="margin: 0; padding: 0 15px 10px 15px;"><small>Reviewed by: ---</small></p>
+                    </div>
+                    <div class="info-box">
+                        <label>Submission Date</label>
+                        <p id="modalSubmitDate">---</p>
+                    </div>
+                    <button class="btn-cancel" onclick="closeViewModal()">Close Preview</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/js/leave/emp_leaverequest.js"></script>
+</body>
+</html>
