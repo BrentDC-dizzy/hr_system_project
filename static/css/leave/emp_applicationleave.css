@@ -47,7 +47,7 @@ body, html {
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     transition: width 0.35s ease;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .sidebar.collapsed { width: 90px; }
@@ -74,6 +74,40 @@ body, html {
 .menu-item.active { background: rgba(255,255,255,0.25); }
 hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0; }
 .bottom-section { margin-top: auto; }
+
+/* --- TOOLTIP FIX (The Black Box with Text) --- */
+.sidebar.collapsed .menu-item:hover::after {
+    content: attr(data-text); 
+    position: absolute;
+    left: 85px; 
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1a1a1a; 
+    color: #ffffff !important; /* Force text to be white */
+    padding: 8px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999; /* Ensure it floats above the form card */
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Tooltip Arrow */
+.sidebar.collapsed .menu-item:hover::before {
+    content: "";
+    position: absolute;
+    left: 77px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #1a1a1a transparent transparent;
+    z-index: 9999;
+}
 
 /* 5. Main Content Wrapper: EXACT HR SPACING */
 .main-content {
@@ -124,15 +158,3 @@ hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0; }
 .form-actions { display: flex; justify-content: flex-end; gap: 15px; padding-top: 15px; border-top: 1px solid #eee; }
 .btn-secondary { padding: 12px 35px; background: #eee; border: none; border-radius: 8px; cursor: pointer; }
 .btn-primary { padding: 12px 35px; background: #4a1d1d; color: white; border: none; border-radius: 8px; cursor: pointer; }
-
-/* Tooltip */
-.sidebar.collapsed .menu-item:hover::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 80px;
-    background: rgba(20,20,20,0.95);
-    padding: 8px 14px;
-    border-radius: 8px;
-    white-space: nowrap;
-    font-size: 14px;
-}

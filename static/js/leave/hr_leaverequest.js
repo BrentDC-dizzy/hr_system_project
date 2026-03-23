@@ -1,251 +1,136 @@
+/* hr_leaverequest.js */
+let leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 let activeRowId = null;
-let currentType = "";
-let currentDays = 0;
-
-let sickCredits = { "row-1": 15, "row-2": 15 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    const handleToggle = () => { if (sidebar) sidebar.classList.toggle('close'); };
-    document.getElementById('closeBtn').addEventListener('click', handleToggle);
-    document.getElementById('logoToggle').addEventListener('click', handleToggle);
+    const sidebar = document.getElementById("sidebar");
+    const logoToggle = document.getElementById("logoToggle");
+    const closeBtn = document.getElementById("closeBtn");
+    const menuItems = document.querySelectorAll('.menu-item');
 
-    const tabRequests = document.getElementById('tab-requests');
-    const tabHistory = document.getElementById('tab-history');
-    const requestsContent = document.getElementById('requests-content');
-    const historyContent = document.getElementById('history-content');
-
-    tabRequests.addEventListener('click', () => {
-        tabRequests.classList.add('active'); tabHistory.classList.remove('active');
-        requestsContent.style.display = 'block'; historyContent.style.display = 'none';
+    menuItems.forEach(item => {
+        const span = item.querySelector("span");
+        if (span) {
+            item.setAttribute("data-text", span.textContent.trim());
+        }
     });
 
-    tabHistory.addEventListener('click', () => {
-        tabHistory.classList.add('active'); tabRequests.classList.remove('active');
-        requestsContent.style.display = 'none'; historyContent.style.display = 'block';
-    });
+    renderHRTable("Active");
 
-    // --- SEARCH BAR LOGIC ---
-    // Selects the input field inside your search-wrapper
-    const searchInput = document.querySelector('.search-wrapper input');
-    
-    searchInput.addEventListener('keyup', () => {
-        const filter = searchInput.value.toLowerCase();
-        // Selects all rows with the class 'table-row' in both tables
-        const allRows = document.querySelectorAll('.table-row');
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
-        allRows.forEach(row => {
-            // Converts all text inside the row to lowercase for easier matching
-            const rowText = row.innerText.toLowerCase();
-            
-            // Shows the row if it matches the search query, hides it if not
-            if (rowText.includes(filter)) {
-                row.style.display = ""; 
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
+    document.getElementById('tab-requests').onclick = () => {
+        document.getElementById('tab-requests').classList.add('active');
+        document.getElementById('tab-history').classList.remove('active');
+        renderHRTable("Active");
+    };
+
+    document.getElementById('tab-history').onclick = () => {
+        document.getElementById('tab-history').classList.add('active');
+        document.getElementById('tab-requests').classList.remove('active');
+        renderHRTable("History");
+    };
 });
 
-function openViewModal(rowId, type, days) { 
-    activeRowId = rowId; currentType = type; currentDays = days;
-    const row = document.getElementById(rowId);
-    const statusText = row.querySelector('.status-pill').textContent.trim();
+function getCredits(name) {
+    const credits = JSON.parse(localStorage.getItem('userCredits')) || {};
+    return credits[name] !== undefined ? credits[name] : 15;
+}
 
-    document.getElementById('modalActions').style.display = 'flex';
-    document.getElementById('decisionBanner').style.display = 'none';
-    document.getElementById('modalFileName').innerText = type.replace(" ", "_") + "_.pdf";
+function renderHRTable(mode) {
+    const body = document.getElementById('leaveTableBody');
+    if (!body) return;
+    body.innerHTML = "";
+    leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
-    // 1. Leave Balance Visibility (Sick Leave Only)
-    document.getElementById('balanceContainer').style.display = (type === "Sick Leave") ? 'block' : 'none';
-    if(type === "Sick Leave") document.getElementById('creditVal').innerText = sickCredits[rowId];
+    leaveData.forEach((leave) => {
+        const isFinal = leave.status === "Approved" || leave.status === "Rejected";
+        if ((mode === "Active" && !isFinal) || (mode === "History" && isFinal)) {
+            const statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
+            body.innerHTML += `<tr>
+                <td><strong>${leave.name}</strong><br><small>${leave.role}</small></td>
+                <td>${leave.leaveType}</td>
+                <td>${leave.startDate}</td>
+                <td>${leave.endDate}</td>
+                <td>${leave.numDays}</td>
+                <td><span class="status-pill ${statusClass}">${leave.status}</span></td>
+                <td>${leave.reviewedBy}</td>
+                <td><span class="action-link" onclick="openHRModal(${leave.id})">View Details</span></td>
+            </tr>`;
+        }
+    });
+}
 
-    // 2. Pending Status logic
-    const label = document.getElementById('modalStatusLabel');
-    if (statusText === "Pending") {
-        label.className = "status-pill pending";
-        label.innerHTML = `<i class="fas fa-exclamation-circle"></i> Pending`;
-        document.getElementById('reviewerDetails').innerHTML = `<small>Reviewed by: ---</small>`;
-    } else {
-        showFinalStateInModal(statusText.includes("Approved") ? "Approved" : "Rejected");
+function openHRModal(id) {
+    activeRowId = id;
+    const data = leaveData.find(l => l.id === id);
+    if (!data) return;
+
+    document.getElementById('modalFileName').innerText = data.fileName;
+    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${data.status.toLowerCase().replace(/\s+/g, '-')}">${data.status}</span>`;
+    document.getElementById('modalReviewer').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
+
+    const remarksParagraph = document.getElementById('modalRemarks');
+    let modalHTML = `<div class="info-item"><label>REASON</label><p class="modal-text-unified">${data.reason}</p></div>`;
+    
+    if (data.leaveType === "Sick Leave") {
+        modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>SICK LEAVE CREDITS</label><p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p></div>`;
     }
 
-    document.getElementById('viewModal').style.display = 'flex'; 
+    modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>REVIEW REMARKS</label><p class="modal-text-unified">${data.reviewRemarks || 'Awaiting initial review.'}</p></div>`;
+    remarksParagraph.parentElement.innerHTML = `<div id="modalRemarks">${modalHTML}</div>`;
+
+    const preview = document.querySelector('.pdf-placeholder');
+    if (data.fileData) {
+        if (data.fileData.includes("image")) {
+            preview.innerHTML = `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">`;
+        } else {
+            preview.innerHTML = `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
+        }
+    } else {
+        preview.innerHTML = `<i class="fas fa-file-alt"></i><p>No document uploaded</p>`;
+    }
+
+    const isFinal = data.status === "Approved" || data.status === "Rejected";
+    document.getElementById('modalActions').style.display = isFinal ? "none" : "flex";
+    document.getElementById('viewModal').style.display = 'flex';
 }
 
 function processRequest(status) {
-    const row = document.getElementById(activeRowId);
-    if (row) {
-        if (status === 'Approved' && currentType === "Sick Leave") sickCredits[activeRowId] -= currentDays;
-        showFinalStateInModal(status);
-        row.querySelector('.status-cell').innerHTML = `<span class="status-pill ${status.toLowerCase()}"><i class="fas fa-${status === 'Approved' ? 'check' : 'times'}-circle"></i> ${status}</span>`;
-        row.querySelector('.reviewer-cell').innerHTML = `<strong>HR Manager</strong><br><small>${new Date().toLocaleDateString()}</small>`;
-        row.querySelector('td:last-child').innerHTML = `<button class="view-btn" onclick="openViewModal('${activeRowId}', '${currentType}', ${currentDays})">View</button>`;
-        document.getElementById('history-table-body').appendChild(row);
-    }
-}
+    const index = leaveData.findIndex(l => l.id === activeRowId);
+    if (index !== -1) {
+        const request = leaveData[index];
+        const isHeadRequest = (request.role === "Department Head");
 
-function showFinalStateInModal(status) {
-    const label = document.getElementById('modalStatusLabel');
-    label.className = `status-pill ${status.toLowerCase()}`;
-    label.innerHTML = `<i class="fas fa-${status === 'Approved' ? 'check' : 'times'}-circle"></i> ${status}`;
-    if (currentType === "Sick Leave") document.getElementById('creditVal').innerText = sickCredits[activeRowId];
-    const pill = document.getElementById('decisionPill');
-    pill.className = `banner-pill ${status.toLowerCase()}-banner`;
-    pill.innerText = status;
-    document.getElementById('modalActions').style.display = 'none';
-    document.getElementById('decisionBanner').style.display = 'block';
-    document.getElementById('reviewerDetails').innerHTML = `<small>Reviewed by: HR Manager</small>`;
+        if (status === "Approved") {
+            if (isHeadRequest) {
+                // If HR approves a Head, it's NOT final. Updates status for School Director to see.
+                request.status = "Approved - By HR";
+                request.reviewedBy = "HR Manager";
+                request.reviewRemarks = "HR Manager has reviewed and approved. Waiting for final review by School Director.";
+            } else {
+                // Finalize for normal employees
+                if (request.leaveType === "Sick Leave") {
+                    let credits = JSON.parse(localStorage.getItem('userCredits')) || {};
+                    credits[request.name] = getCredits(request.name) - request.numDays;
+                    localStorage.setItem('userCredits', JSON.stringify(credits));
+                }
+                request.status = "Approved"; 
+                request.reviewedBy = "HR Manager";
+                request.reviewRemarks = "This request has been finalized by HR Manager.";
+            }
+        } else {
+            // Rejection is final for everyone
+            request.status = "Rejected"; 
+            request.reviewedBy = "HR Manager";
+            request.reviewRemarks = "This request has been rejected by HR Manager.";
+        }
+        
+        localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
+        location.reload();
+    }
 }
 
 function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
-
-
-const sidebar = document.getElementById("sidebar");
-const logoToggle = document.getElementById("logoToggle");
-const closeBtn = document.getElementById("closeBtn");
-const menuItems = document.querySelectorAll(".menu-item");
-const dashboard = document.querySelector(".dashboard-wrapper");
-
-// Close button (only when expanded)
-closeBtn.addEventListener("click", () => {
-    sidebar.classList.add("collapsed");
-    adjustDashboard();
-});
-
-// Open via logo click
-logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-        adjustDashboard();
-    }
-});
-
-// Tooltip text & active menu highlighting
-menuItems.forEach(item => {
-    const text = item.querySelector("span").innerText;
-    item.setAttribute("data-text", text);
-
-    item.addEventListener("click", () => {
-        document.querySelector(".menu-item.active")?.classList.remove("active");
-        item.classList.add("active");
-    });
-});
-
-// Adjust dashboard margin based on sidebar state
-function adjustDashboard() {
-    if(!dashboard || !sidebar) return;
-    if(sidebar.classList.contains("collapsed")){
-        dashboard.style.marginLeft = "120px";
-    } else {
-        dashboard.style.marginLeft = "340px";
-    }
-}
-// Initial adjustment
-adjustDashboard();
-
-const loggedUser = "Tatsu"; // Replace with dynamic login session later
-const usernameElement = document.getElementById("username");
-if(usernameElement){
-    usernameElement.textContent = loggedUser.toUpperCase();
-}
-
-const quotes = [
-    "Success is walking from failure to failure with no loss of enthusiasm.",
-    "Hard work beats talent when talent doesn't work hard.",
-    "Consistency creates success.",
-    "Dream big and work hard.",
-    "Stay focused and never quit.",
-    "Small progress each day adds up to big results.",
-    "Discipline is choosing between what you want now and what you want most."
-];
-const quoteElement = document.getElementById("quote");
-function rotateQuote(){
-    if(!quoteElement) return;
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    quoteElement.textContent = quotes[randomIndex];
-}
-rotateQuote();
-setInterval(rotateQuote, 8000);
-
-document.querySelectorAll(".quick-actions button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const link = btn.getAttribute("data-link");
-        if(link && link !== "#"){
-            window.location.href = link;
-        }
-    });
-});
-
-const helpBtn = document.getElementById("helpBtn");
-const helpModal = document.getElementById("helpModal");
-const closeHelp = document.getElementById("closeHelp");
-
-if(helpBtn){
-    helpBtn.addEventListener("click", () => {
-        if(helpModal){
-            helpModal.style.display = "flex";
-        }
-    });
-}
-if(closeHelp){
-    closeHelp.addEventListener("click", () => {
-        helpModal.style.display = "none";
-    });
-};
-
-
-const employeeData = {
-    total: 546,
-    active: 902,
-    leave: 67
-};
-
-const totalEmployees = document.getElementById("totalEmployees");
-const activeEmployees = document.getElementById("activeEmployees");
-const leaveEmployees = document.getElementById("leaveEmployees");
-
-if(totalEmployees) totalEmployees.textContent = employeeData.total;
-if(activeEmployees) activeEmployees.textContent = employeeData.active;
-if(leaveEmployees) leaveEmployees.textContent = employeeData.leave;
-
-
-function animateNumber(element, target){
-    let current = 0;
-    const step = Math.ceil(target / 40);
-    const timer = setInterval(() => {
-        current += step;
-        if(current >= target){
-            current = target;
-            clearInterval(timer);
-        }
-        element.textContent = current;
-    }, 20);
-}
-
-if(totalEmployees) animateNumber(totalEmployees, employeeData.total);
-if(activeEmployees) animateNumber(activeEmployees, employeeData.active);
-if(leaveEmployees) animateNumber(leaveEmployees, employeeData.leave);
-
-const canvas = document.getElementById("attendanceChart");
-if(canvas){
-    const ctx = canvas.getContext("2d");
-    const attendanceData = [
-        {label:"Present", value:50, color:"#5aa0ff"},
-        {label:"Absent", value:30, color:"#7be495"},
-        {label:"Late", value:20, color:"#ffb86c"}
-    ];
-    let startAngle = 0;
-    attendanceData.forEach(item => {
-        const slice = (item.value / 100) * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(100,100);
-        ctx.arc(100,100,100,startAngle,startAngle + slice);
-        ctx.fillStyle = item.color;
-        ctx.fill();
-        startAngle += slice;
-    });
-}
-
-
