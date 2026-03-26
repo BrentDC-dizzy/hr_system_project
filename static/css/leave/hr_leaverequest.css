@@ -55,15 +55,34 @@ tbody td { padding: 12px 10px; border-bottom: 1px solid #f5f5f5; font-size: 13px
 .status-pill.approved { background-color: #d4edda; color: #155724; }
 .status-pill.rejected { background-color: #f8d7da; color: #721c24; }
 
-/* 6. MODAL STYLES (Balanced Text Spacing) */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
-.view-modal-content { background: white; width: 900px; border-radius: 25px; padding: 35px; animation: slideUp 0.3s ease-out; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* 6. MODAL STYLES (Balanced 950px Design) */
+.modal-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(8px); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+}
+
+.view-modal-content { 
+    background: white; 
+    width: 950px; /* Exact size requested */
+    border-radius: 25px; 
+    padding: 35px; 
+    animation: slideUp 0.3s ease-out; 
+}
+
+@keyframes slideUp { 
+    from { transform: translateY(20px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
 
 .modal-header { border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 25px; }
 .modal-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 35px; }
 
-/* Info Area Balance */
 .info-item { margin-bottom: 18px; }
 .info-item label { 
     display: block; 
@@ -73,26 +92,7 @@ tbody td { padding: 12px 10px; border-bottom: 1px solid #f5f5f5; font-size: 13px
     font-weight: 700; 
     margin-bottom: 0.3rem; 
 }
-.info-item p { font-size: 14px; color: #333; line-height: 1.4; }
 
-/* Doc Preview Area */
-.doc-tab-label { background: #e0e0e0; padding: 8px 15px; border-radius: 10px 10px 0 0; font-weight: 700; font-size: 12px; display: inline-block; }
-.doc-box { border: 1px solid #ddd; border-radius: 0 15px 15px 15px; overflow: hidden; }
-.doc-header { background: #fff; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #eee; }
-.pdf-placeholder { height: 320px; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #bbb; }
-
-/* Status Pill Row Fix */
-#modalStatusContainer { padding: 5px 0; display: block; }
-#modalReviewer { margin-top: 4px; display: block; color: #777; }
-
-/* Footer Buttons */
-.modal-footer { display: flex; gap: 12px; margin-top: 15px; }
-.btn-approve { background: #d4edda; color: #155724; border: none; padding: 12px; flex: 1; border-radius: 10px; font-weight: 700; cursor: pointer; }
-.btn-reject { background: #f8d7da; color: #721c24; border: none; padding: 12px; flex: 1; border-radius: 10px; font-weight: 700; cursor: pointer; }
-
-.modal-close-btn { width: 100%; padding: 12px; background: #4a1d1d; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-
-/* Unified Text Styling for Modal */
 .modal-text-unified {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
@@ -100,15 +100,83 @@ tbody td { padding: 12px 10px; border-bottom: 1px solid #f5f5f5; font-size: 13px
     margin: 5px 0 0 0;
     line-height: 1.5;
 }
+#modalSubmitDate {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+}
+/* Doc Preview Area */
+.doc-tab-label { background: #e0e0e0; padding: 8px 15px; border-radius: 10px 10px 0 0; font-weight: 700; font-size: 12px; display: inline-block; border: 1px solid #ddd; border-bottom: none; }
+.doc-box { border: 1px solid #ddd; border-radius: 0 15px 15px 15px; overflow: hidden; }
+.doc-header { background: #fff; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #eee; }
+.pdf-placeholder { height: 320px; background: #f9f9f9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #bbb; }
 
-.info-item label {
-    font-weight: bold;
-    color: #888;
-    font-size: 12px;
-    display: block;
-    text-transform: uppercase;
+/* Status & Reviewer */
+#modalStatusContainer { padding: 5px 0; display: block; }
+#modalReviewer { margin-top: 4px; display: block; color: #777; font-size: 12px; }
+
+/* ALERT STYLE FOOTER BUTTONS */
+.modal-footer { display: flex; gap: 12px; margin-top: 15px; }
+
+.btn-approve { 
+    background: #d4edda; /* Light Green Container */
+    color: #155724;      /* Dark Green Text */
+    border: none; 
+    padding: 12px; 
+    flex: 1; 
+    border-radius: 10px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.2s;
 }
 
+.btn-reject { 
+    background: #f8d7da; /* Light Red Container */
+    color: #721c24;      /* Dark Red Text */
+    border: none; 
+    padding: 12px; 
+    flex: 1; 
+    border-radius: 10px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.2s;
+}
+
+.btn-approve:hover, .btn-reject:hover { filter: brightness(0.95); }
+
+.modal-close-btn { 
+    width: 100%; 
+    padding: 12px; 
+    background: #4a1d1d; 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    margin-top: 10px; 
+}
+
+/* --- SIDEBAR TOOLTIP & ICON CENTER FIXES --- */
+.sidebar.collapsed .menu-item { justify-content: center !important; }
+.sidebar.collapsed .menu-item i { width: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+.sidebar.collapsed .logo-wrapper { margin: 0 auto !important; }
+
+.sidebar.collapsed .menu-item:hover::after {
+    content: attr(data-text) !important;
+    position: absolute !important;
+    left: 85px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: #1a1a1a !important;
+    color: #ffffff !important;      /* FORCE WHITE TEXT */
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    z-index: 9999 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
 /* --- ADDED: HR LEAVE SIDEBAR FIXES --- */
 
 /* 1. Center the icons when sidebar is small */

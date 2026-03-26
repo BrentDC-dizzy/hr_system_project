@@ -67,15 +67,17 @@
 
                         <div class="input-group">
                             <label>Reason for Leave</label>
-                            <textarea class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
+                            <textarea id="leaveReason" class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
                         </div>
 
                         <label class="section-label">Attach Supporting Document(s)</label>
                         <div class="drop-zone" id="dropZone">
                             <input type="file" id="fileInput" hidden>
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Drag and Drop or <span>browse files</span></p>
-                            <small>PDF, JPG, PNG - Max 10MB each</small>
+                            <div id="dropZoneContent">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag and Drop or <span>browse files</span></p>
+                                <small>PDF, JPG, PNG - Max 10MB each</small>
+                            </div>
                         </div>
                     </form>
                 </div>

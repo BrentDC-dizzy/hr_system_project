@@ -64,8 +64,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="leaveTableBody">
-                            </tbody>
+                        <tbody id="leaveTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -76,7 +75,6 @@
         <div class="view-modal-content">
             <div class="modal-header">
                 <h3>Leave Application Detail</h3>
-                <span class="close-modal" onclick="closeViewModal()">&times;</span>
             </div>
             <div class="modal-grid">
                 <div class="doc-preview-area">
@@ -90,7 +88,7 @@
                     </div>
                 </div>
                 <div class="info-panel">
-                    <div class="status-box">
+                    <div class="info-item">
                         <label>Application Status</label>
                         <div id="modalStatusContainer"></div>
                     </div>
@@ -99,14 +97,31 @@
                         <p id="modalSubmitDate">---</p>
                     </div>
                     <div class="info-item">
+                        <label>Reason for Leave</label>
+                        <p id="modalReason" class="modal-text-unified">---</p>
+                    </div>
+                    <div class="info-item">
                         <label>Review Remarks</label>
-                        <p id="modalRemarks">Awaiting response from Head/HR.</p>
+                        <p id="modalRemarks" class="modal-text-unified">Awaiting response from Head/HR.</p>
                     </div>
                     <button class="modal-close-btn" onclick="closeViewModal()">Close Preview</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <template id="leaveRowTemplate">
+        <tr>
+            <td class="col-filed"></td>
+            <td class="col-type"></td>
+            <td class="col-start"></td>
+            <td class="col-end"></td>
+            <td class="col-days"></td>
+            <td class="col-status"></td>
+            <td class="col-reviewer"></td>
+            <td><span class="action-link">View Details</span></td>
+        </tr>
+    </template>
 
     <script src="../../static/js/leave/emp_leaverequest.js"></script>
 </body>

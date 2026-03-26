@@ -7,39 +7,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
-    const menuItems = document.querySelectorAll(".menu-item");
+    const tabRequests = document.getElementById('tab-requests');
+    const tabHistory = document.getElementById('tab-history');
 
-    menuItems.forEach(item => {
+    // Sidebar Tooltips
+    document.querySelectorAll(".menu-item").forEach(item => {
         const span = item.querySelector("span");
-        if (span) {
-            item.setAttribute("data-text", span.textContent.trim());
-        }
+        if (span) item.setAttribute("data-text", span.textContent.trim());
     });
 
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
-    const tabRequests = document.getElementById('tab-requests');
-    const tabHistory = document.getElementById('tab-history');
+    tabRequests.onclick = () => {
+        tabRequests.classList.add('active'); tabHistory.classList.remove('active');
+        renderHeadTable("Active");
+    };
+    tabHistory.onclick = () => {
+        tabHistory.classList.add('active'); tabRequests.classList.remove('active');
+        renderHeadTable("History");
+    };
 
-    if (tabRequests) {
-        tabRequests.onclick = () => {
-            tabRequests.classList.add('active');
-            tabHistory.classList.remove('active');
-            renderHeadTable("Active");
-        };
-    }
-
-    if (tabHistory) {
-        tabHistory.onclick = () => {
-            tabHistory.classList.add('active');
-            tabRequests.classList.remove('active');
-            renderHeadTable("History");
-        };
-    }
-
-    leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
     renderHeadTable("Active");
+
+    document.getElementById('tableSearch').addEventListener('keyup', (e) => {
+        const val = e.target.value.toLowerCase();
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+        });
+    });
 });
 
 function getCredits(name) {
@@ -49,49 +45,49 @@ function getCredits(name) {
 
 function renderHeadTable(mode) {
     const body = document.getElementById('leaveTableBody');
-    if (!body) return;
-    
+    const template = document.getElementById('headRowTemplate');
     body.innerHTML = "";
     leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
     leaveData.forEach((leave) => {
         const isOwnRequest = (leave.name.trim() === loggedHeadName.trim());
+        const isSDRequest = (leave.role === "School Director");
+        const isHRRequest = (leave.role === "HR Manager");
+        
         const isActionedByHead = leave.status.includes("- By Head");
         const isFinal = (leave.status === "Approved" || leave.status === "Rejected");
 
-        let shouldShow = false;
+        if (isSDRequest || isHRRequest) return; 
 
+        let shouldShow = false;
         if (mode === "Active") {
-            // Show staff requests needing action OR Head's own request that isn't finalized
-            if ((!isOwnRequest && !isActionedByHead && !isFinal) || (isOwnRequest && !isFinal)) {
-                shouldShow = true;
-            }
-        } else if (mode === "History") {
-            // Show staff requests already processed OR Head's own finalized requests
-            if ((!isOwnRequest && (isActionedByHead || isFinal)) || (isOwnRequest && isFinal)) {
-                shouldShow = true;
-            }
+            if ((!isOwnRequest && !isActionedByHead && !isFinal) || (isOwnRequest && !isFinal)) shouldShow = true;
+        } else {
+            if ((!isOwnRequest && (isActionedByHead || isFinal)) || (isOwnRequest && isFinal)) shouldShow = true;
         }
 
         if (shouldShow) {
+            const clone = template.content.cloneNode(true);
             let displayStatus = leave.status;
-            // Map the status for the Head's view: show as Pending until School Director finishes
             if (isOwnRequest && !isFinal) displayStatus = "Pending";
-
             const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
+
+            clone.querySelector('.col-emp').innerHTML = `<strong>${leave.name}</strong><br><small>${leave.role}</small>`;
+            clone.querySelector('.col-type').innerText = leave.leaveType;
+            clone.querySelector('.col-start').innerText = leave.startDate;
+            clone.querySelector('.col-end').innerText = leave.endDate;
+            clone.querySelector('.col-days').innerText = leave.numDays;
+            clone.querySelector('.col-status').innerHTML = `<span class="status-pill ${statusClass}">${displayStatus}</span>`;
+            clone.querySelector('.col-reviewer').innerText = leave.reviewedBy || '---';
             
-            body.innerHTML += `<tr>
-                <td><strong>${leave.name}</strong><br><small>${leave.role}</small></td>
-                <td>${leave.leaveType}</td>
-                <td>${leave.startDate}</td>
-                <td>${leave.endDate}</td>
-                <td>${leave.numDays}</td>
-                <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
-                <td>${leave.reviewedBy}</td>
-                <td><span class="action-link" onclick="openHeadModal(${leave.id})">View Details</span></td>
-            </tr>`;
+            clone.querySelector('.action-link').onclick = () => openHeadModal(leave.id);
+            body.appendChild(clone);
         }
     });
+
+    if (body.innerHTML === "") {
+        body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888; padding:40px;">No records found.</td></tr>`;
+    }
 }
 
 function openHeadModal(id) {
@@ -100,43 +96,43 @@ function openHeadModal(id) {
     if (!data) return;
 
     const isOwnRequest = (data.name.trim() === loggedHeadName.trim());
-    let displayStatus = data.status;
-    if (isOwnRequest && !data.status.includes("Approved") && !data.status.includes("Rejected")) {
-        displayStatus = "Pending";
-    }
+    const isFinal = (data.status === "Approved" || data.status === "Rejected");
+    const isActionedByHead = data.status.includes("- By Head");
+    const statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
 
-    document.getElementById('modalFileName').innerText = data.fileName;
-    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${displayStatus.toLowerCase().replace(/\s+/g, '-')}">${displayStatus}</span>`;
-    document.getElementById('modalReviewer').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
+    // Fill Modal Data
+    document.getElementById('modalFileName').innerText = data.fileName || "Document.pdf";
     document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime || '---'}`;
+    document.getElementById('modalReason').innerText = data.reason || "N/A";
+    document.getElementById('modalRemarks').innerText = data.reviewRemarks || 'Awaiting initial review.';
+    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewedBy || '---'}</small>`;
+    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${isOwnRequest && !isFinal ? 'Pending' : data.status}</span>`;
 
-    const remarksParagraph = document.getElementById('modalRemarks');
-    let modalHTML = `<div class="info-item"><label>REASON</label><p class="modal-text-unified">${data.reason}</p></div>`;
-    
+    // Credits visibility
+    const creditsBlock = document.getElementById('creditsBlock');
     if (data.leaveType === "Sick Leave") {
-        modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>SICK LEAVE CREDITS</label><p class="modal-text-unified">${getCredits(data.name)} Days Remaining</p></div>`;
+        creditsBlock.style.display = "block";
+        document.getElementById('modalCredits').innerText = `${getCredits(data.name)} Days Remaining`;
+    } else {
+        creditsBlock.style.display = "none";
     }
 
-    modalHTML += `<div class="info-item" style="margin-top: 15px;"><label>REVIEW REMARKS</label><p class="modal-text-unified">${data.reviewRemarks || 'Awaiting HR review.'}</p></div>`;
-    remarksParagraph.parentElement.innerHTML = `<div id="modalRemarks">${modalHTML}</div>`;
+    // Actions visibility
+    const actions = document.getElementById('modalActions');
+    if (!isOwnRequest && !isActionedByHead && !isFinal) {
+        actions.style.display = "flex";
+    } else {
+        actions.style.display = "none";
+    }
 
+    // File Preview
     const preview = document.querySelector('.pdf-placeholder');
     if (data.fileData) {
-        if (data.fileData.includes("image")) {
-            preview.innerHTML = `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">`;
-        } else {
-            preview.innerHTML = `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
-        }
-    } else {
-        preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>No document attached</p>`;
+        preview.innerHTML = data.fileData.includes("image") 
+            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
+            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
     }
 
-    const actions = document.getElementById('modalActions');
-    const isActioned = data.status.includes("- By Head") || data.status === "Approved" || data.status === "Rejected";
-    
-    // ACTION FIX: No action buttons if it's the Head's own leave
-    actions.style.display = (isOwnRequest || isActioned) ? "none" : "flex";
-    
     document.getElementById('viewModal').style.display = 'flex';
 }
 
@@ -145,14 +141,12 @@ function processHeadRequest(decision) {
     if (index !== -1) {
         leaveData[index].status = decision + " - By Head";
         leaveData[index].reviewedBy = loggedHeadName; 
-        const headStatus = decision === "Approved" ? "approved" : "rejected";
-        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${headStatus}. Awaiting HR final review.`;
+        const statusStr = decision === "Approved" ? "approved" : "rejected";
+        leaveData[index].reviewRemarks = `${loggedHeadName} (Dept. Head) has ${statusStr}. Awaiting HR final review.`;
 
         localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
         location.reload();
     }
 }
 
-function closeViewModal() { 
-    document.getElementById('viewModal').style.display = 'none'; 
-}
+function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }

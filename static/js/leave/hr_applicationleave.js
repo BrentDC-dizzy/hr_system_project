@@ -1,223 +1,105 @@
+/* hr_applicationleave.js */
 document.addEventListener('DOMContentLoaded', () => {
     // Selectors
     const sidebar = document.getElementById('sidebar');
     const closeBtn = document.getElementById('closeBtn');
     const logoToggle = document.getElementById('logoToggle');
-    const leaveManagementLink = document.getElementById('leaveManagementLink');
-    const modal = document.getElementById('leaveModal');
-    const modalClose = document.getElementById('modalClose');
     const typeButtons = document.querySelectorAll('.type-btn');
     const dropZone = document.getElementById('dropZone');
+    const dropZoneContent = document.getElementById('dropZoneContent');
     const fileInput = document.getElementById('fileInput');
+    const leaveForm = document.getElementById('leaveRequestForm');
+    const menuItems = document.querySelectorAll(".menu-item");
 
-    // --- 1. Sidebar Toggle & Card Stretch ---
-    // Controls the width and the 1-inch (96px/110px) gap proportion
-    const handleToggle = () => {
-        if (sidebar) sidebar.classList.toggle('close');
-    };
-    if (closeBtn) closeBtn.addEventListener('click', handleToggle);
-    if (logoToggle) logoToggle.addEventListener('click', handleToggle);
+    let selectedFileData = null;
+    let selectedFileName = "No Document Attached";
 
-    // --- 2. Modal Choice Logic ---
-    // Shows the modal instead of navigating
-    if (leaveManagementLink) {
-        leaveManagementLink.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            if (modal) modal.style.display = 'flex';
-        });
-    }
-
-    if (modalClose) {
-        modalClose.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-    }
-
-    // Close if user clicks the dark background
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
+    // --- Sidebar & Tooltips ---
+    menuItems.forEach(item => {
+        const span = item.querySelector("span");
+        if (span) item.setAttribute("data-text", span.innerText);
     });
 
-    // --- 3. Leave Type Selection ---
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+
+    // --- Leave Type Selection ---
     typeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
             typeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        });
+        };
     });
 
-    // --- 4. File Upload & Filename Display ---
+    // --- File Upload Handling ---
     if (dropZone && fileInput) {
-        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.onclick = () => fileInput.click();
 
-        fileInput.addEventListener('change', () => {
+        fileInput.onchange = () => {
             if (fileInput.files.length > 0) {
-                const fileName = fileInput.files[0].name;
-                // Display the selected filename inside the box
-                dropZone.innerHTML = `
-                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i>
-                    <p style="margin-top: 10px;">Selected: <span style="color: #4a1d1d; font-weight: bold;">${fileName}</span></p>
-                    <small style="color: #666;">Click to change file</small>
-                `;
+                const file = fileInput.files[0];
+                selectedFileName = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedFileData = e.target.result;
+                    // Update UI inside the drop zone
+                    dropZoneContent.innerHTML = `
+                        <i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i>
+                        <p style="margin-top: 10px;">Selected: <span style="color: #4a1d1d; font-weight: bold;">${selectedFileName}</span></p>
+                        <small style="color: #666;">Click to change file</small>
+                    `;
+                };
+                reader.readAsDataURL(file);
             }
-        });
+        };
     }
 
-    // --- 5. Form Submission ---
-    const form = document.getElementById('leaveRequestForm');
-    if (form) {
-        form.addEventListener('submit', (e) => {
+    // --- Form Submission Logic ---
+    if (leaveForm) {
+        leaveForm.onsubmit = (e) => {
             e.preventDefault();
+
+            const activeBtn = document.querySelector('.type-btn.active');
+            const leaveType = activeBtn ? activeBtn.innerText : "General Leave";
+            const startDateVal = document.getElementsByName('start_date')[0].value;
+            const endDateVal = document.getElementsByName('end_date')[0].value;
+            const reasonVal = document.getElementById('leaveReason').value;
+
+            // Simple validation
+            if (!startDateVal || !endDateVal || !reasonVal) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            const diffDays = Math.ceil(Math.abs(new Date(endDateVal) - new Date(startDateVal)) / (1000 * 60 * 60 * 24)) + 1;
+
+            // Create request object
+            const newRequest = {
+                id: Date.now(),
+                name: "Tatsu", 
+                role: "HR Manager",
+                dept: "Human Resources",
+                dateFiled: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                submitTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                leaveType: leaveType,
+                startDate: startDateVal,
+                endDate: endDateVal,
+                numDays: diffDays,
+                status: "Pending",
+                reviewedBy: "---",
+                fileName: selectedFileName,
+                fileData: selectedFileData,
+                reason: reasonVal,
+                reviewRemarks: "Awaiting review from School Director."
+            };
+
+            // Save to LocalStorage
+            let allRequests = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
+            allRequests.push(newRequest);
+            localStorage.setItem('allLeaveRequests', JSON.stringify(allRequests));
+
             alert('Leave request submitted successfully!');
-        });
+            window.location.href = 'hr_leaverequest.html';
+        };
     }
 });
-
-
-const sidebar = document.getElementById("sidebar");
-const logoToggle = document.getElementById("logoToggle");
-const closeBtn = document.getElementById("closeBtn");
-const menuItems = document.querySelectorAll(".menu-item");
-const dashboard = document.querySelector(".dashboard-wrapper");
-
-// Close button (only when expanded)
-closeBtn.addEventListener("click", () => {
-    sidebar.classList.add("collapsed");
-    adjustDashboard();
-});
-
-// Open via logo click
-logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-        adjustDashboard();
-    }
-});
-
-// Tooltip text & active menu highlighting
-menuItems.forEach(item => {
-    const text = item.querySelector("span").innerText;
-    item.setAttribute("data-text", text);
-
-    item.addEventListener("click", () => {
-        document.querySelector(".menu-item.active")?.classList.remove("active");
-        item.classList.add("active");
-    });
-});
-
-// Adjust dashboard margin based on sidebar state
-function adjustDashboard() {
-    if(!dashboard || !sidebar) return;
-    if(sidebar.classList.contains("collapsed")){
-        dashboard.style.marginLeft = "120px";
-    } else {
-        dashboard.style.marginLeft = "340px";
-    }
-}
-// Initial adjustment
-adjustDashboard();
-
-const loggedUser = "Tatsu"; // Replace with dynamic login session later
-const usernameElement = document.getElementById("username");
-if(usernameElement){
-    usernameElement.textContent = loggedUser.toUpperCase();
-}
-
-const quotes = [
-    "Success is walking from failure to failure with no loss of enthusiasm.",
-    "Hard work beats talent when talent doesn't work hard.",
-    "Consistency creates success.",
-    "Dream big and work hard.",
-    "Stay focused and never quit.",
-    "Small progress each day adds up to big results.",
-    "Discipline is choosing between what you want now and what you want most."
-];
-const quoteElement = document.getElementById("quote");
-function rotateQuote(){
-    if(!quoteElement) return;
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    quoteElement.textContent = quotes[randomIndex];
-}
-rotateQuote();
-setInterval(rotateQuote, 8000);
-
-document.querySelectorAll(".quick-actions button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const link = btn.getAttribute("data-link");
-        if(link && link !== "#"){
-            window.location.href = link;
-        }
-    });
-});
-
-const helpBtn = document.getElementById("helpBtn");
-const helpModal = document.getElementById("helpModal");
-const closeHelp = document.getElementById("closeHelp");
-
-if(helpBtn){
-    helpBtn.addEventListener("click", () => {
-        if(helpModal){
-            helpModal.style.display = "flex";
-        }
-    });
-}
-if(closeHelp){
-    closeHelp.addEventListener("click", () => {
-        helpModal.style.display = "none";
-    });
-};
-
-
-const employeeData = {
-    total: 546,
-    active: 902,
-    leave: 67
-};
-
-const totalEmployees = document.getElementById("totalEmployees");
-const activeEmployees = document.getElementById("activeEmployees");
-const leaveEmployees = document.getElementById("leaveEmployees");
-
-if(totalEmployees) totalEmployees.textContent = employeeData.total;
-if(activeEmployees) activeEmployees.textContent = employeeData.active;
-if(leaveEmployees) leaveEmployees.textContent = employeeData.leave;
-
-
-function animateNumber(element, target){
-    let current = 0;
-    const step = Math.ceil(target / 40);
-    const timer = setInterval(() => {
-        current += step;
-        if(current >= target){
-            current = target;
-            clearInterval(timer);
-        }
-        element.textContent = current;
-    }, 20);
-}
-
-if(totalEmployees) animateNumber(totalEmployees, employeeData.total);
-if(activeEmployees) animateNumber(activeEmployees, employeeData.active);
-if(leaveEmployees) animateNumber(leaveEmployees, employeeData.leave);
-
-const canvas = document.getElementById("attendanceChart");
-if(canvas){
-    const ctx = canvas.getContext("2d");
-    const attendanceData = [
-        {label:"Present", value:50, color:"#5aa0ff"},
-        {label:"Absent", value:30, color:"#7be495"},
-        {label:"Late", value:20, color:"#ffb86c"}
-    ];
-    let startAngle = 0;
-    attendanceData.forEach(item => {
-        const slice = (item.value / 100) * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(100,100);
-        ctx.arc(100,100,100,startAngle,startAngle + slice);
-        ctx.fillStyle = item.color;
-        ctx.fill();
-        startAngle += slice;
-    });
-}
-
-

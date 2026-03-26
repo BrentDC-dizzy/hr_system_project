@@ -1,3 +1,4 @@
+/* emp_leaverequest.js */
 const empInfo = { name: "John Smith" };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -6,9 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById("closeBtn");
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
-    const menuItems = document.querySelectorAll(".menu-item"); // ADDED
+    const menuItems = document.querySelectorAll(".menu-item");
 
-    // --- ADDED: INITIALIZE TOOLTIP LABELS ---
+    // Initialize Tooltip Labels
     menuItems.forEach(item => {
         const span = item.querySelector("span");
         if (span) {
@@ -18,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderLeaveTable("Active");
 
-    closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
     tabRequests.onclick = () => {
         tabRequests.classList.add('active'); tabHistory.classList.remove('active');
@@ -40,17 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderLeaveTable(filter) {
     const body = document.getElementById('leaveTableBody');
+    const template = document.getElementById('leaveRowTemplate');
     body.innerHTML = "";
     
-    // Refresh data from shared storage
     const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
     const myLeaves = leaveData.filter(l => l.name === empInfo.name);
 
     myLeaves.forEach((leave) => {
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
-        
         let displayStatus = leave.status;
-        let displayReviewer = leave.reviewedBy;
+        let displayReviewer = leave.reviewedBy || "---";
 
         if (displayStatus.includes("- By Head")) {
             displayStatus = "Pending";
@@ -58,27 +58,39 @@ function renderLeaveTable(filter) {
         }
 
         if ((filter === "Active" && !isFinal) || (filter === "History" && isFinal)) {
+            const clone = template.content.cloneNode(true);
             const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
-            body.innerHTML += `<tr>
-                <td>${leave.dateFiled}</td>
-                <td><strong>${leave.leaveType}</strong></td>
-                <td>${leave.startDate}</td>
-                <td>${leave.endDate}</td>
-                <td>${leave.numDays}</td>
-                <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
-                <td>${displayReviewer}</td>
-                <td><span class="action-link" onclick="openViewModalByID(${leave.id})">View Details</span></td>
-            </tr>`;
+
+            // Fill row data
+            clone.querySelector('.col-filed').innerText = leave.dateFiled;
+            clone.querySelector('.col-type').innerHTML = `<strong>${leave.leaveType}</strong>`;
+            clone.querySelector('.col-start').innerText = leave.startDate;
+            clone.querySelector('.col-end').innerText = leave.endDate;
+            clone.querySelector('.col-days').innerText = leave.numDays;
+            clone.querySelector('.col-status').innerHTML = `<span class="status-pill ${statusClass}">${displayStatus}</span>`;
+            clone.querySelector('.col-reviewer').innerText = displayReviewer;
+            
+            // Set action click
+            clone.querySelector('.action-link').onclick = () => openViewModalByID(leave.id);
+
+            body.appendChild(clone);
         }
     });
+
+    if (body.innerHTML === "") {
+        body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888; padding:40px;">No leave records found.</td></tr>`;
+    }
 }
 
 function openViewModalByID(id) {
     const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
     const data = leaveData.find(l => l.id === id);
+    if (!data) return;
     
+    // Fill Modal Data
     document.getElementById('modalFileName').innerText = data.fileName || (data.leaveType + ".pdf");
-    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime || '---'}`;
+    document.getElementById('modalReason').innerText = data.reason || "No reason provided.";
     
     let displayStatus = data.status;
     let remarks = "";
@@ -89,18 +101,19 @@ function openViewModalByID(id) {
     } else if (displayStatus === "Pending") {
         remarks = "Awaiting initial review.";
     } else {
-        remarks = `This request has been finalized by ${data.reviewedBy}.`;
+        remarks = data.reviewRemarks || `This request has been finalized by ${data.reviewedBy}.`;
     }
 
     const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${displayStatus}</span>`;
     document.getElementById('modalRemarks').innerText = remarks;
     
+    // Preview Logic
     const preview = document.querySelector('.pdf-placeholder');
     if (data.fileData) {
         preview.innerHTML = data.fileData.includes("image") 
-            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain;">` 
-            : `<embed src="${data.fileData}" width="100%" height="100%">`;
+            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
+            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
     } else {
         preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>No document attached</p>`;
     }
@@ -108,4 +121,6 @@ function openViewModalByID(id) {
     document.getElementById('viewModal').style.display = 'flex';
 }
 
-function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+function closeViewModal() { 
+    document.getElementById('viewModal').style.display = 'none'; 
+}

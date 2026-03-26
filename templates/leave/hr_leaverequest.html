@@ -90,15 +90,23 @@
                     <div class="info-item">
                         <label>Application Status</label>
                         <div id="modalStatusContainer"></div>
-                        <p id="modalReviewer"><small>Reviewed by: ---</small></p>
+                        <p id="modalReviewerText"><small>Reviewed by: ---</small></p>
                     </div>
                     <div class="info-item">
                         <label>Submission Date</label>
                         <p id="modalSubmitDate">---</p>
                     </div>
                     <div class="info-item">
+                        <label>Reason</label>
+                        <p id="modalReason" class="modal-text-unified">---</p>
+                    </div>
+                    <div class="info-item" id="creditsBlock" style="display: none;">
+                        <label>Sick Leave Credits</label>
+                        <p id="modalCredits" class="modal-text-unified">---</p>
+                    </div>
+                    <div class="info-item">
                         <label>Review Remarks</label>
-                        <p id="modalRemarks">---</p>
+                        <p id="modalRemarks" class="modal-text-unified">---</p>
                     </div>
 
                     <div class="modal-footer" id="modalActions">
@@ -111,6 +119,19 @@
             </div>
         </div>
     </div>
+
+    <template id="hrRowTemplate">
+        <tr>
+            <td class="col-emp"></td>
+            <td class="col-type"></td>
+            <td class="col-start"></td>
+            <td class="col-end"></td>
+            <td class="col-days"></td>
+            <td class="col-status"></td>
+            <td class="col-reviewer"></td>
+            <td><span class="action-link">View Details</span></td>
+        </tr>
+    </template>
 
     <script src="../../static/js/leave/hr_leaverequest.js"></script>
 </body>
