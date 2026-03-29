@@ -5,115 +5,6 @@ body, html {
     overflow: hidden; 
 }
 
-.dashboard-viewport {
-    display: flex;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-    gap: 20px; 
-}
-
-.main-content {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    height: 100%;
-}
-
-/* Sidebar Widths & Transitions */
-#sidebar {
-    width: 300px;
-    transition: width 0.35s ease;
-}
-
-#sidebar.close {
-    width: 90px;
-}
-
-/* Vanishing Text Logic */
-#sidebar.close span,
-#sidebar.close .close-btn,
-#sidebar.close hr {
-    display: none !important;
-    opacity: 0;
-}
-
-/* Card Styling & Expansion */
-.content-card {
-    background: #ffffff;
-    border-radius: 25px;
-    padding: 30px 45px;
-    width: 100%;
-    max-width: 1180px; 
-    display: flex;
-    flex-direction: column;
-    height: 100%; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    box-sizing: border-box;
-    transition: max-width 0.4s ease-in-out; 
-}
-
-#sidebar.close ~ .main-content .content-card {
-    max-width: calc(100% - 110px);
-}
-
-/* Form Body Scrolling */
-.content-card h1 { font-size: 32px; margin: 0 0 25px 0; color: #1a1a1a; }
-.form-body { flex: 1; overflow-y: auto; padding-right: 15px; margin-bottom: 10px; }
-.form-body::-webkit-scrollbar { width: 6px; }
-.form-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
-
-/* Form Grid System */
-.form-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
-.form-section-box { border: 1px solid #e0e0e0; border-radius: 18px; overflow: hidden; background: #fff; height: fit-content; }
-.section-header { background: #f8f8f8; padding: 15px 20px; font-weight: bold; border-bottom: 1px solid #eee; font-size: 14px; }
-.section-body { padding: 20px; }
-
-/* Photo Container */
-.photo-container { text-align: center; margin-bottom: 20px; }
-.photo-circle { width: 80px; height: 80px; background: #4a1d1d; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.photo-circle img { width: 100%; height: 100%; object-fit: cover; }
-.photo-circle svg { width: 40px; height: 40px; fill: white; }
-
-/* Inputs row (2 columns) */
-.inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-/* RESTORED: Personal Information Full Width Styling */
-.input-item, .full-width-item { margin-bottom: 12px; }
-
-.input-item label, .full-width-item label { 
-    display: block; 
-    margin-bottom: 6px; 
-    font-weight: 600; 
-    color: #555; 
-}
-
-.input-item input, .input-item select, .full-width-item input { 
-    width: 100%; 
-    padding: 10px; 
-    border: 1px solid #ccc; 
-    border-radius: 8px; 
-    font-size: 13px; 
-}
-
-.input-item input[readonly] { background-color: #f0f0f0; cursor: not-allowed; }
-
-/* Sub-header (Emergency Contact) */
-.sub-header { 
-    margin: 20px 0 10px 0; 
-    font-weight: bold; 
-    border-top: 1px solid #eee; 
-    padding-top: 15px; 
-}
-
-/* Footer Buttons */
-.form-footer { display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #eee; }
-.btn { padding: 12px 35px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
-.btn-cancel { background: #eee; color: #333; }
-.btn-save { background: #4a1d1d; color: white; transition: 0.3s; }
-.btn-save:hover { background: #7b3f3f; }
-
-/* 1. Reset & Global Layout */
 * {
     margin: 0;
     padding: 0;
@@ -121,12 +12,6 @@ body, html {
     font-family: 'Segoe UI', sans-serif;
 }
 
-body {
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* 2. Blurred Fixed Background */
 .background {
     position: fixed;
     inset: 0;
@@ -136,13 +21,21 @@ body {
     z-index: -1;
 }
 
-/* 3. Glassmorphism Sidebar Container */
+/* THE CONTAINER THAT ENABLES GLIDING */
+.dashboard-viewport {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 20px; 
+}
+
+/* --- SIDEBAR --- */
 .sidebar {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    height: calc(100% - 40px);
     width: 300px; 
+    min-width: 300px;
+    height: 100%;
     padding: 25px;
     border-radius: 20px;
     display: flex;
@@ -151,79 +44,29 @@ body {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width 0.35s ease;
+    transition: all 0.35s ease-in-out; /* Speed of the glide */
+    z-index: 1000;
 }
 
-/* Collapsed State */
-.sidebar.collapsed {
+/* SIDEBAR CLOSED STATE */
+.sidebar.close {
     width: 90px;
+    min-width: 90px;
+    padding: 25px 20px;
 }
 
-/* 4. Top Section (Logo & Toggle) */
-.top-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo-wrapper {
-    width: 45px;
-    height: 45px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.logo {
-    width: 100%;
-    border-radius: 50%;
-    transition: 0.3s;
-}
-
-/* Centered Icon Logic (Hover Effects) */
-.open-icon {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    color: white;
-    transition: 0.3s;
-}
-
-.sidebar.collapsed .logo-wrapper:hover .logo {
-    opacity: 0;
-}
-
-.sidebar.collapsed .logo-wrapper:hover .open-icon {
-    opacity: 1;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.sidebar.collapsed .close-btn {
-    display: none;
-}
-
-/* 5. Navigation Menu Items */
+/* --- SIDEBAR MENU FIX (EXACT ALIGNMENT) --- */
 .menu {
-    list-style: none;
-    margin-top: 30px;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 30px 0 0 0;
     flex: 1;
 }
 
-.menu a, .bottom-section a {
-    text-decoration: none;
+.menu li {
+    list-style: none !important;
+    padding: 0;
+    margin: 0;
 }
 
 .menu-item {
@@ -237,12 +80,13 @@ body {
     transition: background 0.3s;
 }
 
+/* THE ICON: Fixed size and centered in its lane */
 .menu-item i {
     width: 50px;
     text-align: center;
 }
 
-/* Text span anchored to prevent shifting */
+/* THE TEXT: Fixed distance from the left edge */
 .menu-item span {
     position: absolute;
     left: 60px;
@@ -250,39 +94,131 @@ body {
     transition: opacity 0.2s ease;
 }
 
-/* Smooth text hiding for collapsed state */
-.sidebar.collapsed .menu-item span {
+/* SIDEBAR CLOSED STATE */
+.sidebar.close .menu-item i {
+    width: 100%; /* Centers the icon in the 90px width */
+}
+
+.sidebar.close span, 
+.sidebar.close .close-btn, 
+.sidebar.close hr {
+    display: none !important;
     opacity: 0;
-    pointer-events: none;
 }
 
-.menu-item:hover {
-    background: rgba(255,255,255,0.15);
-}
-
-.menu-item.active {
-    background: rgba(255,255,255,0.25);
-}
-
-/* Tooltip for collapsed icons */
-.sidebar.collapsed .menu-item:hover::after {
-    content: attr(data-text);
+/* THE HOVER LABEL (TOOLTIP) */
+.sidebar.close .menu-item:hover::after {
+    content: attr(data-text); 
     position: absolute;
     left: 80px;
-    background: rgba(20,20,20,0.95);
+    background: rgba(20, 20, 20, 0.95);
+    color: white;
     padding: 8px 14px;
     border-radius: 8px;
     white-space: nowrap;
     font-size: 14px;
+    z-index: 2000;
 }
 
-/* 6. Footer Divider & Bottom Section */
-hr {
-    border: 0.5px solid rgba(255,255,255,0.2);
-    margin: 10px 0;
+.menu-item:hover { background: rgba(255,255,255,0.15); }
+.menu-item.active { background: rgba(255,255,255,0.25); }
+
+/* --- MAIN CONTENT: THE GLIDE --- */
+.main-content {
+    flex: 1; /* This is what makes it glide/fill space */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.35s ease-in-out; /* Required for gliding */
 }
 
-.bottom-section {
-    margin-top: auto;
+/* NO CHANGES TO YOUR CONTENT CARD STYLES */
+.content-card {
+    background: #ffffff;
+    border-radius: 25px;
+    padding: 30px 45px;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
+.content-card h1 { font-size: 32px; margin: 0 0 25px 0; color: #1a1a1a; font-weight: 700; }
+.form-body { flex: 1; overflow-y: auto; padding-right: 15px; }
+.form-body::-webkit-scrollbar { width: 6px; }
+.form-body::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+.form-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+.form-section-box { border: 1px solid #e0e0e0; border-radius: 18px; overflow: hidden; background: #fff; height: fit-content; }
+.section-header { background: #f8f8f8; padding: 15px 20px; font-weight: bold; border-bottom: 1px solid #eee; font-size: 14px; }
+.section-body { padding: 20px; }
+.photo-container { text-align: center; margin-bottom: 20px; }
+.photo-circle { width: 80px; height: 80px; background: #4a1d1d; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+.inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.input-item, .full-width-item { margin-bottom: 12px; }
+label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 13px; }
+input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; }
+input[readonly] { background-color: #f0f0f0; cursor: not-allowed; color: #888; }
+.sub-header { margin: 20px 0 10px 0; font-weight: bold; border-top: 1px solid #eee; padding-top: 15px; }
+.form-footer { display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #eee; margin-top: 10px; }
+.btn { padding: 12px 35px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.3s; }
+.btn-cancel { background: #eee; color: #333; }
+.btn-save { background: #4a1d1d; color: white; }
+.btn-save:hover { background: #7b3f3f; }
+
+/* SHARED UI HELPERS */
+.top-section { display: flex; align-items: center; justify-content: space-between; }
+.logo-wrapper { width: 45px; height: 45px; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.logo { width: 100%; border-radius: 50%; }
+.open-icon { position: absolute; opacity: 0; color: white; transition: 0.3s; }
+.sidebar.close .logo-wrapper:hover .logo { opacity: 0; }
+.sidebar.close .logo-wrapper:hover .open-icon { opacity: 1; }
+.close-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; }
+hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0; }
+.bottom-section { margin-top: auto; }
+
+/* Custom sizes for SweetAlert notifications */
+.small-swal-title {
+    font-size: 18px !important; /* Smaller Header */
+    font-weight: 600;
+    color: #4a1d1d;
+}
+
+.small-swal-text {
+    font-size: 14px !important; /* Smaller Body Text */
+    color: #666;
+}
+
+/* Optional: Make the icons slightly smaller too */
+.swal2-icon {
+    transform: scale(0.8);
+}
+/* Styling for the Rectangle Notification */
+.swal2-toast {
+    border: 1px solid #4a1d1d;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* Slimmer Text for Toast */
+.swal2-title {
+    font-size: 16px !important;
+    margin: 0 10px !important;
+}
+
+.swal2-html-container {
+    font-size: 13px !important;
+}
+
+/* Adjusting the Header of the Discard Modal */
+.small-swal-title {
+    font-size: 18px !important;
+    color: #4a1d1d;
+}
+
+.small-swal-text {
+    font-size: 14px !important;
+}

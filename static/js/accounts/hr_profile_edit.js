@@ -1,131 +1,69 @@
-let uploadedPhotoData = null;
+/**
+ * Sidebar Toggle Logic
+ */
+const sidebar = document.getElementById('sidebar');
+const logoToggle = document.getElementById('logoToggle');
+const closeBtn = document.getElementById('closeBtn');
 
-// --- SIDEBAR LOGIC (CLICK ONLY) ---
-function initSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const closeBtn = document.getElementById('closeBtn');
-    const logoToggle = document.getElementById('logoToggle');
+if (logoToggle) {
+    logoToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
+}
+if (closeBtn) {
+    closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
+}
 
-    // Toggles the 'close' class on click. No hover logic exists here anymore.
-    const handleToggle = () => { 
-        if (sidebar) {
-            sidebar.classList.toggle('close');
+/**
+ * Update Changes Function (HR Version)
+ */
+function updateHRProfile() { // Pinalitan ang pangalan para mag-match sa HTML
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true,
+        width: '450px',
+        background: '#fff',
+        color: '#4a1d1d',
+        iconColor: '#4a1d1d',
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
-    };
+    });
 
-    if (closeBtn) closeBtn.addEventListener('click', handleToggle);
-    if (logoToggle) logoToggle.addEventListener('click', handleToggle);
-
-    // Sidebar Active State Highlighting
-    const params = new URLSearchParams(window.location.search);
-    const empID = params.get('id');
-    const hrAdminID = "2024-001";
-    const menuLinks = document.querySelectorAll('.menu-item');
-
-    menuLinks.forEach(link => {
-        const linkText = link.querySelector('span')?.textContent.trim();
-        link.classList.remove('active');
-        if (empID === hrAdminID && linkText === "Profile") link.classList.add('active');
-        else if (empID !== hrAdminID && linkText === "Employee Records") link.classList.add('active');
+    Toast.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'HR Manager profile has been updated.' // Custom message para sa HR
+    }).then(() => {
+        // Siguraduhin na tama ang path papunta sa view page
+        window.location.href = 'hr_profile_view.html?id=2024-001';
     });
 }
 
-// --- RECORD MANAGEMENT FUNCTIONS (PRESERVED) ---
-function getReturnURL() {
-    const params = new URLSearchParams(window.location.search);
-    const source = params.get('source');
-    const id = params.get('id');
-    if (source === 'profile') return `hr_profile_view.html?id=${id}`;
-    else return `../hr/employee_management/hr_employeelist.html`;
+/**
+ * Cancel Function (HR Version)
+ */
+function cancelHREdit() { // Pinalitan ang pangalan para mag-match sa HTML
+    Swal.fire({
+        title: 'Discard changes?',
+        text: "Any unsaved information will be lost.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#4a1d1d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, discard',
+        cancelButtonText: 'No',
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-text'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'hr_profile_view.html?id=2024-001';
+        }
+    });
 }
-
-window.handleCancel = function() { window.location.href = getReturnURL(); };
-
-window.handlePhotoUpload = function(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            uploadedPhotoData = e.target.result;
-            const photoCircle = document.querySelector('.photo-circle');
-            if (photoCircle) photoCircle.innerHTML = `<img src="${uploadedPhotoData}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    initSidebar();
-    const params = new URLSearchParams(window.location.search);
-    const idToEdit = params.get('id');
-    let employees = JSON.parse(localStorage.getItem('addedEmployees')) || [];
-    let empData = employees.find(e => e.id === idToEdit);
-    
-    if (!empData && idToEdit === "2024-001") {
-        empData = { id: "2024-001", fullName: "HR, Admin", dept: "HR Department", pos: "Administrator", status: "Active" };
-    }
-
-    if (empData) {
-        if (empData.fullName && empData.fullName.includes(',')) {
-            const parts = empData.fullName.split(',');
-            document.getElementById('lastName').value = parts[0].trim();
-            document.getElementById('firstName').value = parts[1].trim();
-        } else {
-            document.getElementById('firstName').value = empData.fullName || "";
-        }
-        document.getElementById('empID').value = empData.id || "";
-        document.getElementById('empStatus').value = empData.status || "Active";
-        document.getElementById('empType').value = empData.empType || "";
-        document.getElementById('dept').value = empData.dept || "";
-        document.getElementById('pos').value = empData.pos || "";
-        document.getElementById('dateHired').value = empData.dateHired || "";
-        document.getElementById('email').value = empData.email || "";
-        document.getElementById('contact').value = empData.contact || "";
-        document.getElementById('address').value = empData.address || "";
-        document.getElementById('emergencyName').value = empData.emergencyName || "";
-        document.getElementById('emergencyPhone').value = empData.emergencyPhone || "";
-        if (empData.photo) {
-            const photoCircle = document.querySelector('.photo-circle');
-            if (photoCircle) photoCircle.innerHTML = `<img src="${empData.photo}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        }
-    }
-});
-
-window.updateEmployee = function() {
-    const params = new URLSearchParams(window.location.search);
-    const idToEdit = params.get('id');
-    let employees = JSON.parse(localStorage.getItem('addedEmployees')) || [];
-    const existingEmp = employees.find(e => e.id === idToEdit);
-    const updatedData = {
-        id: document.getElementById('empID').value,
-        fullName: document.getElementById('lastName').value + ", " + document.getElementById('firstName').value,
-        dept: document.getElementById('dept').value,
-        pos: document.getElementById('pos').value,
-        status: document.getElementById('empStatus').value,
-        empType: document.getElementById('empType').value,
-        dateHired: document.getElementById('dateHired').value,
-        email: document.getElementById('email').value,
-        contact: document.getElementById('contact').value,
-        address: document.getElementById('address').value,
-        emergencyName: document.getElementById('emergencyName').value,
-        emergencyPhone: document.getElementById('emergencyPhone').value,
-        photo: uploadedPhotoData || (existingEmp ? existingEmp.photo : null)
-    };
-    const index = employees.findIndex(e => e.id === idToEdit);
-    if (index !== -1) employees[index] = updatedData;
-    else employees.push(updatedData);
-    localStorage.setItem('addedEmployees', JSON.stringify(employees));
-    alert("Record updated successfully!");
-    window.location.href = getReturnURL();
-};
-
-document.getElementById('deleteBtn').onclick = function() {
-    const params = new URLSearchParams(window.location.search);
-    const idToEdit = params.get('id');
-    if(confirm("Are you sure you want to delete this record?")) {
-        let employees = JSON.parse(localStorage.getItem('addedEmployees')) || [];
-        employees = employees.filter(e => e.id !== idToEdit);
-        localStorage.setItem('addedEmployees', JSON.stringify(employees));
-        window.location.href = `../hr/employee_management/hr_employeelist.html`;
-    }
-};

@@ -13,16 +13,16 @@ if (closeBtn) {
 }
 
 /**
- * Update Changes Function (Slim Rectangle Toast)
+ * Update Changes Function (Rectangle Toast)
  */
-function updateEmployee() {
+function updateHead() {
     const Toast = Swal.mixin({
         toast: true,
-        position: 'top', // Appears at the top center
+        position: 'top',
         showConfirmButton: false,
         timer: 1800,
         timerProgressBar: true,
-        width: '450px', // Wider width makes it a rectangle
+        width: '450px', // Horizontal Rectangle
         background: '#fff',
         color: '#4a1d1d',
         iconColor: '#4a1d1d',
@@ -35,25 +35,26 @@ function updateEmployee() {
     Toast.fire({
         icon: 'success',
         title: 'Success!',
-        text: 'Your profile changes have been updated.'
+        text: 'Department Head profile has been updated.'
     }).then(() => {
-        window.location.href = 'emp_profile_view.html';
+        window.location.href = 'head_profile_view.html';
     });
 }
 
 /**
- * Cancel Function (Smaller Rectangular Modal)
+ * Cancel Function (Rectangle Modal)
  */
 function cancelEdit() {
     Swal.fire({
         title: 'Discard changes?',
+        text: "Any unsaved information will be lost.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#4a1d1d',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, discard',
         cancelButtonText: 'No',
-        width: '400px', // Horizontal rectangle shape
+        width: '400px', // Rectangle shape
         padding: '1rem',
         customClass: {
             title: 'small-swal-title',
@@ -61,7 +62,7 @@ function cancelEdit() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = 'emp_profile_view.html';
+            window.location.href = 'head_profile_view.html';
         }
     });
 }
