@@ -17,6 +17,7 @@ body, html {
 .background {
     position: fixed;
     inset: 0;
+    /* Verify if 'static' is needed in your path */
     background: url('../../img/general/bg.jpeg') no-repeat center/cover;
     filter: blur(10px);
     transform: scale(1.1);
@@ -192,21 +193,23 @@ hr {
     padding: 20px;
     box-sizing: border-box;
     gap: 20px;
+    position: relative;
 }
 
 /* IMPORTANT: MAIN CONTENT MUST RESERVE SIDEBAR SPACE */
 .main-content {
     flex: 1;
     height: 100%;
-    margin-left: 320px; /* 300 sidebar + 20 gap */
+    /* Default margin when sidebar is open */
+    margin-left: 320px; 
     display: flex;
     min-width: 0;
-    transition: margin-left 0.35s ease;
+    transition: margin-left 0.35s ease-in-out;
 }
 
 /* WHEN SIDEBAR COLLAPSED */
-.sidebar.collapsed ~ .dashboard-viewport .main-content {
-    margin-left: 110px; /* 90 sidebar + 20 gap */
+.sidebar.collapsed + .main-content {
+    margin-left: 110px; 
 }
 
 /* Leave Card (FULL WIDTH ALWAYS) */

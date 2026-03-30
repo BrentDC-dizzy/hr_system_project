@@ -107,18 +107,41 @@ body, html {
 }
 
 /* THE HOVER LABEL (TOOLTIP) */
-.sidebar.close .menu-item:hover::after {
-    content: attr(data-text); 
+.sidebar.close .menu-item::after {
+    content: attr(data-text);
     position: absolute;
-    left: 80px;
-    background: rgba(20, 20, 20, 0.95);
-    color: white;
+    left: 95px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white !important;
     padding: 8px 14px;
     border-radius: 8px;
-    white-space: nowrap;
     font-size: 14px;
-    z-index: 2000;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.2s ease;
+    z-index: 999999;
+    pointer-events: none;
 }
+
+.sidebar.close .menu-item:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+.sidebar, .menu, .menu li, .menu-item {
+    overflow: visible !important;
+}
+.menu-item {
+    width: 100%;
+    text-decoration: none;
+}
+.sidebar.close .menu-item[data-text]::after {
+    content: attr(data-text) !important;
+}
+
 
 .menu-item:hover { background: rgba(255,255,255,0.15); }
 .menu-item.active { background: rgba(255,255,255,0.25); }

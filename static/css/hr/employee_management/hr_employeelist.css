@@ -38,8 +38,10 @@ body {
 
 /* 4. Glassmorphism Sidebar */
 .sidebar {
-    position: relative; /* Changed to relative so flexbox handles the auto-width glide */
-    height: 100%;
+    position: fixed; /* Keep it fixed to the side */
+    top: 20px;
+    left: 20px;
+    height: calc(100% - 40px);
     width: 300px; 
     padding: 25px;
     border-radius: 20px;
@@ -49,9 +51,9 @@ body {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width 0.35s ease;
+    transition: width 0.35s ease-in-out;
     z-index: 1000;
-    flex-shrink: 0; /* Prevents sidebar from squishing */
+    overflow: visible; /* Required for tooltips to show */
 }
 
 .sidebar.collapsed {
@@ -69,8 +71,21 @@ body {
 .sidebar.collapsed .close-btn { display: none; }
 
 .menu { list-style: none; margin-top: 30px; flex: 1; }
-.menu-item { position: relative; display: flex; align-items: center; height: 48px; color: white; cursor: pointer; border-radius: 12px; transition: background 0.3s; }
-.menu-item i { width: 50px; text-align: center; flex-shrink: 0; }
+.menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    color: white;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+
+.menu-item i {
+    width: 50px;
+    text-align: center;
+}
 .menu-item span { position: absolute; left: 60px; white-space: nowrap; transition: opacity 0.2s ease; }
 
 .sidebar.collapsed .menu-item span { opacity: 0; pointer-events: none; }
@@ -94,26 +109,28 @@ hr { border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0; }
 
 /* 5. Main Content: AUTO-WIDTH GLIDE */
 .main-content {
-    flex: 1; /* Takes up ALL remaining space */
+    flex: 1;
     display: flex;
-    justify-content: flex-end;
     height: 100%;
-    min-width: 0; /* Ensures flexibility on small screens */
-    transition: all 0.35s ease-in-out;
+    /* Default margin: 300px sidebar + 20px gap */
+    margin-left: 320px; 
+    transition: margin-left 0.35s ease-in-out;
+}
+.sidebar.collapsed + .main-content {
+    /* New margin: 90px sidebar + 20px gap */
+    margin-left: 110px;
 }
 
 .leave-card {
     background: #ffffff;
     border-radius: 25px;
     padding: 30px 45px;
-    width: 100%; /* Stretches to fill main-content space */
-    max-width: 100%; /* REPLACED 1180px to fix the gap */
+    width: 100%;
     display: flex;
     flex-direction: column;
     height: 100%; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     box-sizing: border-box;
-    transition: all 0.4s ease-in-out; 
 }
 
 /* Card expands fully when sidebar state changes (Handled by Flexbox) */

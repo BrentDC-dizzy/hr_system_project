@@ -1,4 +1,26 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById("sidebar");
+    const logoToggle = document.getElementById("logoToggle");
+    const closeBtn = document.getElementById("closeBtn");
+    const menuItems = document.querySelectorAll(".menu-item");
+
+    // 1. Tooltip Logic: Set data-text attribute automatically
+    menuItems.forEach(item => {
+        const span = item.querySelector("span");
+        if (span) {
+            item.setAttribute("data-text", span.textContent.trim());
+        }
+    });
+
+    // 2. Sidebar Toggle Logic
+    if (closeBtn) {
+        closeBtn.onclick = () => sidebar.classList.add("collapsed");
+    }
+    if (logoToggle) {
+        logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    }
+
+    // 3. Search and Filter Logic (Existing)
     const searchInput = document.getElementById('searchInput');
     const filterPosition = document.getElementById('filterPosition');
     const filterStatus = document.getElementById('filterStatus');
@@ -9,30 +31,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedPosition = filterPosition.value;
         const selectedStatus = filterStatus.value;
 
-        // Loop through all table rows in the body
         Array.from(tableBody.rows).forEach(row => {
             const cells = row.cells;
-            
-            // Text content from specific columns
             const rowText = row.textContent.toLowerCase();
             const rowPosition = cells[3].textContent.trim();
             const rowStatus = cells[4].textContent.trim();
 
-            // Check conditions
             const matchesSearch = rowText.includes(searchTerm);
             const matchesPosition = selectedPosition === "" || rowPosition === selectedPosition;
             const matchesStatus = selectedStatus === "" || rowStatus === selectedStatus;
 
-            // Show or hide row
-            if (matchesSearch && matchesPosition && matchesStatus) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+            row.style.display = (matchesSearch && matchesPosition && matchesStatus) ? "" : "none";
         });
     }
 
-    // Event Listeners
     searchInput.addEventListener('input', filterTable);
     filterPosition.addEventListener('change', filterTable);
     filterStatus.addEventListener('change', filterTable);

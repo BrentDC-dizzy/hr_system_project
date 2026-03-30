@@ -1,9 +1,14 @@
-/**
- * Sidebar Toggle Logic
- */
 const sidebar = document.getElementById('sidebar');
 const logoToggle = document.getElementById('logoToggle');
 const closeBtn = document.getElementById('closeBtn');
+const menuItems = document.querySelectorAll('.menu-item');
+
+menuItems.forEach(item => {
+    const span = item.querySelector('span');
+    if (span) {
+        item.setAttribute('data-text', span.innerText);
+    }
+});
 
 if (logoToggle) {
     logoToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
@@ -12,10 +17,7 @@ if (closeBtn) {
     closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
 }
 
-/**
- * Update Changes Function (HR Version)
- */
-function updateHRProfile() { // Pinalitan ang pangalan para mag-match sa HTML
+function updateHRProfile() {
     const Toast = Swal.mixin({
         toast: true,
         position: 'top',
@@ -35,12 +37,11 @@ function updateHRProfile() { // Pinalitan ang pangalan para mag-match sa HTML
     Toast.fire({
         icon: 'success',
         title: 'Success!',
-        text: 'HR Manager profile has been updated.' 
+        text: 'HR profile has been updated.' 
     }).then(() => {
         window.location.href = 'hr_profile_view.html';
     });
 }
-
 
 function cancelHREdit() { 
     Swal.fire({

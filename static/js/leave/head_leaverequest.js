@@ -72,6 +72,15 @@ let headSampleData = [
 document.addEventListener('DOMContentLoaded', () => {
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
+    const menuItems = document.querySelectorAll('.menu-item');
+
+    // --- TOOLTIP LABEL INITIALIZATION ---
+    menuItems.forEach(item => {
+        const span = item.querySelector('span');
+        if (span) {
+            item.setAttribute('data-text', span.innerText);
+        }
+    });
 
     // Sidebar Toggles
     document.getElementById('closeBtn').onclick = () => document.getElementById('sidebar').classList.add("collapsed");
@@ -138,7 +147,6 @@ function openHeadModal(id) {
     document.getElementById('viewModal').style.display = 'flex';
 }
 
-// --- CRITICAL: INSTANT UI UPDATE ---
 function processHeadRequest(decision) {
     const leaveIndex = headSampleData.findIndex(l => l.id === activeRowId);
 
@@ -152,19 +160,19 @@ function processHeadRequest(decision) {
         const statusClass = decision.toLowerCase();
         document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${decision}</span>`;
         document.getElementById('modalRemarks').innerText = headSampleData[leaveIndex].reviewRemarks;
-        document.getElementById('modalActions').style.display = "none"; // Hide buttons immediately
+        document.getElementById('modalActions').style.display = "none"; 
 
-        // 3. INSTANT TABLE UPDATE (Happens in background)
+        // 3. INSTANT TABLE UPDATE
         const currentTab = document.getElementById('tab-requests').classList.contains('active') ? "Active" : "History";
         renderHeadTable(currentTab);
 
-        // 4. Then show the Success Notification
+        // 4. Success Notification
         Swal.fire({
             icon: 'success',
             title: `Request ${decision}`,
             text: `The status was updated and recorded.`,
             confirmButtonColor: '#4a1d1d',
-            timer: 2000 // Automatically closes so you can see the table change
+            timer: 2000 
         });
     }
 }

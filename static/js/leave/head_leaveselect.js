@@ -4,28 +4,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById("closeBtn");
     const menuItems = document.querySelectorAll(".menu-item");
 
-    // Close button (adds collapsed class)
-    closeBtn.addEventListener("click", () => {
-        sidebar.classList.add("collapsed");
-    });
+    // 1. Sidebar Close Logic
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.add("collapsed");
+        });
+    }
 
-    // Logo click (removes collapsed class)
-    logoToggle.addEventListener("click", () => {
-        if (sidebar.classList.contains("collapsed")) {
-            sidebar.classList.remove("collapsed");
-        }
-    });
+    // 2. Logo Toggle Logic (Handles both Open and Close)
+    if (logoToggle) {
+        logoToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+        });
+    }
 
-    // Tooltip text injection and Active state
+    // 3. Tooltip Initialization & Active State
     menuItems.forEach(item => {
         const span = item.querySelector("span");
+        
+        // Auto-fill the data-text attribute for CSS tooltips
         if (span) {
-            const text = span.innerText;
-            item.setAttribute("data-text", text);
+            item.setAttribute("data-text", span.innerText.trim());
         }
 
+        // Handle Active State switching
         item.addEventListener("click", () => {
-            document.querySelector(".menu-item.active")?.classList.remove("active");
+            const currentActive = document.querySelector(".menu-item.active");
+            if (currentActive) {
+                currentActive.classList.remove("active");
+            }
             item.classList.add("active");
         });
     });

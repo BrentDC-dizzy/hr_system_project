@@ -57,8 +57,10 @@ body, html {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width 0.35s ease;
+    /* Transition must match .main-content */
+    transition: width 0.35s ease-in-out;
     z-index: 1000;
+    overflow: visible; /* Required for tooltips */
 }
 
 .sidebar.collapsed {
@@ -207,20 +209,23 @@ hr {
    5. Main Content (FIXED SPACING)
 ================================ */
 .main-content {
+    flex: 1;
     height: 100%;
-    width: 100%;
-    margin-left: 320px; /* 300 sidebar + 20 gap */
+    /* Default space: 300px sidebar + 20px gap */
+    margin-left: 320px; 
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
     box-sizing: border-box;
-    transition: margin-left 0.35s ease;
+    /* Smooth movement speed */
+    transition: margin-left 0.35s ease-in-out; 
 }
 
 /* Sidebar collapsed spacing */
-.sidebar.collapsed ~ .dashboard-viewport .main-content {
-    margin-left: 110px; /* 90 sidebar + 20 gap */
+/* This selector triggers the glide */
+.sidebar.collapsed + .main-content {
+    margin-left: 110px; /* 90px sidebar + 20px gap */
 }
 
 /* ================================

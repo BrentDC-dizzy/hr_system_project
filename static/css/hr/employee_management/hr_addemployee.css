@@ -136,7 +136,6 @@ body {
 .menu-item i {
     width: 50px;
     text-align: center;
-    flex-shrink: 0;
 }
 
 .menu-item span {

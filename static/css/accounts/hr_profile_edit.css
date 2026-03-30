@@ -15,11 +15,14 @@ body, html {
 .background {
     position: fixed;
     inset: 0;
-    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
+    /* Use three dots levels to reach static/img from static/css/accounts/ */
+    background: url('../../../static/img/general/bg.jpeg') no-repeat center/cover;
     filter: blur(10px);
     transform: scale(1.1); 
     z-index: -1;
 }
+
+/* Add this to ensure the sidebar doesn't hide the tooltips */
 
 /* THE CONTAINER THAT ENABLES GLIDING */
 .dashboard-viewport {
@@ -50,9 +53,7 @@ body, html {
 
 /* SIDEBAR CLOSED STATE */
 .sidebar.close {
-    width: 90px;
-    min-width: 90px;
-    padding: 25px 20px;
+    overflow: visible !important;
 }
 
 /* --- SIDEBAR MENU FIX (EXACT ALIGNMENT) --- */

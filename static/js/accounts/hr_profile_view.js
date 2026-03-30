@@ -1,8 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- SIDEBAR ELEMENTS ---
+    const sidebar = document.getElementById('sidebar');
+    const logoToggle = document.getElementById('logoToggle');
+    const closeBtn = document.getElementById('closeBtn');
+    const menuItems = document.querySelectorAll('.menu-item');
+
+    // --- SIDEBAR TOGGLE & GLIDE LOGIC ---
+    if (logoToggle) {
+        logoToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
+    }
+
+    // --- AUTOMATIC TOOLTIP LABELS ---
+    // This pulls text from the span and puts it into data-text for the CSS tooltip
+    menuItems.forEach(item => {
+        const span = item.querySelector('span');
+        if (span) {
+            item.setAttribute('data-text', span.innerText);
+        }
+    });
+
+    // --- TAB SWITCHING LOGIC ---
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content-item');
 
-    // --- TAB SWITCHING LOGIC ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
@@ -55,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- HISTORY MODAL LOGIC ---
     const modal = document.getElementById('historyModal');
     const openBtn = document.getElementById('openHistoryModal');
-    const closeBtn = document.getElementById('closeHistoryModal');
+    const closeBtnModal = document.getElementById('closeHistoryModal');
     const saveBtn = document.getElementById('saveEventBtn');
 
     // Open Modal
@@ -66,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Close Modal via 'X'
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
+    if (closeBtnModal) {
+        closeBtnModal.addEventListener('click', () => {
             modal.style.display = "none";
         });
     }
@@ -89,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dateVal && titleVal && descVal) {
                 const timeline = document.getElementById('timelineContainer');
                 
-                // Create the new timeline item element
                 const newItem = document.createElement('div');
                 newItem.classList.add('timeline-item');
                 
@@ -101,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-                // Add to the top of the list for better visibility
                 timeline.prepend(newItem);
 
                 // Reset and Close

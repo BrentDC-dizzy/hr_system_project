@@ -1,9 +1,14 @@
-/**
- * Sidebar Toggle Logic
- */
 const sidebar = document.getElementById('sidebar');
 const logoToggle = document.getElementById('logoToggle');
 const closeBtn = document.getElementById('closeBtn');
+const menuItems = document.querySelectorAll('.menu-item');
+
+menuItems.forEach(item => {
+    const span = item.querySelector('span');
+    if (span) {
+        item.setAttribute('data-text', span.innerText);
+    }
+});
 
 if (logoToggle) {
     logoToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
@@ -12,9 +17,6 @@ if (closeBtn) {
     closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
 }
 
-/**
- * Update Changes Function (Rectangle Toast)
- */
 function updateSDProfile() {
     const Toast = Swal.mixin({
         toast: true,
@@ -22,7 +24,7 @@ function updateSDProfile() {
         showConfirmButton: false,
         timer: 1800,
         timerProgressBar: true,
-        width: '450px', // Horizontal Rectangle
+        width: '450px',
         background: '#fff',
         color: '#4a1d1d',
         iconColor: '#4a1d1d',
@@ -35,16 +37,13 @@ function updateSDProfile() {
     Toast.fire({
         icon: 'success',
         title: 'Success!',
-        text: 'School Director profile has been updated.'
+        text: 'School Director profile has been updated.' 
     }).then(() => {
         window.location.href = 'sd_profile_view.html';
     });
 }
 
-/**
- * Cancel Function (Rectangle Modal)
- */
-function cancelSDEdit() {
+function cancelSDEdit() { 
     Swal.fire({
         title: 'Discard changes?',
         text: "Any unsaved information will be lost.",
@@ -54,7 +53,7 @@ function cancelSDEdit() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, discard',
         cancelButtonText: 'No',
-        width: '400px', // Rectangle shape
+        width: '400px',
         padding: '1rem',
         customClass: {
             title: 'small-swal-title',
