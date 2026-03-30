@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaveForm = document.getElementById('leaveRequestForm');
     const menuItems = document.querySelectorAll(".menu-item");
 
-    let selectedFileData = null;
     let selectedFileName = "No Document Attached";
 
     // --- Sidebar & Tooltips ---
@@ -37,19 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fileInput.onchange = () => {
             if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                selectedFileName = file.name;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    selectedFileData = e.target.result;
-                    // Update UI inside the drop zone
+                selectedFileName = fileInput.files[0].name;
+                if (dropZoneContent) {
                     dropZoneContent.innerHTML = `
                         <i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i>
                         <p style="margin-top: 10px;">Selected: <span style="color: #4a1d1d; font-weight: bold;">${selectedFileName}</span></p>
                         <small style="color: #666;">Click to change file</small>
                     `;
-                };
-                reader.readAsDataURL(file);
+                }
             }
         };
     }
@@ -59,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
 
+            const TOTAL_SICK_CREDITS = 15;
             const activeBtn = document.querySelector('.type-btn.active');
             const leaveType = activeBtn ? activeBtn.innerText : "General Leave";
             const startDateVal = document.getElementsByName('start_date')[0].value;
@@ -67,39 +62,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Simple validation
             if (!startDateVal || !endDateVal || !reasonVal) {
-                alert("Please fill in all required fields.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Info',
+                    text: 'Please fill in all required fields.',
+                    confirmButtonColor: '#4a1d1d'
+                });
                 return;
             }
 
-            const diffDays = Math.ceil(Math.abs(new Date(endDateVal) - new Date(startDateVal)) / (1000 * 60 * 60 * 24)) + 1;
+            // Calculate duration (inclusive)
+            const start = new Date(startDateVal);
+            const end = new Date(endDateVal);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-            // Create request object
-            const newRequest = {
-                id: Date.now(),
-                name: "Tatsu", 
-                role: "HR Manager",
-                dept: "Human Resources",
-                dateFiled: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                submitTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                leaveType: leaveType,
-                startDate: startDateVal,
-                endDate: endDateVal,
-                numDays: diffDays,
-                status: "Pending",
-                reviewedBy: "---",
-                fileName: selectedFileName,
-                fileData: selectedFileData,
-                reason: reasonVal,
-                reviewRemarks: "Awaiting review from School Director."
-            };
+            // Prepare Notification Message
+            let finalMessage = "Leave request submitted successfully!";
+            if (leaveType.toLowerCase().includes("sick")) {
+                const remaining = TOTAL_SICK_CREDITS - diffDays;
+                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
+            }
 
-            // Save to LocalStorage
-            let allRequests = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-            allRequests.push(newRequest);
-            localStorage.setItem('allLeaveRequests', JSON.stringify(allRequests));
-
-            alert('Leave request submitted successfully!');
-            window.location.href = 'hr_leaverequest.html';
+            // Fire SweetAlert
+            Swal.fire({
+                icon: 'success',
+                title: 'Request Sent',
+                text: finalMessage,
+                confirmButtonColor: '#4a1d1d',
+                timer: 3500,
+                timerProgressBar: true
+            }).then(() => {
+                // Redirecting without saving to LocalStorage
+                window.location.href = 'hr_leaverequest.html';
+            });
         };
     }
 });

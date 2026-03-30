@@ -59,9 +59,18 @@ body, html {
 
 .profile-right { display: flex; flex-direction: column; align-items: flex-end; }
 .edit-btn {
-    background: #4a1d1d; color: white; border: none; padding: 8px 18px; border-radius: 8px;
-    cursor: pointer; margin-bottom: 40px; font-weight: 600;
+    position: relative; /* Ensures z-index works */
+    z-index: 10;       /* Puts it on top of background layers */
+    background: #4a1d1d; 
+    color: white; 
+    border: none; 
+    padding: 8px 18px; 
+    border-radius: 8px;
+    cursor: pointer; 
+    margin-bottom: 40px; 
+    font-weight: 600;
 }
+
 .edit-btn:hover { background: #7b3f3f; }
 
 .contact-info { width: 260px; text-align: right; }

@@ -2,6 +2,58 @@
 const sdInfo = { name: "Ricardo G. Dela Cruz" };
 let activeRowId = null; 
 
+// HARDCODED SAMPLE DATA
+let sdSampleData = [
+    {
+        id: 401,
+        name: "Ricardo G. Dela Cruz", // OWN LEAVE - PENDING
+        role: "School Director",
+        dateFiled: "March 30, 2026",
+        submitTime: "08:00 AM",
+        leaveType: "Sick Leave",
+        startDate: "2026-03-31",
+        endDate: "2026-04-01",
+        numDays: 2,
+        status: "Pending",
+        reviewedBy: "---",
+        reason: "Severe back pain, advised to rest.",
+        fileName: "SD_Medical_Cert.pdf",
+        reviewRemarks: "Awaiting review from Board of Trustees."
+    },
+    {
+        id: 402,
+        name: "Jose Brian Dela Peña", // FROM HEAD - PENDING
+        role: "Department Head",
+        dateFiled: "March 30, 2026",
+        submitTime: "09:00 AM",
+        leaveType: "Vacation Leave",
+        startDate: "2026-04-05",
+        endDate: "2026-04-05",
+        numDays: 1,
+        status: "Pending",
+        reviewedBy: "---",
+        reason: "Personal errands and rest.",
+        fileName: "No Document Attached",
+        reviewRemarks: "Awaiting final review from School Director."
+    },
+    {
+        id: 403,
+        name: "Tatsu", // FROM HR - PENDING
+        role: "HR Manager",
+        dateFiled: "March 30, 2026",
+        submitTime: "10:30 AM",
+        leaveType: "Vacation Leave",
+        startDate: "2026-04-10",
+        endDate: "2026-04-12",
+        numDays: 3,
+        status: "Pending",
+        reviewedBy: "---",
+        reason: "Family outing and recreation.",
+        fileName: "Flight_Booking.pdf",
+        reviewRemarks: "Awaiting final review from School Director."
+    }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
@@ -9,17 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
 
-    // Tooltips
+    // Sidebar Tooltips Initialization
     document.querySelectorAll(".menu-item").forEach(item => {
         const span = item.querySelector("span");
         if (span) item.setAttribute("data-text", span.innerText);
     });
 
-    renderLeaveTable("Active");
-
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
+    // Tab Switching Logic
     tabRequests.onclick = () => {
         tabRequests.classList.add('active'); tabHistory.classList.remove('active');
         renderLeaveTable("Active");
@@ -29,6 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLeaveTable("History");
     };
 
+    renderLeaveTable("Active");
+
+    // Real-time Search
     document.getElementById('tableSearch').addEventListener('keyup', (e) => {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('tbody tr').forEach(row => {
@@ -40,17 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderLeaveTable(filter) {
     const body = document.getElementById('leaveTableBody');
     const template = document.getElementById('sdRowTemplate');
+    if (!body || !template) return;
     body.innerHTML = "";
-    const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-    
-    const visibleLeaves = leaveData.filter(l => 
-        l.name === sdInfo.name || l.role === "Department Head" || l.role === "HR Manager"
-    );
 
-    visibleLeaves.forEach((leave) => {
+    sdSampleData.forEach((leave) => {
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
+        let shouldShow = (filter === "Active") ? !isFinal : isFinal;
         
-        if ((filter === "Active" && !isFinal) || (filter === "History" && isFinal)) {
+        if (shouldShow) {
             const clone = template.content.cloneNode(true);
             const statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
             
@@ -74,23 +125,22 @@ function renderLeaveTable(filter) {
 
 function openViewModalByID(id) {
     activeRowId = id;
-    const leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-    const data = leaveData.find(l => l.id === id);
+    const data = sdSampleData.find(l => l.id === id);
     if (!data) return;
 
     const isOwnRequest = (data.name === sdInfo.name);
     const isFinal = (data.status === "Approved" || data.status === "Rejected");
     const statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
 
-    // Fill Modal Fields
-    document.getElementById('modalFileName').innerText = data.fileName || "Document.pdf";
-    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime || '---'}`;
-    document.getElementById('modalReason').innerText = data.reason || "No reason provided.";
-    document.getElementById('modalRemarks').innerText = data.reviewRemarks || "Awaiting action.";
-    document.getElementById('modalReviewerText').innerText = `Reviewed by: ${data.reviewedBy || '---'}`;
+    // Fill Modal Data
+    document.getElementById('modalFileName').innerText = data.fileName;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
+    document.getElementById('modalReason').innerText = data.reason;
+    document.getElementById('modalRemarks').innerText = data.reviewRemarks;
+    document.getElementById('modalReviewerText').innerText = `Reviewed by: ${data.reviewedBy}`;
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
 
-    // Toggle Action Buttons
+    // Toggle Action Buttons: Hide if viewing own request or already finalized
     const actions = document.getElementById('modalActions');
     if (!isOwnRequest && !isFinal) {
         actions.style.display = "flex";
@@ -98,29 +148,41 @@ function openViewModalByID(id) {
         actions.style.display = "none";
     }
 
-    // Preview logic
+    // PDF Placeholder Preview
     const preview = document.querySelector('.pdf-placeholder');
-    if (data.fileData) {
-        preview.innerHTML = data.fileData.includes("image") 
-            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
-            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
-    } else {
-        preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>No document attached</p>`;
-    }
+    preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>Preview for ${data.fileName}</p>`;
 
     document.getElementById('viewModal').style.display = 'flex';
 }
 
+// --- INSTANT UPDATE LOGIC ---
 function processSDDecision(decision) {
-    let leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-    const index = leaveData.findIndex(l => l.id === activeRowId);
+    const index = sdSampleData.findIndex(l => l.id === activeRowId);
+    
     if (index !== -1) {
-        leaveData[index].status = decision; 
-        leaveData[index].reviewedBy = sdInfo.name;
-        leaveData[index].reviewRemarks = `Final decision: ${decision} by School Director ${sdInfo.name}.`;
-        
-        localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
-        location.reload();
+        // 1. Instant Memory Update
+        sdSampleData[index].status = decision; 
+        sdSampleData[index].reviewedBy = sdInfo.name;
+        sdSampleData[index].reviewRemarks = `Final decision: ${decision} by School Director on ${new Date().toLocaleDateString()}.`;
+
+        // 2. Instant Modal Visual Update
+        const statusClass = decision.toLowerCase();
+        document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${decision}</span>`;
+        document.getElementById('modalRemarks').innerText = sdSampleData[index].reviewRemarks;
+        document.getElementById('modalActions').style.display = "none";
+
+        // 3. Instant Table Refresh (Background)
+        const currentMode = document.getElementById('tab-requests').classList.contains('active') ? "Active" : "History";
+        renderLeaveTable(currentMode);
+
+        // 4. Success Alert
+        Swal.fire({
+            icon: 'success',
+            title: `Request ${decision}`,
+            text: `Decision finalized and recorded instantly.`,
+            confirmButtonColor: '#4a1d1d',
+            timer: 2000
+        });
     }
 }
 

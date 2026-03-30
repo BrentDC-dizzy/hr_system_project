@@ -1,7 +1,74 @@
 /* hr_leaverequest.js */
-let leaveData = [];
+const hrName = "Tatsu"; 
 let activeRowId = null;
-const hrName = "Tatsu"; // Persona: HR Manager
+
+// HARDCODED SAMPLE DATA
+let leaveData = [
+    {
+        id: 301,
+        name: "Tatsu", 
+        role: "HR Manager",
+        dateFiled: "March 30, 2026",
+        submitTime: "09:00 AM",
+        leaveType: "Vacation Leave",
+        startDate: "2026-04-10",
+        endDate: "2026-04-12",
+        numDays: 3,
+        status: "Pending",
+        reviewedBy: "---",
+        reason: "Personal rest and recreation.",
+        fileName: "No Document Attached",
+        reviewRemarks: "Awaiting review from School Director."
+    },
+    {
+        id: 302,
+        name: "Jose Brian Dela Peña", // FROM HEAD - HISTORY
+        role: "Department Head",
+        dateFiled: "March 25, 2026",
+        submitTime: "08:30 AM",
+        leaveType: "Sick Leave",
+        startDate: "2026-03-26",
+        endDate: "2026-03-27",
+        numDays: 2, // 2 DAYS
+        status: "Approved",
+        reviewedBy: "Tatsu (HR)",
+        reason: "Severe Migraine",
+        fileName: "Medical_Cert.pdf",
+        reviewRemarks: "Final approval granted by HR Department."
+    },
+    {
+        id: 303,
+        name: "Alice Johnson", 
+        role: "Senior Instructor",
+        dateFiled: "March 29, 2026",
+        submitTime: "10:15 AM",
+        leaveType: "Maternity Leave",
+        startDate: "2026-05-01",
+        endDate: "2026-07-30",
+        numDays: 90,
+        status: "Pending",
+        reviewedBy: "---",
+        reason: "Maternity leave application.",
+        fileName: "Doctor_Note.pdf",
+        reviewRemarks: "Awaiting HR validation of documents."
+    },
+    {
+        id: 304,
+        name: "Ricardo G. Dela Cruz", 
+        role: "School Director",
+        dateFiled: "March 20, 2026",
+        submitTime: "01:00 PM",
+        leaveType: "Emergency Leave",
+        startDate: "2026-03-21",
+        endDate: "2026-03-21",
+        numDays: 1,
+        status: "Rejected",
+        reviewedBy: "Board of Trustees",
+        reason: "Urgent family matter.",
+        fileName: "No Document Attached",
+        reviewRemarks: "Rejected due to conflict with the Annual Board Meeting."
+    }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById("sidebar");
@@ -10,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabRequests = document.getElementById('tab-requests');
     const tabHistory = document.getElementById('tab-history');
 
-    // Sidebar Tooltips
+    // Sidebar Tooltips Initialization
     document.querySelectorAll('.menu-item').forEach(item => {
         const span = item.querySelector("span");
         if (span) item.setAttribute("data-text", span.textContent.trim());
@@ -19,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
+    // Tab Navigation
     tabRequests.onclick = () => {
         tabRequests.classList.add('active'); tabHistory.classList.remove('active');
         renderHRTable("Active");
@@ -30,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderHRTable("Active");
 
+    // Real-time Search
     document.getElementById('tableSearch').addEventListener('keyup', (e) => {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('tbody tr').forEach(row => {
@@ -38,22 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function getCredits(name) {
-    const credits = JSON.parse(localStorage.getItem('userCredits')) || {};
-    return credits[name] !== undefined ? credits[name] : 15;
-}
-
 function renderHRTable(mode) {
     const body = document.getElementById('leaveTableBody');
     const template = document.getElementById('hrRowTemplate');
     if (!body || !template) return;
     body.innerHTML = "";
-    leaveData = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
 
     leaveData.forEach((leave) => {
         const isFinal = leave.status === "Approved" || leave.status === "Rejected";
-        
-        if ((mode === "Active" && !isFinal) || (mode === "History" && isFinal)) {
+        let shouldShow = (mode === "Active") ? !isFinal : isFinal;
+
+        if (shouldShow) {
             const clone = template.content.cloneNode(true);
             const statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
             
@@ -80,29 +144,30 @@ function openHRModal(id) {
     const data = leaveData.find(l => l.id === id);
     if (!data) return;
 
-    const isOwnRequest = (data.name.trim() === hrName.trim());
+    const isOwnRequest = (data.name === hrName);
     const isSDRequest = (data.role === "School Director");
     const isFinal = (data.status === "Approved" || data.status === "Rejected");
     const statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
 
-    // Fill Modal Data by ID
-    document.getElementById('modalFileName').innerText = data.fileName || "Document.pdf";
-    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime || '---'}`;
-    document.getElementById('modalReason').innerText = data.reason || "N/A";
-    document.getElementById('modalRemarks').innerText = data.reviewRemarks || 'Awaiting initial review.';
-    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewedBy || '---'}</small>`;
+    document.getElementById('modalFileName').innerText = data.fileName;
+    document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
+    document.getElementById('modalReason').innerText = data.reason;
+    document.getElementById('modalRemarks').innerText = data.reviewRemarks;
+    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
 
-    // Handle Credits Block
+    // --- UPDATED CREDITS LOGIC ---
     const creditsBlock = document.getElementById('creditsBlock');
     if (data.leaveType === "Sick Leave") {
         creditsBlock.style.display = "block";
-        document.getElementById('modalCredits').innerText = `${getCredits(data.name)} Days Remaining`;
+        // Dynamically calculate based on the 15 baseline
+        const remaining = 15 - data.numDays;
+        document.getElementById('modalCredits').innerText = `${remaining} Days Remaining`;
     } else {
         creditsBlock.style.display = "none";
     }
 
-    // Actions visibility: Hide if final, own request, or School Director request
+    // Toggle Action Buttons
     const actions = document.getElementById('modalActions');
     if (isFinal || isOwnRequest || isSDRequest) {
         actions.style.display = "none";
@@ -110,15 +175,8 @@ function openHRModal(id) {
         actions.style.display = "flex";
     }
 
-    // File Preview
     const preview = document.querySelector('.pdf-placeholder');
-    if (data.fileData) {
-        preview.innerHTML = data.fileData.includes("image") 
-            ? `<img src="${data.fileData}" style="width:100%; height:100%; object-fit:contain; border-radius:10px;">` 
-            : `<embed src="${data.fileData}" width="100%" height="100%" style="border-radius:10px;">`;
-    } else {
-        preview.innerHTML = `<i class="fas fa-file-alt"></i><p>No document uploaded</p>`;
-    }
+    preview.innerHTML = `<i class="fas fa-file-pdf"></i><p>Preview for ${data.fileName}</p>`;
 
     document.getElementById('viewModal').style.display = 'flex';
 }
@@ -126,33 +184,31 @@ function openHRModal(id) {
 function processRequest(status) {
     const index = leaveData.findIndex(l => l.id === activeRowId);
     if (index !== -1) {
-        const request = leaveData[index];
-        const isHeadRequest = (request.role === "Department Head");
+        // Instant Data Update
+        leaveData[index].status = status;
+        leaveData[index].reviewedBy = hrName;
+        leaveData[index].reviewRemarks = `Processed by HR Manager on ${new Date().toLocaleDateString()}`;
 
-        if (status === "Approved") {
-            if (isHeadRequest) {
-                request.status = "Approved - By HR";
-                request.reviewedBy = "HR Manager";
-                request.reviewRemarks = "HR Manager has reviewed and approved. Waiting for final review by School Director.";
-            } else {
-                if (request.leaveType === "Sick Leave") {
-                    let credits = JSON.parse(localStorage.getItem('userCredits')) || {};
-                    credits[request.name] = getCredits(request.name) - request.numDays;
-                    localStorage.setItem('userCredits', JSON.stringify(credits));
-                }
-                request.status = "Approved"; 
-                request.reviewedBy = "HR Manager";
-                request.reviewRemarks = "This request has been finalized by HR Manager.";
-            }
-        } else {
-            request.status = "Rejected"; 
-            request.reviewedBy = "HR Manager";
-            request.reviewRemarks = "This request has been rejected by HR Manager.";
-        }
-        
-        localStorage.setItem('allLeaveRequests', JSON.stringify(leaveData));
-        location.reload();
+        // Instant Modal Update
+        const statusClass = status.toLowerCase();
+        document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${status}</span>`;
+        document.getElementById('modalRemarks').innerText = leaveData[index].reviewRemarks;
+        document.getElementById('modalActions').style.display = "none";
+
+        // Instant Table Update
+        const currentTab = document.getElementById('tab-requests').classList.contains('active') ? "Active" : "History";
+        renderHRTable(currentTab);
+
+        Swal.fire({
+            icon: 'success',
+            title: `Request ${status}`,
+            text: `Data updated and moved to history instantly.`,
+            confirmButtonColor: '#4a1d1d',
+            timer: 2000
+        });
     }
 }
 
-function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+function closeViewModal() { 
+    document.getElementById('viewModal').style.display = 'none'; 
+}

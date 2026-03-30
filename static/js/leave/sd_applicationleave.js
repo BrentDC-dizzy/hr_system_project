@@ -8,9 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const leaveForm = document.getElementById('leaveRequestForm');
     const menuItems = document.querySelectorAll(".menu-item");
 
-    let selectedFileData = null; 
-    let selectedFileName = "No Document Attached";
-
     // Initialize Tooltips
     menuItems.forEach(item => {
         const span = item.querySelector("span");
@@ -33,14 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = () => {
             if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                selectedFileName = file.name;
-                const reader = new FileReader();
-                reader.onload = (e) => { 
-                    selectedFileData = e.target.result; 
-                    dropZone.innerHTML = `<i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i><p>Selected: <b>${selectedFileName}</b></p>`;
-                };
-                reader.readAsDataURL(file);
+                const fileName = fileInput.files[0].name;
+                dropZone.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 24px;"></i>
+                    <p>Selected: <b>${fileName}</b></p>
+                    <small style="color: #666;">Click to change file</small>
+                `;
             }
         };
     }
@@ -49,38 +44,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
+
+            const TOTAL_SICK_CREDITS = 15;
+            let finalMessage = "Leave request submitted to HR successfully!";
+
             const activeBtn = document.querySelector('.type-btn.active');
-            const leaveType = activeBtn ? activeBtn.innerText : "General Leave";
-            const startDateVal = document.getElementsByName('start_date')[0].value;
-            const endDateVal = document.getElementsByName('end_date')[0].value;
-            const reasonVal = document.querySelector('.form-textarea').value;
-
-            const diffDays = Math.ceil(Math.abs(new Date(endDateVal) - new Date(startDateVal)) / (1000 * 60 * 60 * 24)) + 1;
+            const leaveType = activeBtn ? activeBtn.innerText : "";
             
-            const newRequest = {
-                id: Date.now(),
-                name: "Ricardo G. Dela Cruz", // MATCHED TO SD INFO
-                role: "School Director",
-                dept: "Office of the Director",
-                dateFiled: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                submitTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                leaveType: leaveType,
-                startDate: startDateVal,
-                endDate: endDateVal,
-                numDays: diffDays,
-                status: "Pending", // For SD, this goes to HR
-                reviewedBy: "---",
-                fileName: selectedFileName,
-                fileData: selectedFileData, 
-                reason: reasonVal,
-                reviewRemarks: "Awaiting review from Human Resources."
-            };
+            // Selecting dates by name as per your previous HTML structure
+            const startDateEl = document.getElementsByName('start_date')[0];
+            const endDateEl = document.getElementsByName('end_date')[0];
 
-            let allRequests = JSON.parse(localStorage.getItem('allLeaveRequests')) || [];
-            allRequests.push(newRequest);
-            localStorage.setItem('allLeaveRequests', JSON.stringify(allRequests));
-            alert("Leave Request Submitted to HR!");
-            window.location.href = 'sd_leaverequest.html';
+            if (leaveType.toLowerCase().includes("sick") && startDateEl.value && endDateEl.value) {
+                const start = new Date(startDateEl.value);
+                const end = new Date(endDateEl.value);
+                
+                // Calculate days inclusive
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                const remaining = TOTAL_SICK_CREDITS - diffDays;
+                finalMessage = `Success! You have ${remaining} sick leave credits remaining.`;
+            }
+
+            // SweetAlert Notification
+            Swal.fire({
+                icon: "success",
+                title: "Request Submitted",
+                text: finalMessage,
+                confirmButtonColor: '#4a1d1d',
+                timer: 3500,
+                timerProgressBar: true
+            }).then(() => {
+                window.location.href = 'sd_leaverequest.html';
+            });
         };
     }
 });
