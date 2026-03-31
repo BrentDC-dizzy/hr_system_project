@@ -17,7 +17,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 2. Main Layout - Centering Content                          */
+/* 2. Main Layout                                              */
 /* ----------------------------------------------------------- */
 .main-content.full-view {
     flex: 1;
@@ -37,37 +37,41 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Header - Centered Title & Left-Aligned Logo              */
+/* 3. Header - Logo Top & Blue Centered Title                  */
 /* ----------------------------------------------------------- */
 .form-header.centered-header {
     background: #ffffff;
-    padding: 20px 60px;
+    padding: 40px 0 20px 0; /* Space for the top area */
     border-bottom: 1px solid #eeeeee;
     display: flex; 
-    align-items: center; 
+    flex-direction: column; /* Stacks logo above the title */
+    align-items: center;    /* Centers items horizontally */
     justify-content: center; 
     width: 100%;
-    position: relative; 
 }
 
 .header-logo {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: auto;
     object-fit: contain;
-    position: absolute;
-    left: 60px; 
+    margin-top: 20px;       /* Margin top for the logo */
+    margin-bottom: 20px;    /* Space between logo and blue info */
 }
 
 .header-title {
-    font-size: 1.4rem;
-    color: #333;
+    background-color: #004a99; /* The Blue Section */
+    color: #ffffff;
+    padding: 10px 35px;
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
+    border-radius: 50px;    /* Makes it look like a pill/circle shape */
+    display: inline-block;
 }
 
 /* ----------------------------------------------------------- */
-/* 4. Panels - Vertical & Horizontal Centering                 */
+/* 4. Panels - Centering Content                               */
 /* ----------------------------------------------------------- */
 .form-body { 
     flex: 1;
@@ -86,8 +90,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centers items vertically */
-    align-items: center;     /* Centers items horizontally */
+    justify-content: center; 
+    align-items: center;     
     padding: 40px;
     background: #ffffff;
 }
@@ -109,7 +113,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 5. Form Elements Width Control                              */
+/* 5. Form Elements                                            */
 /* ----------------------------------------------------------- */
 .form-group { 
     width: 100%;
@@ -178,7 +182,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 7. Footer & Action Buttons                                  */
+/* 7. Footer & Buttons                                         */
 /* ----------------------------------------------------------- */
 .form-footer.aligned-right {
     background: #ffffff;
@@ -200,10 +204,6 @@ body {
     transition: 0.2s;
 }
 
-.btn-cancel:hover {
-    background: #e4e4e4;
-}
-
 .btn-save { 
     background: #5c2b2b;
     color: white; 
@@ -216,7 +216,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 8. Modals & Notifications (Timer Styling Included)           */
+/* 8. Modals                                                   */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
@@ -239,33 +239,8 @@ body {
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
 }
 
-/* Countdown Timer Styling */
-#redirect-timer {
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #666;
-    border: 1px solid #eee;
-}
-
-#redirect-timer b {
-    color: #5c2b2b;
-    font-size: 1.1rem;
-}
-
-.success-icon {
-    font-size: 60px;
-    color: #4CAF50;
-    margin-bottom: 20px;
-}
-
-.warning-icon {
-    font-size: 60px;
-    color: #f39c12;
-    margin-bottom: 20px;
-}
+.success-icon { font-size: 60px; color: #4CAF50; margin-bottom: 20px; }
+.warning-icon { font-size: 60px; color: #f39c12; margin-bottom: 20px; }
 
 .btn-ok {
     background: #5c2b2b;
