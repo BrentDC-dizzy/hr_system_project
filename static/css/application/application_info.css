@@ -17,7 +17,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 2. Main Layout                                              */
+/* 2. Main Layout - Centering Content                          */
 /* ----------------------------------------------------------- */
 .main-content.full-view {
     flex: 1;
@@ -37,41 +37,37 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Header - Logo Top & Blue Centered Title                  */
+/* 3. Header - Centered Title & Left-Aligned Logo              */
 /* ----------------------------------------------------------- */
 .form-header.centered-header {
     background: #ffffff;
-    padding: 40px 0 20px 0; /* Space for the top area */
+    padding: 20px 60px;
     border-bottom: 1px solid #eeeeee;
     display: flex; 
-    flex-direction: column; /* Stacks logo above the title */
-    align-items: center;    /* Centers items horizontally */
+    align-items: center; 
     justify-content: center; 
     width: 100%;
+    position: relative; 
 }
 
 .header-logo {
-    width: 60px;
-    height: auto;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
-    margin-top: 20px;       /* Margin top for the logo */
-    margin-bottom: 20px;    /* Space between logo and blue info */
+    position: absolute;
+    left: 60px; 
 }
 
 .header-title {
-    background-color: #004a99; /* The Blue Section */
-    color: #ffffff;
-    padding: 10px 35px;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
+    color: #333;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    border-radius: 50px;    /* Makes it look like a pill/circle shape */
-    display: inline-block;
 }
 
 /* ----------------------------------------------------------- */
-/* 4. Panels - Centering Content                               */
+/* 4. Panels - Vertical & Horizontal Centering                 */
 /* ----------------------------------------------------------- */
 .form-body { 
     flex: 1;
@@ -90,8 +86,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; 
-    align-items: center;     
+    justify-content: center; /* Centers items vertically */
+    align-items: center;     /* Centers items horizontally */
     padding: 40px;
     background: #ffffff;
 }
@@ -113,7 +109,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 5. Form Elements                                            */
+/* 5. Form Elements Width Control                              */
 /* ----------------------------------------------------------- */
 .form-group { 
     width: 100%;
@@ -182,7 +178,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 7. Footer & Buttons                                         */
+/* 7. Footer & Action Buttons                                  */
 /* ----------------------------------------------------------- */
 .form-footer.aligned-right {
     background: #ffffff;
@@ -204,6 +200,10 @@ body {
     transition: 0.2s;
 }
 
+.btn-cancel:hover {
+    background: #e4e4e4;
+}
+
 .btn-save { 
     background: #5c2b2b;
     color: white; 
@@ -216,7 +216,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 8. Modals                                                   */
+/* 8. Modals & Notifications (Timer Styling Included)           */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
@@ -239,8 +239,33 @@ body {
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
 }
 
-.success-icon { font-size: 60px; color: #4CAF50; margin-bottom: 20px; }
-.warning-icon { font-size: 60px; color: #f39c12; margin-bottom: 20px; }
+/* Countdown Timer Styling */
+#redirect-timer {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #666;
+    border: 1px solid #eee;
+}
+
+#redirect-timer b {
+    color: #5c2b2b;
+    font-size: 1.1rem;
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.warning-icon {
+    font-size: 60px;
+    color: #f39c12;
+    margin-bottom: 20px;
+}
 
 .btn-ok {
     background: #5c2b2b;
