@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+
+    // --- ELEMENTS ---
     const sidebar = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn = document.getElementById("closeBtn");
@@ -8,125 +10,181 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const viewModal = document.getElementById("viewModal");
     const posModal = document.getElementById("positionChangeModal");
-    const posForm = document.getElementById("positionChangeForm");
 
     const tabNew = document.getElementById("tab-new");
     const tabPosition = document.getElementById("tab-position");
 
-    // --- Sidebar Tooltips ---
-    document.querySelectorAll('.menu-item').forEach(item => {
-        const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.textContent.trim());
-    });
+    // =========================
+    // SIDEBAR TOGGLE
+    // =========================
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.add("collapsed");
+        });
+    }
 
-    // --- Sidebar Toggle ---
-    if (closeBtn) closeBtn.onclick = () => sidebar.classList.add("collapsed");
-    if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
+    if (logoToggle) {
+        logoToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+        });
+    }
 
-    // --- Search ---
+    // =========================
+    // SEARCH FILTER
+    // =========================
     if (searchInput && tableBody) {
         searchInput.addEventListener("keyup", () => {
             const filter = searchInput.value.toLowerCase();
+
             tableBody.querySelectorAll("tr").forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? "" : "none";
             });
         });
     }
 
-    // --- Tab Switching ---
+    // =========================
+    // TAB SWITCHING
+    // =========================
     if (tabNew && tabPosition) {
-        tabNew.onclick = () => {
+        tabNew.addEventListener("click", () => {
             tabNew.classList.add("active");
             tabPosition.classList.remove("active");
-        };
+        });
 
-        tabPosition.onclick = () => {
+        tabPosition.addEventListener("click", () => {
             tabPosition.classList.add("active");
             tabNew.classList.remove("active");
+
             openModal(posModal);
-        };
+        });
     }
 
-    // --- Modal Helpers ---
+    // =========================
+    // MODAL FUNCTIONS
+    // =========================
     function openModal(modal) {
         if (modal) modal.style.display = "flex";
     }
 
-    function closeAllModals() {
-        [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
+    function closeModal(modal) {
+        if (modal) modal.style.display = "none";
     }
 
-    // --- View Modal Triggers ---
-    document.querySelectorAll(".view-link").forEach(link => {
-        link.addEventListener("click", (e) => {
+    function closeAllModals() {
+        closeModal(viewModal);
+        closeModal(posModal);
+    }
+
+    // =========================
+    // VIEW BUTTON (TABLE)
+    // =========================
+    document.addEventListener("click", (e) => {
+
+        // VIEW CLICK
+        if (e.target.classList.contains("view-link")) {
             e.preventDefault();
 
-            // Get row data
             const row = e.target.closest("tr");
             const cells = row.querySelectorAll("td");
 
-            document.getElementById("modalSubmitDate").innerText     = cells[4]?.innerText || "---";
-            document.getElementById("modalDepartment").innerText     = cells[2]?.innerText || "---";
-            document.getElementById("modalPosition").innerText       = cells[3]?.innerText || "---";
-            document.getElementById("modalProgress").innerText       = cells[5]?.innerText || "---";
-            document.getElementById("modalRemarks").innerText        = "Awaiting review.";
-            document.getElementById("modalFileName").innerText       = "Document.pdf";
+            // Fill modal
+            document.getElementById("modalSubmitDate").innerText = cells[4]?.innerText || "---";
+            document.getElementById("modalDepartment").innerText = cells[2]?.innerText || "---";
+            document.getElementById("modalPosition").innerText = cells[3]?.innerText || "---";
+            document.getElementById("modalProgress").innerText = cells[5]?.innerText || "---";
 
-            // Status pill
+            document.getElementById("modalRemarks").innerText = "Awaiting review.";
+            document.getElementById("modalFileName").innerText = "Document.pdf";
+
+            // STATUS COPY
             const statusPill = cells[6]?.querySelector(".status-pill");
-            document.getElementById("modalStatusContainer").innerHTML = statusPill
-                ? statusPill.outerHTML
-                : "<span>---</span>";
+            const container = document.getElementById("modalStatusContainer");
 
-            document.getElementById("modalReviewerText").innerHTML = "<small>Reviewed by: ---</small>";
+            container.innerHTML = statusPill ? statusPill.outerHTML : "<span>---</span>";
 
-            // Show/hide action buttons based on status
+            // SHOW/HIDE ACTIONS
             const statusText = statusPill?.innerText || "";
-            const isFinal = statusText === "Approved" || statusText === "Rejected";
+            const isFinal = statusText.includes("Approved") || statusText.includes("Rejected");
+
             document.getElementById("modalActions").style.display = isFinal ? "none" : "flex";
 
             openModal(viewModal);
-        });
+        }
+
+        // APPROVE CLICK (DROPDOWN)
+        if (e.target.classList.contains("approve-option")) {
+            e.preventDefault();
+
+            const row = e.target.closest("tr");
+            updateRowStatus(row, "Approved", "approved");
+        }
+
+        // REJECT CLICK (DROPDOWN)
+        if (e.target.classList.contains("reject-option")) {
+            e.preventDefault();
+
+            const row = e.target.closest("tr");
+            updateRowStatus(row, "Rejected", "rejected");
+        }
     });
 
-    // --- Close View Modal ---
-    document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
+    // =========================
+    // UPDATE ROW STATUS
+    // =========================
+    function updateRowStatus(row, text, className) {
+        const statusCell = row.children[6];
 
-    // --- Modal Approve / Reject ---
+        statusCell.innerHTML = `<span class="status-pill ${className}">${text}</span>`;
+
+        const progressCell = row.children[5];
+        progressCell.innerText = "Completed";
+    }
+
+    // =========================
+    // MODAL BUTTONS
+    // =========================
     document.querySelector(".btn-approve")?.addEventListener("click", () => {
         document.getElementById("modalStatusContainer").innerHTML =
-            '<span class="status-pill approved">Approved</span>';
+            `<span class="status-pill approved">Approved</span>`;
+
         document.getElementById("modalActions").style.display = "none";
         document.getElementById("modalRemarks").innerText =
-            `Approved by HR on ${new Date().toLocaleDateString()}`;
+            `Approved on ${new Date().toLocaleDateString()}`;
     });
 
     document.querySelector(".btn-reject")?.addEventListener("click", () => {
         document.getElementById("modalStatusContainer").innerHTML =
-            '<span class="status-pill rejected">Rejected</span>';
+            `<span class="status-pill rejected">Rejected</span>`;
+
         document.getElementById("modalActions").style.display = "none";
         document.getElementById("modalRemarks").innerText =
-            `Rejected by HR on ${new Date().toLocaleDateString()}`;
+            `Rejected on ${new Date().toLocaleDateString()}`;
     });
 
-    // --- Position Change Form Submit ---
-    if (posForm) {
-        posForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            alert("Position change request logged successfully.");
-            closeAllModals();
-        });
-    }
+    // =========================
+    // CLOSE BUTTONS
+    // =========================
+    document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
 
-    // --- Cancel Button in Pos Modal ---
     document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
 
-    // --- Close on backdrop click or Escape ---
+    // =========================
+    // CLICK OUTSIDE MODAL
+    // =========================
     window.addEventListener("click", (e) => {
-        if (e.target === viewModal || e.target === posModal) closeAllModals();
+        if (e.target === viewModal || e.target === posModal) {
+            closeAllModals();
+        }
     });
 
+    // =========================
+    // ESC KEY CLOSE
+    // =========================
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAllModals();
+        if (e.key === "Escape") {
+            closeAllModals();
+        }
     });
+
 });
