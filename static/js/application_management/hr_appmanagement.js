@@ -105,7 +105,34 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeRecord = null;          // tracks currently opened modal record
 
     // --------------------------------------------------------
-    // 3. SIDEBAR
+    // 3. NOTIFICATION SYSTEM
+    // --------------------------------------------------------
+    function showNotification(message, type = 'success') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
+        
+        toast.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+        }, 3000);
+    }
+
+    // --------------------------------------------------------
+    // 4. SIDEBAR LOGIC
     // --------------------------------------------------------
     document.querySelectorAll('.menu-item').forEach(item => {
         const span = item.querySelector("span");
@@ -116,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (logoToggle) logoToggle.onclick = () => sidebar.classList.toggle("collapsed");
 
     // --------------------------------------------------------
-    // 4. RENDER TABLE
+    // 5. RENDER TABLE
     // --------------------------------------------------------
     function renderTable(data) {
         tableBody.innerHTML = "";
@@ -155,10 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --------------------------------------------------------
-    // 5. TABLE EVENT LISTENERS
+    // 6. TABLE EVENT LISTENERS
     // --------------------------------------------------------
     function attachTableEvents() {
-        // View links
         tableBody.querySelectorAll(".view-link").forEach(link => {
             link.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -168,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Inline approve
         tableBody.querySelectorAll(".approve-option").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -177,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Inline reject
         tableBody.querySelectorAll(".reject-option").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -188,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --------------------------------------------------------
-    // 6. UPDATE RECORD STATUS
+    // 7. UPDATE RECORD STATUS
     // --------------------------------------------------------
     function updateRecordStatus(id, statusClass, statusLabel) {
         const record = activeData.find(r => r.id === id);
@@ -201,14 +225,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderTable(activeData);
 
-        // If the modal is open for this record, update it live
+        // Notification Logic
+        if (statusClass === "approved") {
+            showNotification(`Application ${id} (${record.name}) has been Approved!`, 'success');
+        } else if (statusClass === "rejected") {
+            showNotification(`Application ${id} (${record.name}) has been Rejected.`, 'error');
+        }
+
         if (activeRecord && activeRecord.id === id) {
             populateModal(record);
         }
     }
 
     // --------------------------------------------------------
-    // 7. VIEW MODAL
+    // 8. VIEW MODAL LOGIC
     // --------------------------------------------------------
     function openViewModal(record) {
         activeRecord = record;
@@ -235,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("closeViewModal")?.addEventListener("click", closeAllModals);
 
-    // Modal approve/reject buttons
     document.querySelector(".btn-approve")?.addEventListener("click", () => {
         if (!activeRecord) return;
         updateRecordStatus(activeRecord.id, "approved", "Approved");
@@ -247,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --------------------------------------------------------
-    // 8. TABS
+    // 9. TABS & SEARCH
     // --------------------------------------------------------
     tabNew.addEventListener("click", () => {
         tabNew.classList.add("active");
@@ -266,9 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
         posModal.style.display = "flex";
     });
 
-    // --------------------------------------------------------
-    // 9. SEARCH
-    // --------------------------------------------------------
     searchInput.addEventListener("keyup", () => {
         const filter = searchInput.value.toLowerCase();
         tableBody.querySelectorAll("tr").forEach(row => {
@@ -303,22 +329,17 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             positionChangeData.push(newRecord);
-
-            // Switch to position change tab and show new record
-            tabPosition.classList.add("active");
-            tabNew.classList.remove("active");
-            activeData = positionChangeData;
-            renderTable(activeData);
-
+            tabPosition.click(); // Refresh tab view
             posForm.reset();
             closeAllModals();
+            showNotification("Request Logged Successfully!", "success");
         });
     }
 
     document.getElementById("cancelRequest")?.addEventListener("click", closeAllModals);
 
     // --------------------------------------------------------
-    // 11. CLOSE MODALS
+    // 11. UTILITIES & INIT
     // --------------------------------------------------------
     function closeAllModals() {
         [viewModal, posModal].forEach(m => { if (m) m.style.display = "none"; });
@@ -332,8 +353,5 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "Escape") closeAllModals();
     });
 
-    // --------------------------------------------------------
-    // 12. INITIAL RENDER
-    // --------------------------------------------------------
     renderTable(newEmployeeData);
 });

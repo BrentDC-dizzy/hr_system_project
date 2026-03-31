@@ -5,7 +5,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body, html {
@@ -21,14 +21,14 @@ body, html {
 .background {
     position: fixed;
     inset: 0;
-    background: url('../../img/general/bg.jpeg') no-repeat center/cover;
+    background: url('../../img/general/bg.jpeg') no-repeat center center/cover;
     filter: blur(10px);
     transform: scale(1.1);
     z-index: -1;
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Sidebar                                                  */
+/* 3. Sidebar Configuration                                    */
 /* ----------------------------------------------------------- */
 .sidebar {
     position: fixed;
@@ -44,13 +44,11 @@ body, html {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width 0.35s ease;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
 }
 
-.sidebar.collapsed {
-    width: 90px;
-}
+.sidebar.collapsed { width: 90px; }
 
 .top-section {
     display: flex;
@@ -83,6 +81,7 @@ body, html {
     justify-content: center;
     opacity: 0;
     color: white;
+    font-size: 20px;
     transition: 0.3s;
 }
 
@@ -114,12 +113,10 @@ body, html {
     text-decoration: none;
     border-radius: 12px;
     transition: background 0.3s;
+    margin-bottom: 5px;
 }
 
-.menu-item i {
-    width: 50px;
-    text-align: center;
-}
+.menu-item i { width: 50px; text-align: center; font-size: 18px; }
 
 .menu-item span {
     position: absolute;
@@ -128,293 +125,212 @@ body, html {
     transition: opacity 0.2s ease;
 }
 
-.sidebar.collapsed .menu-item span {
-    opacity: 0;
-    pointer-events: none;
-}
+.sidebar.collapsed .menu-item span { opacity: 0; pointer-events: none; }
 
-.menu-item:hover { background: rgba(255,255,255,0.15); }
-.menu-item.active { background: rgba(255,255,255,0.25); }
+.menu-item:hover { background: rgba(255, 255, 255, 0.15); }
+.menu-item.active { background: rgba(255, 255, 255, 0.25); border-left: 4px solid #fff; }
 
-.sidebar.collapsed .menu-item:hover::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 80px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(20, 20, 20, 0.95);
-    color: white;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 14px;
-    white-space: nowrap;
-    z-index: 2000;
-    pointer-events: none;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.sidebar.collapsed .menu-item:hover::before {
-    content: "";
-    position: absolute;
-    left: 72px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent rgba(20, 20, 20, 0.95) transparent transparent;
-    z-index: 2000;
-}
-
-hr {
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    margin: 10px 0;
-}
-
-.bottom-section { margin-top: auto; }
+hr { border: 0.5px solid rgba(255, 255, 255, 0.2); margin: 15px 0; }
 
 /* ----------------------------------------------------------- */
-/* 4. Dashboard Viewport & Main Content                        */
+/* 4. Main Dashboard Area                                      */
 /* ----------------------------------------------------------- */
 .dashboard-viewport {
     display: flex;
     height: 100vh;
     width: 100%;
     padding: 20px;
-    box-sizing: border-box;
     gap: 20px;
-    position: relative;
 }
 
 .main-content {
     flex: 1;
-    height: 100%;
     margin-left: 320px;
-    display: flex;
-    min-width: 0;
     transition: margin-left 0.35s ease-in-out;
 }
 
-.sidebar.collapsed + .main-content {
-    margin-left: 110px;
-}
+.sidebar.collapsed + .main-content { margin-left: 110px; }
 
-/* ----------------------------------------------------------- */
-/* 5. Leave Card (White Content Card)                          */
-/* ----------------------------------------------------------- */
 .leave-card {
     background: #ffffff;
     border-radius: 25px;
     padding: 25px 40px;
-    width: 100%;
     height: 100%;
-    flex: 1;
-    min-width: 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* ----------------------------------------------------------- */
-/* 6. Header                                                   */
-/* ----------------------------------------------------------- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 25px;
-    width: 100%;
 }
 
-.header h1 {
-    font-size: 30px;
-    color: #1a1a1a;
-    white-space: nowrap;
-    margin: 0;
-}
-
-.search-add {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.search-add input {
-    padding: 10px 15px;
-    width: 280px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    font-size: 13px;
-    outline: none;
-}
+.header h2 { color: #2c3e50; font-size: 22px; }
 
 /* ----------------------------------------------------------- */
-/* 7. Tab Group                                                */
+/* 5. Tabs & Controls                                          */
 /* ----------------------------------------------------------- */
+.controls { display: flex; gap: 15px; align-items: center; }
+
 .tab-group {
     display: flex;
-    gap: 5px;
-    background: #f0f0f0;
+    background: #f1f3f5;
     padding: 5px;
     border-radius: 12px;
 }
 
 .tab-btn {
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: none;
+    background: transparent;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
     font-weight: 600;
+    color: #7f8c8d;
     transition: 0.3s;
-    color: #666;
-    white-space: nowrap;
-    background: transparent;
 }
 
-.tab-btn.active {
-    background: #4a1d1d;
-    color: white;
-}
+.tab-btn.active { background: #4a1d1d; color: white; }
 
-/* ----------------------------------------------------------- */
-/* 8. Table                                                    */
-/* ----------------------------------------------------------- */
-.form-body {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.form-body::-webkit-scrollbar { width: 6px; }
-.form-body::-webkit-scrollbar-thumb {
-    background: #e0e0e0;
+.search-box {
+    position: relative;
+    background: #f1f3f5;
     border-radius: 10px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-}
-
-thead th {
-    text-align: left;
-    padding: 12px 10px;
-    border-bottom: 2px solid #eee;
-    color: #555;
-    font-size: 12px;
-    text-transform: uppercase;
-}
-
-tbody td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #f5f5f5;
-    font-size: 13px;
-    color: #333;
-}
-
-/* ----------------------------------------------------------- */
-/* 9. Status Pills                                             */
-/* ----------------------------------------------------------- */
-.status-pill {
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 11px;
-    display: inline-block;
-    min-width: 85px;
-    text-align: center;
-}
-
-.status-pill.pending-hr {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.status-pill.approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-pill.rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* ----------------------------------------------------------- */
-/* 10. Actions Column                                          */
-/* ----------------------------------------------------------- */
-.actions-cell {
+    padding: 8px 15px;
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
-.view-link {
-    color: #4a1d1d;
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.view-link:hover { text-decoration: underline; }
-
-.update-link {
-    background: none;
+.search-box input {
     border: none;
-    color: #4a1d1d;
-    font-weight: 600;
-    cursor: pointer;
+    background: transparent;
+    outline: none;
+    padding-left: 10px;
+    color: #2c3e50;
+}
+
+/* ----------------------------------------------------------- */
+/* 6. Table Styling                                            */
+/* ----------------------------------------------------------- */
+.form-body { flex: 1; overflow-y: auto; margin-top: 10px; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+    text-align: left;
+    padding: 15px 12px;
+    border-bottom: 2px solid #edf2f7;
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
     font-size: 13px;
 }
 
-.dropdown {
-    position: relative;
+tr:hover { background-color: #f8fafc; }
+
+/* Status Pills */
+.status-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 11px;
     display: inline-block;
 }
+
+.status-pill.pending-hr { background: #fef3c7; color: #92400e; }
+.status-pill.approved { background: #dcfce7; color: #166534; }
+.status-pill.rejected { background: #fee2e2; color: #991b1b; }
+
+/* Action Links */
+.view-link { color: #3498db; text-decoration: none; font-weight: 600; margin-right: 10px; }
+.update-link { background: none; border: none; color: #4a1d1d; font-weight: 600; cursor: pointer; }
+
+/* ----------------------------------------------------------- */
+/* 7. Dropdown Menu                                            */
+/* ----------------------------------------------------------- */
+.dropdown { position: relative; display: inline-block; }
 
 .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
-    background-color: white;
-    min-width: 110px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border: 1px solid #eee;
-    z-index: 10;
+    background-color: #fff;
+    min-width: 120px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 100;
     border-radius: 8px;
-    padding: 5px 0;
+    overflow: hidden;
 }
 
 .dropdown:hover .dropdown-content { display: block; }
 
 .dropdown-content a {
-    padding: 8px 15px;
-    display: block;
+    color: #333;
+    padding: 10px 16px;
     text-decoration: none;
-    font-size: 0.85rem;
+    display: block;
+    font-size: 13px;
 }
 
-.dropdown-content a:hover { background-color: #f9f9f9; }
-.approve-option { color: green; }
-.reject-option { color: red; }
+.dropdown-content a:hover { background-color: #f1f1f1; }
 
 /* ----------------------------------------------------------- */
-/* 11. Modal Styles                                            */
+/* 8. Notification Toast System (Updated)                      */
+/* ----------------------------------------------------------- */
+.toast-container {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 9999;
+}
+
+.toast {
+    min-width: 300px;
+    padding: 18px 24px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    /* Animation Sequence: Slide in, Stay, Fade out */
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+               fadeOut 0.5s ease-in 2.5s forwards;
+}
+
+.toast.success { background-color: #10b981; border-left: 6px solid #059669; }
+.toast.error { background-color: #ef4444; border-left: 6px solid #dc2626; }
+
+@keyframes slideInRight {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+/* ----------------------------------------------------------- */
+/* 9. Modal Overlay                                            */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
     display: none;
     justify-content: center;
     align-items: center;
@@ -423,228 +339,34 @@ tbody td {
 
 .view-modal-content {
     background: white;
-    width: 950px;
-    max-width: 95%;
+    width: 850px;
+    max-height: 90vh;
     border-radius: 25px;
     padding: 35px;
-    animation: slideUp 0.3s ease-out;
-}
-
-.modal-sm {
-    width: 520px;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 12px;
-    margin-bottom: 25px;
-}
-
-.modal-header h3 {
-    font-size: 1.1rem;
-    color: #1a1a1a;
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 35px;
-}
-
-.info-item {
-    margin-bottom: 18px;
-}
-
-.info-item label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #888;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.info-item p {
-    font-size: 14px;
-    color: #333;
-    line-height: 1.4;
-}
-
-.doc-tab-label {
-    background: #e0e0e0;
-    padding: 8px 15px;
-    border-radius: 10px 10px 0 0;
-    font-weight: 700;
-    font-size: 12px;
-    display: inline-block;
-    border: 1px solid #ddd;
-    border-bottom: none;
-}
-
-.doc-box {
-    border: 1px solid #ddd;
-    border-radius: 0 15px 15px 15px;
-    overflow: hidden;
-}
-
-.doc-header {
-    background: #fff;
-    padding: 10px 15px;
-    font-size: 13px;
-    border-bottom: 1px solid #eee;
-}
-
-.pdf-placeholder {
-    height: 320px;
-    background: #f9f9f9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #bbb;
-}
-
-.pdf-placeholder i {
-    font-size: 50px;
-    margin-bottom: 10px;
-}
-
-#modalStatusContainer {
-    padding: 3px 0;
-    display: block;
+    position: relative;
+    overflow-y: auto;
 }
 
 .modal-footer {
     display: flex;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
 }
 
-.btn-approve {
-    background: #d4edda;
-    color: #155724;
-    border: none;
-    padding: 14px;
+.btn-approve, .btn-reject {
     flex: 1;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.btn-reject {
-    background: #f8d7da;
-    color: #721c24;
-    border: none;
-    padding: 14px;
-    flex: 1;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.modal-close-btn {
-    width: 100%;
     padding: 12px;
-    background: #4a1d1d;
-    color: white;
     border: none;
     border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 15px;
-}
-
-/* ----------------------------------------------------------- */
-/* 12. Position Change Modal Form                              */
-/* ----------------------------------------------------------- */
-.modal-body-form {
-    padding: 5px 0;
-}
-
-.log-request-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px 20px;
-}
-
-.form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.form-field.full-width {
-    grid-column: span 2;
-}
-
-.form-field label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #333;
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: #333;
-    outline: none;
-    background-color: #fafafa;
-    transition: border-color 0.2s;
-}
-
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
-    border-color: #4a1d1d;
-}
-
-.form-field input:disabled {
-    background-color: #f0f0f0;
-    color: #aaa;
-}
-
-.form-field textarea {
-    resize: none;
-}
-
-.pos-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 5px;
-}
-
-.btn-cancel-modal {
-    background: #e0e0e0;
-    border: none;
-    color: #444;
-    padding: 10px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-cancel-modal:hover { background: #d0d0d0; }
-
-.btn-save-modal {
-    background: #4a1d1d;
-    color: white;
-    border: none;
-    padding: 10px 40px;
-    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     transition: 0.2s;
 }
 
-.btn-save-modal:hover { background: #3a1515; }
+.btn-approve { background: #10b981; color: white; }
+.btn-reject { background: #ef4444; color: white; }
+
+.btn-approve:hover { background: #059669; }
+.btn-reject:hover { background: #dc2626; }
