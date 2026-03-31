@@ -17,7 +17,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 2. Main Layout - Centering Content                          */
+/* 2. Main Layout                                              */
 /* ----------------------------------------------------------- */
 .main-content.full-view {
     flex: 1;
@@ -37,37 +37,41 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 3. Header - Centered Title & Left-Aligned Logo              */
+/* 3. Header - Logo & Blue Section Title                       */
 /* ----------------------------------------------------------- */
 .form-header.centered-header {
     background: #ffffff;
-    padding: 20px 60px;
-    border-bottom: 1px solid #eeeeee;
     display: flex; 
+    flex-direction: column; /* Stacks logo over the title bar */
     align-items: center; 
-    justify-content: center; 
     width: 100%;
-    position: relative; 
 }
 
+/* Logo with the requested margin-top */
 .header-logo {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: auto;
     object-fit: contain;
-    position: absolute;
-    left: 60px; 
+    margin-top: 40px; /* Adjust this value to move the logo down */
+    margin-bottom: 20px;
 }
 
+/* The "Blue Circle/Section" equivalent for the title */
 .header-title {
-    font-size: 1.4rem;
-    color: #333;
+    width: 100%;
+    background-color: #003366; /* Deep blue/navy bar */
+    color: #ffffff;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 1.2rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    display: block;
 }
 
 /* ----------------------------------------------------------- */
-/* 4. Panels - Vertical & Horizontal Centering                 */
+/* 4. Form Panels (Centered Content)                           */
 /* ----------------------------------------------------------- */
 .form-body { 
     flex: 1;
@@ -86,35 +90,35 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centers items vertically */
-    align-items: center;     /* Centers items horizontally */
+    justify-content: center; /* Vertical center */
+    align-items: center;     /* Horizontal center */
     padding: 40px;
     background: #ffffff;
 }
 
 .left-panel {
-    border-right: 1px solid #f5f5f5;
+    border-right: 1px solid #f0f0f0;
 }
 
 .section-title {
     width: 100%;
     max-width: 480px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
     color: #5c2b2b;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     text-transform: uppercase;
     border-bottom: 2px solid #f8f8f8;
     padding-bottom: 10px;
 }
 
 /* ----------------------------------------------------------- */
-/* 5. Form Elements Width Control                              */
+/* 5. Inputs & Selects                                         */
 /* ----------------------------------------------------------- */
 .form-group { 
     width: 100%;
     max-width: 480px; 
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
 }
@@ -141,11 +145,10 @@ body {
 .form-group select:focus {
     border-color: #5c2b2b;
     background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(92, 43, 43, 0.05);
 }
 
 /* ----------------------------------------------------------- */
-/* 6. Upload Zone                                              */
+/* 6. File Upload Zone                                         */
 /* ----------------------------------------------------------- */
 .drop-zone {
     width: 100%;
@@ -153,6 +156,7 @@ body {
     border: 2px dashed #cccccc;
     border-radius: 8px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -177,11 +181,15 @@ body {
     color: #444;
 }
 
+.drop-zone-subtext {
+    font-size: 0.75rem;
+    color: #999;
+}
+
 /* ----------------------------------------------------------- */
-/* 7. Footer & Action Buttons                                  */
+/* 7. Footer & Buttons                                         */
 /* ----------------------------------------------------------- */
 .form-footer.aligned-right {
-    background: #ffffff;
     padding: 25px 60px;
     border-top: 1px solid #eeeeee;
     display: flex; 
@@ -197,11 +205,6 @@ body {
     border-radius: 6px; 
     font-weight: 600; 
     cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #e4e4e4;
 }
 
 .btn-save { 
@@ -216,7 +219,7 @@ body {
 }
 
 /* ----------------------------------------------------------- */
-/* 8. Modals & Notifications (Timer Styling Included)           */
+/* 8. Modals                                                   */
 /* ----------------------------------------------------------- */
 .modal-overlay {
     position: fixed;
@@ -226,7 +229,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2000;
+    z-index: 9999;
 }
 
 .modal-content {
@@ -239,33 +242,8 @@ body {
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
 }
 
-/* Countdown Timer Styling */
-#redirect-timer {
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #666;
-    border: 1px solid #eee;
-}
-
-#redirect-timer b {
-    color: #5c2b2b;
-    font-size: 1.1rem;
-}
-
-.success-icon {
-    font-size: 60px;
-    color: #4CAF50;
-    margin-bottom: 20px;
-}
-
-.warning-icon {
-    font-size: 60px;
-    color: #f39c12;
-    margin-bottom: 20px;
-}
+.success-icon { color: #4CAF50; font-size: 60px; margin-bottom: 20px; }
+.warning-icon { color: #f39c12; font-size: 60px; margin-bottom: 20px; }
 
 .btn-ok {
     background: #5c2b2b;
@@ -277,4 +255,14 @@ body {
     cursor: pointer;
     width: 100%;
     margin-top: 20px;
+}
+
+#redirect-timer {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    border: 1px solid #eee;
 }
