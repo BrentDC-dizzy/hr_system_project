@@ -1,3 +1,6 @@
+/* ----------------------------------------------------------- */
+/* 1. Reset & Base Styles                                      */
+/* ----------------------------------------------------------- */
 * {
     margin: 0;
     padding: 0;
@@ -8,12 +11,12 @@
 body {
     height: 100vh;
     width: 100vw;
-    overflow: hidden;
+    overflow: hidden; /* Prevents outer scroll; internal panels will scroll */
     display: flex;
-    background-color: #1a1a1a; /* Fallback */
+    background-color: #1a1a1a;
 }
 
-/* Background */
+/* Blurred Background */
 .background {
     position: fixed;
     inset: 0;
@@ -23,160 +26,199 @@ body {
     z-index: -1;
 }
 
-/* Sidebar - Floating style */
-.sidebar {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    height: calc(100% - 40px);
-    width: 260px;
-    padding: 25px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    z-index: 100;
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar.collapsed {
-    width: 90px;
-}
-
-/* Main Content - Full Container & Centered */
-.main-content {
+/* ----------------------------------------------------------- */
+/* 2. Layout Containers                                        */
+/* ----------------------------------------------------------- */
+.main-content.full-view {
     flex: 1;
     width: 100%;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    transition: all 0.35s ease;
 }
 
-/* Form Card */
-.form-card {
-    background: #ffffff;
+.form-card.transparent-layout {
+    background: transparent;
     width: 100%;
-    max-width: 700px; /* Adjusted for better desktop view */
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    overflow: hidden;
-    animation: fadeIn 0.5s ease-out;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ----------------------------------------------------------- */
+/* 3. Header - Logo & Centered Title                           */
+/* ----------------------------------------------------------- */
+.form-header.centered-header {
+    background: rgba(253, 253, 253, 0.95);
+    padding: 15px 40px;
+    border-bottom: 2px solid #ddd;
+    display: flex; 
+    align-items: center; 
+    width: 100%;
 }
 
 .header-logo {
-  width: 45px;
-    height: 45px;          /* Keep it square to match the icon feel */
-    margin-right: 12px;     /* Space between logo and text */
-    vertical-align: middle; /* Aligns with the middle of the text */
-    object-fit: contain;    /* Prevents stretching */
+    width: 60px; /* Large logo per drawing */
+    height: 60px;
+    margin-right: 20px;
+    object-fit: contain;
 }
 
-/* Form Styling */
-.form-header {
-    background: #fdfdfd;
-    padding: 25px 35px;
-    font-size: 1.4rem;
+.header-title {
+    flex-grow: 1;
+    text-align: center;
+    font-size: 1.6rem;
     color: #333;
-    font-weight: 700;
-    border-bottom: 1px solid #eee;
-    display: flex;          /* Added flexbox */
-    align-items: center;    /* Vertically centers logo and text */
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-.form-body { padding: 35px; }
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin-bottom: 20px;
+/* ----------------------------------------------------------- */
+/* 4. Split Body & Panels                                      */
+/* ----------------------------------------------------------- */
+.form-body { 
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
-.form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+.split-container {
+    flex: 1;
+    display: flex; /* Creates the side-by-side view */
+    width: 100%;
+}
+
+.panel {
+    flex: 1;
+    height: 100%;
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.left-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-right: 2px solid #ddd; /* The vertical line from your drawing */
+}
+
+.right-panel {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* ----------------------------------------------------------- */
+/* 5. Form Elements                                            */
+/* ----------------------------------------------------------- */
+.form-group { 
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
 
 .form-group label {
     font-weight: 700;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
+    font-size: 0.9rem;
     color: #444;
+    margin-bottom: 8px;
 }
 
-.form-group input, .form-group select {
+.form-group input, 
+.form-group select {
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
     transition: border 0.3s;
 }
 
-.form-group input:focus {
-    outline: none;
+.form-group input:focus,
+.form-group select:focus {
     border-color: #5c2b2b;
 }
 
-/* Upload Section */
-.upload-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 5px;
-}
-
-.upload-btn {
-    background: #f0f0f0;
-    color: #333;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    border: 1px solid #ddd;
-}
-
-#file-name {
-    font-style: italic;
-    color: #777;
-    font-size: 0.9rem;
-}
-
-/* Sidebar Inner Logic */
-.logo-wrapper { width: 45px; height: 45px; cursor: pointer; position: relative; }
-.logo { width: 100%; border-radius: 50%; }
-.open-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; color: white; transition: 0.3s; }
-.sidebar.collapsed .logo-wrapper:hover .logo { opacity: 0; }
-.sidebar.collapsed .logo-wrapper:hover .open-icon { opacity: 1; }
-
-.close-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-.sidebar.collapsed .close-btn { display: none; }
-
-.menu { list-style: none; margin-top: 40px; }
-.menu-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    height: 50px;
-    color: white;
-    cursor: pointer;
+/* ----------------------------------------------------------- */
+/* 6. Drag and Drop Zone (CV Upload)                           */
+/* ----------------------------------------------------------- */
+.drop-zone {
+    width: 100%;
+    min-height: 160px;
+    border: 3px dashed #bbb; /* Dashed border from drawing */
     border-radius: 12px;
-    margin-bottom: 8px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 20px;
 }
-.menu-item i { width: 50px; text-align: center; font-size: 18px; }
-.menu-item span { position: absolute; left: 60px; white-space: nowrap; transition: 0.2s; }
-.sidebar.collapsed .menu-item span { opacity: 0; visibility: hidden; }
 
-.menu-item:hover { background: rgba(255,255,255,0.1); }
-.menu-item.active { background: rgba(255,255,255,0.2); }
+.drop-zone.over {
+    border-color: #5c2b2b;
+    background: #fef4f4;
+}
 
-/* Footer */
-.form-footer { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
-.btn-cancel { background: #eee; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-.btn-save { background: #5c2b2b; color: white; border: none; padding: 12px 50px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+.drop-zone-content i {
+    font-size: 2.5rem;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.drop-zone-text {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.drop-zone-subtext {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.drop-zone-filename {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #5c2b2b;
+}
+
+/* ----------------------------------------------------------- */
+/* 7. Footer - Aligned Bottom Right                            */
+/* ----------------------------------------------------------- */
+.form-footer.aligned-right {
+    background: rgba(253, 253, 253, 0.98);
+    padding: 20px 60px;
+    border-top: 2px solid #ddd;
+    display: flex; 
+    justify-content: flex-end; /* Pushes buttons to bottom right */
+    gap: 15px;
+}
+
+.btn-cancel { 
+    background: #e0e0e0; 
+    border: none;
+    color: #333;
+    padding: 12px 30px; 
+    border-radius: 8px; 
+    font-weight: 600; 
+    cursor: pointer;
+}
+
+.btn-save { 
+    background: #5c2b2b; /* Deep red/brown theme */
+    color: white; 
+    border: none; 
+    padding: 12px 50px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-save:hover {
+    background: #4a2222;
+}

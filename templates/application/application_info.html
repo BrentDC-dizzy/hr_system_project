@@ -4,83 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Form - New Employee</title>
+    <!-- Favicon -->
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="../../static/css/application/application_info.css">
+    <!-- Font Awesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 
+    <!-- Blurred Background Image -->
     <div class="background"></div>
 
-    <main class="main-content">
-        <div class="form-card">
-            <div class="form-header">
-             <img src="../../static/img/general/uph.png" alt="Logo" class="header-logo">
-                Applicant Information
+    <main class="main-content full-view">
+        <div class="form-card transparent-layout">
+            
+            <!-- Header with Logo and Centered Title -->
+            <div class="form-header centered-header">
+                <img src="../../static/img/general/uph.png" alt="Logo" class="header-logo">
+                <span class="header-title">Applicant Information</span>
             </div>
+            
             <form id="applicantForm" class="form-body">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" placeholder="Enter first name" required>
+                <!-- Vertical Split Container -->
+                <div class="split-container">
+                    
+                    <!-- Left Panel: Contact Details -->
+                    <div class="panel left-panel">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" placeholder="Last Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" placeholder="Phone Number">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" placeholder="Enter last name" required>
+
+                    <!-- Right Panel: Application Details & Upload -->
+                    <div class="panel right-panel">
+                        <div class="form-group">
+                            <label>Department Applying To</label>
+                            <select required>
+                                <option value="" disabled selected>Select department...</option>
+                                <option>Human Resources</option>
+                                <option>Information Technology</option>
+                                <option>Marketing</option>
+                                <option>Finance</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Position Applying For</label>
+                            <select required>
+                                <option value="" disabled selected>Select position...</option>
+                                <option>Manager</option>
+                                <option>Staff</option>
+                                <option>Intern</option>
+                            </select>
+                        </div>
+
+                        <!-- Drag and Drop Upload Zone -->
+                        <div class="form-group drop-zone-group">
+                            <label>Tell us about yourself (CV)</label>
+                            <div class="drop-zone" id="drop-zone">
+                                <input type="file" id="cv-upload" accept=".pdf,.jpg,.png" hidden>
+                                <div class="drop-zone-content">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <p class="drop-zone-text">Drag and Drop or Browse Files</p>
+                                    <p class="drop-zone-subtext">Pdf, Jpg, PNG - Max 10mb</p>
+                                    <span id="file-name" class="drop-zone-filename">No file chosen</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="Enter a valid email address" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" placeholder="Enter phone number">
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Department Applying To</label>
-                    <select required>
-                        <option value="" disabled selected>Select department...</option>
-                        <option>Human Resources</option>
-                        <option>Information Technology</option>
-                        <option>Marketing</option>
-                        <option>Finance</option>
-                    </select>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Position Applying For</label>
-                    <select required>
-                        <option value="" disabled selected>Select position...</option>
-                        <option>Manager</option>
-                        <option>Staff</option>
-                        <option>Intern</option>
-                    </select>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Tell us about yourself (CV)</label>
-                    <div class="upload-container">
-                        <label for="cv-upload" class="upload-btn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload CV
-                        </label>
-                        <input type="file" id="cv-upload" accept=".pdf" hidden>
-                        <span id="file-name">No file chosen (PDF only)</span>
-                    </div>
-                </div>
-
-                <div class="form-footer">
+                <!-- Footer with Action Buttons aligned to the Right -->
+                <div class="form-footer aligned-right">
                     <button type="button" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-save">Save</button>
+                    <button type="submit" class="btn-save">Submit</button>
                 </div>
             </form>
         </div>
     </main>
 
+    <!-- External JavaScript -->
     <script src="../../static/js/application employee/application_info.js"></script>
 </body>
 </html>
