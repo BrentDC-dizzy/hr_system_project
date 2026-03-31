@@ -73,6 +73,14 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+.header-logo {
+    width: 30px;            /* Adjust size to match your preference */
+    height: 30px;           /* Keep it square to match the icon feel */
+    margin-right: 12px;     /* Space between logo and text */
+    vertical-align: middle; /* Aligns with the middle of the text */
+    object-fit: contain;    /* Prevents stretching */
+}
+
 /* Form Styling */
 .form-header {
     background: #fdfdfd;
@@ -81,6 +89,8 @@ body {
     color: #333;
     font-weight: 700;
     border-bottom: 1px solid #eee;
+    display: flex;          /* Added flexbox */
+    align-items: center;    /* Vertically centers logo and text */
 }
 
 .form-body { padding: 35px; }
