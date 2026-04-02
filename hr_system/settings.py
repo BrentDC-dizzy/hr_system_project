@@ -110,3 +110,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'admin_dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Custom setting for failed login attempts
+MAX_FAILED_LOGIN_ATTEMPTS = 5

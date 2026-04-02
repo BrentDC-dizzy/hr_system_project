@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management | Employee Portal</title>
-    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
-    <link rel="stylesheet" href="../../static/css/application/application_info.css">
-    <link rel="stylesheet" href="../../static/css/admin/admin.css">
+    {% load static %} {# Load static files #}
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
+    <link rel="stylesheet" href="{% static 'css/application/application_info.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin/admin.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         html, body {
@@ -58,6 +59,36 @@
             color: var(--admin-text);
             font-size: 1.5rem;
         }
+
+        /* Styles for the alert/toast messages */
+        #toastContainer {
+            position: fixed;
+            top: 32px;
+            right: 32px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 420px;
+            width: min(420px, calc(100vw - 40px));
+            pointer-events: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: white;
+            pointer-events: auto;
+        }
+
+        .alert.info { background-color: #2196F3; }
+        .alert.success { background-color: #4CAF50; }
+        .alert.danger { background-color: #f44336; }
+        .alert.warning { background-color: #ff9800; }
     </style>
 </head>
 <body>
@@ -67,21 +98,26 @@
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
+                <img src="{% static 'img/general/uph.png' %}" class="logo" alt="Logo">
                 <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
             </div>
             <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
         </div>
 
         <ul class="menu">
-            <li><a href="dashboard.html" class="menu-item"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
-            <li><a href="user_management.html" class="menu-item active"><i class="fas fa-users"></i> <span>User Management</span></a></li>
-            <li><a href="department_management.html" class="menu-item"><i class="fas fa-sitemap"></i> <span>Department Management</span></a></li>
-            <li><a href="audit_trails.html" class="menu-item"><i class="fas fa-history"></i> <span>Audit Trails</span></a></li>
+            <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="{% url 'admin_dashboard' %}" class="menu-item active"><i class="fas fa-users"></i> <span>User Management</span></a></li> {# Link to admin_dashboard for user list #}
+            <li><a href="#" class="menu-item"><i class="fas fa-sitemap"></i> <span>Department Management</span></a></li>
+            <li><a href="#" class="menu-item"><i class="fas fa-history"></i> <span>Audit Trails</span></a></li>
         </ul>
 
-        <div class="bottom-section">
-            <a href="../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+        <div class="bottom-section"> 
+            <form action="{% url 'logout' %}" method="post" id="logout-form" style="display:none;">
+                {% csrf_token %}
+            </form>
+            <a href="#" class="menu-item logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fas fa-sign-out-alt"></i> <span>Log Out</span>
+            </a> 
         </div>
     </div>
 
@@ -99,28 +135,28 @@
                 <div class="filters-container">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="userSearch" placeholder="Search by name, email, or ID...">
+                        <input type="text" id="userSearch" placeholder="Search by name, email, or ID..." value="{{ current_search }}">
                     </div>
                     <select id="roleFilter" class="filter-select">
                         <option value="">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="hr">HR</option>
-                        <option value="head">Department Head</option>
-                        <option value="employee">Employee</option>
+                        {% for role_value, role_label in roles %}
+                            <option value="{{ role_value }}" {% if current_role_filter == role_value %}selected{% endif %}>{{ role_label }}</option>
+                        {% endfor %}
                     </select>
                     <select id="statusFilter" class="filter-select">
                         <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                        <option value="active" {% if current_status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if current_status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                        <option value="locked" {% if current_status_filter == 'locked' %}selected{% endif %}>Locked</option>
                     </select>
                     <select id="departmentFilter" class="filter-select">
                         <option value="">All Departments</option>
-                        <option value="1">Human Resources</option>
-                        <option value="2">Information Technology</option>
-                        <option value="3">Finance</option>
-                        <option value="4">Operations</option>
-                        <option value="5">Sales & Marketing</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}" {% if current_department_filter == department.id %}selected{% endif %}>{{ department.name }}</option>
+                        {% endfor %}
                     </select>
+                    <button class="btn btn-secondary" id="applyFiltersBtn">Apply Filters</button>
+                    <button class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
                 </div>
 
                 <div class="table-container">
@@ -139,238 +175,60 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="user-row" data-user-id="1">
+                            {% for user in users %}
+                            <tr class="user-row" data-user-id="{{ user.id }}">
                                 <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#1</td>
+                                <td>#{{ user.id }}</td>
                                 <td>
                                     <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="John Doe" class="user-avatar">
-                                        <span>John Doe</span>
+                                        <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}{% static 'img/sample-profile-pic.jfif' %}{% endif %}" alt="{{ user.get_full_name }}" class="user-avatar">
+                                        <span>{{ user.get_full_name }}</span>
                                     </div>
                                 </td>
-                                <td>john.doe@company.com</td>
-                                <td><span class="role-badge role-admin">Admin</span></td>
-                                <td>Information Technology</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Jan 15, 2024</td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="role-badge role-{{ user.role|lower }}">{{ user.get_role_display }}</span></td>
+                                <td>{{ user.department.name|default:"N/A" }}</td>
+                                <td>
+                                    {% if user.is_locked %}
+                                        <span class="status-badge locked">Locked</span>
+                                    {% elif user.is_active %}
+                                        <span class="status-badge active">Active</span>
+                                    {% else %}
+                                        <span class="status-badge inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
                                 <td>
                                     <div class="action-dropdown">
                                         <button class="action-btn" onclick="toggleDropdown(this)">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="1"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="1"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="1"><i class="fas fa-key"></i> Reset Password</a>
+                                            <a href="#" class="dropdown-item edit-user" data-user-id="{{ user.id }}"><i class="fas fa-edit"></i> Edit</a>
+                                            <a href="#" class="dropdown-item assign-role" data-user-id="{{ user.id }}" data-user-name="{{ user.get_full_name }}" data-current-role="{{ user.role }}" data-current-department="{{ user.department.id }}"><i class="fas fa-user-tie"></i> Assign Role</a>
+                                            <a href="#" class="dropdown-item reset-password" data-user-id="{{ user.id }}" data-user-name="{{ user.get_full_name }}"><i class="fas fa-key"></i> Reset Password</a>
                                             <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="1"><i class="fas fa-trash"></i> Delete</a>
+                                            {% if user.is_active %}
+                                                <a href="#" class="dropdown-item deactivate-user" data-user-id="{{ user.id }}"><i class="fas fa-user-slash"></i> Deactivate</a>
+                                            {% else %}
+                                                <a href="#" class="dropdown-item activate-user" data-user-id="{{ user.id }}"><i class="fas fa-user-check"></i> Activate</a>
+                                            {% endif %}
+                                            {% if user.is_locked %}
+                                                <a href="#" class="dropdown-item unlock-user" data-user-id="{{ user.id }}"><i class="fas fa-unlock"></i> Unlock Account</a>
+                                            {% else %}
+                                                <a href="#" class="dropdown-item lock-user" data-user-id="{{ user.id }}"><i class="fas fa-lock"></i> Lock Account</a>
+                                            {% endif %}
+                                            <hr>
+                                            <a href="#" class="dropdown-item delete-user" data-user-id="{{ user.id }}"><i class="fas fa-trash"></i> Delete</a>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="user-row" data-user-id="2">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#2</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Jane Smith" class="user-avatar">
-                                        <span>Jane Smith</span>
-                                    </div>
-                                </td>
-                                <td>jane.smith@company.com</td>
-                                <td><span class="role-badge role-hr">HR</span></td>
-                                <td>Human Resources</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Jan 20, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="2"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="2"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="2"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="2"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9">No users found.</td>
                             </tr>
-                            <tr class="user-row" data-user-id="3">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#3</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Michael Brown" class="user-avatar">
-                                        <span>Michael Brown</span>
-                                    </div>
-                                </td>
-                                <td>michael.brown@company.com</td>
-                                <td><span class="role-badge role-head">Department Head</span></td>
-                                <td>Information Technology</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Feb 01, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="3"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="3"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="3"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="3"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="user-row" data-user-id="4">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#4</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Emily Davis" class="user-avatar">
-                                        <span>Emily Davis</span>
-                                    </div>
-                                </td>
-                                <td>emily.davis@company.com</td>
-                                <td><span class="role-badge role-employee">Employee</span></td>
-                                <td>Finance</td>
-                                <td><span class="status-badge inactive">Inactive</span></td>
-                                <td>Feb 10, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="4"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="4"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="4"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="4"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="user-row" data-user-id="5">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#5</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Carlos Ramirez" class="user-avatar">
-                                        <span>Carlos Ramirez</span>
-                                    </div>
-                                </td>
-                                <td>carlos.ramirez@company.com</td>
-                                <td><span class="role-badge role-employee">Employee</span></td>
-                                <td>Operations</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Feb 18, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="5"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="5"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="5"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="5"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="user-row" data-user-id="6">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#6</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Priya Patel" class="user-avatar">
-                                        <span>Priya Patel</span>
-                                    </div>
-                                </td>
-                                <td>priya.patel@company.com</td>
-                                <td><span class="role-badge role-head">Department Head</span></td>
-                                <td>Sales &amp; Marketing</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Mar 02, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="6"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="6"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="6"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="6"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="user-row" data-user-id="7">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#7</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Nathan Lee" class="user-avatar">
-                                        <span>Nathan Lee</span>
-                                    </div>
-                                </td>
-                                <td>nathan.lee@company.com</td>
-                                <td><span class="role-badge role-hr">HR</span></td>
-                                <td>Human Resources</td>
-                                <td><span class="status-badge inactive">Inactive</span></td>
-                                <td>Mar 10, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="7"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="7"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="7"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="7"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="user-row" data-user-id="8">
-                                <td><input type="checkbox" class="user-checkbox"></td>
-                                <td>#8</td>
-                                <td>
-                                    <div class="user-cell">
-                                        <img src="../../static/img/sample-profile-pic.jfif" alt="Olivia Turner" class="user-avatar">
-                                        <span>Olivia Turner</span>
-                                    </div>
-                                </td>
-                                <td>olivia.turner@company.com</td>
-                                <td><span class="role-badge role-employee">Employee</span></td>
-                                <td>Information Technology</td>
-                                <td><span class="status-badge active">Active</span></td>
-                                <td>Mar 18, 2024</td>
-                                <td>
-                                    <div class="action-dropdown">
-                                        <button class="action-btn" onclick="toggleDropdown(this)">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a href="#" class="dropdown-item edit-user" data-user-id="8"><i class="fas fa-edit"></i> Edit</a>
-                                            <a href="#" class="dropdown-item assign-role" data-user-id="8"><i class="fas fa-user-tie"></i> Assign Role</a>
-                                            <a href="#" class="dropdown-item reset-password" data-user-id="8"><i class="fas fa-key"></i> Reset Password</a>
-                                            <hr>
-                                            <a href="#" class="dropdown-item delete-user" data-user-id="8"><i class="fas fa-trash"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -389,6 +247,8 @@
                     <span id="selectedCount">0 selected</span>
                     <button class="btn btn-secondary" id="bulkDeactivate">Deactivate Selected</button>
                     <button class="btn btn-primary" id="bulkActivate">Activate Selected</button>
+                    <button class="btn btn-warning" id="bulkLock">Lock Selected</button>
+                    <button class="btn btn-info" id="bulkUnlock">Unlock Selected</button>
                     <button class="btn btn-danger" id="bulkDelete">Delete Selected</button>
                 </div>
             </div>
@@ -399,7 +259,9 @@
         <div class="modal-content">
             <span class="close" onclick="closeUserModal()">&times;</span>
             <h2 id="modalTitle">Create New User</h2>
-            <form id="userForm">
+            <form id="userForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="userIdForEdit" name="user_id">
                 <div class="form-group">
                     <label>First Name *</label>
                     <input type="text" id="firstName" required>
@@ -413,22 +275,38 @@
                     <input type="email" id="email" required>
                 </div>
                 <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
                     <label>Password *</label>
                     <input type="password" id="password" minlength="8">
                 </div>
                 <div class="form-group">
                     <label>Confirm Password *</label>
-                    <input type="password" id="confirmPassword" minlength="8">
+                    <input type="password" id="confirmPassword" name="confirm_password" minlength="8">
                 </div>
                 <div class="form-group">
                     <label>Role *</label>
-                    <select id="role" required>
+                    <select id="role" name="role" required>
                         <option value="">Select Role</option>
-                        <option value="hr">HR</option>
-                        <option value="head">Department Head</option>
-                        <option value="admin">Admin</option>
-                        <option value="employee">Employee</option>
+                        {% for role_value, role_label in roles %}
+                            <option value="{{ role_value }}">{{ role_label }}</option>
+                        {% endfor %}
                     </select>
+                </div>
+                <div class="form-group" id="departmentSelectGroupUserModal" style="display: none;">
+                    <label>Department *</label>
+                    <select id="departmentUserModal" name="department">
+                        <option value="">Select Department</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}">{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <input type="file" id="profilePic" name="profile_pic" accept="image/*">
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save User</button>
@@ -443,21 +321,21 @@
             <span class="close" onclick="closeAssignRoleModal()">&times;</span>
             <h2>Assign Role</h2>
             <p id="userNameDisplay"></p>
-            <form id="assignRoleForm">
+            <form id="assignRoleForm" method="post">
+                {% csrf_token %}
                 <input type="hidden" id="assignRoleUserId">
                 <div class="form-group">
                     <label>New Role *</label>
-                    <select id="newRole" required>
+                    <select id="newRole" name="role" required>
                         <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
-                        <option value="hr">HR</option>
-                        <option value="head">Department Head</option>
-                        <option value="employee">Employee</option>
+                        {% for role_value, role_label in roles %}
+                            <option value="{{ role_value }}">{{ role_label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group" id="departmentSelectGroup" style="display: none;">
                     <label>Department *</label>
-                    <select id="newDepartment">
+                    <select id="newDepartment" name="department">
                         <option value="">Select Department</option>
                         <option value="1">Human Resources</option>
                         <option value="2">Information Technology</option>
@@ -479,15 +357,16 @@
             <span class="close" onclick="closeResetPasswordModal()">&times;</span>
             <h2>Reset Password</h2>
             <p id="resetUserDisplay"></p>
-            <form id="resetPasswordForm">
+            <form id="resetPasswordForm" method="post">
+                {% csrf_token %}
                 <input type="hidden" id="resetUserId">
                 <div class="form-group">
                     <label>New Password *</label>
-                    <input type="password" id="newPassword" minlength="8" required>
+                    <input type="password" id="newPassword" name="new_password1" minlength="8" required>
                 </div>
                 <div class="form-group">
                     <label>Confirm New Password *</label>
-                    <input type="password" id="confirmNewPassword" minlength="8" required>
+                    <input type="password" id="confirmNewPassword" name="new_password2" minlength="8" required>
                 </div>
                 <div class="form-group password-strength">
                     Strength: <span id="strengthIndicator" class="weak">Weak</span>
@@ -512,7 +391,7 @@
         </div>
     </div>
 
-    <script src="../../static/js/admin/sidebar.js"></script>
-    <script src="../../static/js/admin/user_management.js"></script>
+    <script src="{% static 'js/admin/sidebar.js' %}"></script>
+    <script src="{% static 'js/admin/user_management.js' %}"></script>
 </body>
 </html>
