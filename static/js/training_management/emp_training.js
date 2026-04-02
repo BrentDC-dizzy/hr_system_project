@@ -6,6 +6,11 @@ const modalOverlay = document.getElementById("modalOverlay");
 const modalBox = document.getElementById("modalBox");
 const btnCloseModal = document.getElementById("btnCloseModal");
 
+// NEW: Elements for Registration logic
+const btnRegisterModal = document.querySelector(".btn-register-modal");
+const myTrainingsList = document.getElementById("myTrainingsList");
+let currentlySelectedCard = null; // Tracks which card is open in the modal
+
 // Sidebar: close button
 closeBtn.addEventListener("click", () => {
     sidebar.classList.add("collapsed");
@@ -29,14 +34,57 @@ menuItems.forEach(item => {
     });
 });
 
-// Training cards: open modal on card click, but not on register button
+// --- REGISTRATION LOGIC ---
+
+function registerTraining(card) {
+    // Prevent double registration
+    if (card.classList.contains("is-registered")) return;
+
+    const data = card.dataset;
+    const cardBtn = card.querySelector(".register-btn");
+
+    // 1. Update Card UI (Green border and Button change)
+    card.classList.add("is-registered");
+    if (cardBtn) {
+        cardBtn.classList.add("registered");
+        cardBtn.innerHTML = 'Registered <i class="fas fa-check"></i>';
+    }
+
+    // 2. Update Modal Button UI
+    btnRegisterModal.classList.add("registered");
+    btnRegisterModal.innerText = "Registered";
+
+    // 3. Add to "My Trainings" Sidebar List
+    const trainingItem = document.createElement("div");
+    trainingItem.className = "my-training-item";
+    trainingItem.innerHTML = `
+        <div class="t-name">${data.title}</div>
+        <div class="t-date">${data.date}</div>
+        <span class="status-badge registered">Registered</span>
+    `;
+    myTrainingsList.appendChild(trainingItem);
+}
+
+// Training cards: handle click
 document.querySelectorAll(".training-card").forEach(card => {
     card.addEventListener("click", (e) => {
-        if (e.target.classList.contains("register-btn")) return;
+        // If clicking the register button directly
+        if (e.target.classList.contains("register-btn")) {
+            registerTraining(card);
+            return;
+        }
 
-        const data = card.dataset;
-        openModal(data);
+        // Open modal and store reference to this card
+        currentlySelectedCard = card;
+        openModal(card.dataset);
     });
+});
+
+// Modal Register Button: handle click
+btnRegisterModal.addEventListener("click", () => {
+    if (currentlySelectedCard) {
+        registerTraining(currentlySelectedCard);
+    }
 });
 
 // Open modal and populate with card data
@@ -51,17 +99,28 @@ function openModal(data) {
     document.getElementById("modal-contact").textContent = data.contact;
     document.getElementById("modal-slots").textContent = data.slots;
 
+    // Check if the card is already registered to update modal button style
+    if (currentlySelectedCard.classList.contains("is-registered")) {
+        btnRegisterModal.classList.add("registered");
+        btnRegisterModal.innerText = "Registered";
+    } else {
+        btnRegisterModal.classList.remove("registered");
+        btnRegisterModal.innerText = "Register";
+    }
+
     modalOverlay.classList.add("active");
 }
 
 // Close modal via Close button
 btnCloseModal.addEventListener("click", () => {
     modalOverlay.classList.remove("active");
+    currentlySelectedCard = null;
 });
 
 // Close modal by clicking outside (on overlay)
 modalOverlay.addEventListener("click", (e) => {
     if (e.target === modalOverlay) {
         modalOverlay.classList.remove("active");
+        currentlySelectedCard = null;
     }
 });
