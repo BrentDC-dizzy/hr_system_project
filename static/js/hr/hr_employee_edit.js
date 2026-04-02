@@ -1,10 +1,10 @@
 const sidebar = document.getElementById('sidebar');
 const logoToggle = document.getElementById('logoToggle');
 const closeBtn = document.getElementById('closeBtn');
-const deleteUserBtn = document.getElementById('deleteUserBtn'); // Reference to maroon button
+const deleteUserBtn = document.getElementById('deleteUserBtn');
 const menuItems = document.querySelectorAll('.menu-item');
 
-// --- FIX: This loop puts the text into the tooltips so they aren't black/empty ---
+// --- Sidebar Tooltip Initialization ---
 menuItems.forEach(item => {
     const span = item.querySelector('span');
     if (span) {
@@ -12,6 +12,7 @@ menuItems.forEach(item => {
     }
 });
 
+// --- Sidebar Toggle Logic ---
 if (logoToggle) {
     logoToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
 }
@@ -19,7 +20,7 @@ if (closeBtn) {
     closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
 }
 
-// --- NEW: Delete User Logic ---
+// --- Delete User functionality ---
 if (deleteUserBtn) {
     deleteUserBtn.addEventListener('click', function() {
         Swal.fire({
@@ -44,7 +45,6 @@ if (deleteUserBtn) {
                     icon: 'success',
                     confirmButtonColor: '#4a1d1d'
                 }).then(() => {
-                    // Redirect to the list after deletion
                     window.location.href = 'hr_employeelist.html';
                 });
             }
@@ -52,6 +52,7 @@ if (deleteUserBtn) {
     });
 }
 
+// --- Update Profile Logic ---
 function updateHRProfile() {
     const Toast = Swal.mixin({
         toast: true,
@@ -78,6 +79,7 @@ function updateHRProfile() {
     });
 }
 
+// --- Cancel Edit Logic ---
 function cancelHREdit() {
     Swal.fire({
         title: 'Discard changes?',
@@ -99,4 +101,41 @@ function cancelHREdit() {
             window.location.href = 'hr_employee_view.html';
         }
     });
+}
+
+// --- Add Event Modal Logic ---
+function openEventModal() {
+    const modal = document.getElementById('eventModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeEventModal() {
+    const modal = document.getElementById('eventModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// --- File Upload Logic (View/Download Actual File) ---
+function triggerFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.click();
+}
+
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileURL = URL.createObjectURL(file); // Direct link to the file data
+        const display = document.getElementById('fileDisplayArea');
+
+        if (display) {
+            display.innerHTML = `
+                <div class="file-row" style="display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                    <span><i class="fas fa-file"></i> ${file.name}</span>
+                    <div class="file-actions">
+                        <a href="${fileURL}" target="_blank" style="margin-left: 10px; color: #4a1d1d;"><i class="fas fa-eye" title="View"></i></a>
+                        <a href="${fileURL}" download="${file.name}" style="margin-left: 10px; color: #4a1d1d;"><i class="fas fa-download" title="Download"></i></a>
+                    </div>
+                </div>
+            `;
+        }
+    }
 }
