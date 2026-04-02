@@ -75,9 +75,59 @@ let appData = [
     }
 ];
 
+// ── Position Change Request Data ──────────────────────────────────────
+let positionChangeData = [];
+
+// Mock employee lookup — simulates auto-fill from a database
+const employeeDirectory = {
+    'dela cruz, juan':   { id: 'EMP-001', position: 'Instructor',         dept: 'CCS' },
+    'santos, maria':     { id: 'EMP-002', position: 'Professor',           dept: 'CBA' },
+    'reyes, ricardo':    { id: 'EMP-003', position: 'Registrar',           dept: 'COE' },
+    'gomez, patricia':   { id: 'EMP-004', position: 'Assistant Professor', dept: 'CAS' },
+    'torres, miguel':    { id: 'EMP-005', position: 'Clinical Instructor', dept: 'CON' },
+    'johnson, alice':    { id: 'EMP-006', position: 'Senior Instructor',   dept: 'CAS' }
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────
 function isFinalStatus(status) {
     return status === 'approved' || status === 'rejected';
+}
+
+function resetPositionForm() {
+    document.getElementById('pcEmpName').value       = '';
+    document.getElementById('pcEmpId').value         = '';
+    document.getElementById('pcCurrentPos').value    = '';
+    document.getElementById('pcDept').value          = '';
+    document.getElementById('pcRequestedPos').value  = '';
+    document.getElementById('pcEffectiveDate').value = '';
+    document.getElementById('pcReason').value        = '';
+
+    // Clear validation highlights
+    ['pcEmpName', 'pcRequestedPos', 'pcEffectiveDate', 'pcReason'].forEach(function (id) {
+        document.getElementById(id).style.borderColor = '';
+    });
+}
+
+function autoFillEmployee(name) {
+    const key    = name.trim().toLowerCase();
+    const emp    = employeeDirectory[key];
+    const idEl   = document.getElementById('pcEmpId');
+    const posEl  = document.getElementById('pcCurrentPos');
+    const deptEl = document.getElementById('pcDept');
+
+    if (emp) {
+        idEl.value   = emp.id;
+        posEl.value  = emp.position;
+        deptEl.value = emp.dept;
+    } else {
+        idEl.value   = '';
+        posEl.value  = '';
+        deptEl.value = '';
+    }
+}
+
+function generatePCRId() {
+    return 'PCR-' + String(positionChangeData.length + 1).padStart(3, '0');
 }
 
 // ── Toast System ──────────────────────────────────────────────────────
@@ -281,6 +331,79 @@ document.addEventListener('DOMContentLoaded', function () {
         posModal.style.display = 'flex';
     });
 
+    // Auto-fill employee details as user types name
+    document.getElementById('pcEmpName').addEventListener('blur', function () {
+        autoFillEmployee(this.value);
+    });
+
+    // Save position change request
+    document.getElementById('saveRequest').addEventListener('click', function () {
+        var empName      = document.getElementById('pcEmpName').value.trim();
+        var empId        = document.getElementById('pcEmpId').value.trim();
+        var requestedPos = document.getElementById('pcRequestedPos').value;
+        var effectDate   = document.getElementById('pcEffectiveDate').value;
+        var reason       = document.getElementById('pcReason').value.trim();
+
+        // Validation — highlight empty required fields
+        var valid = true;
+        [
+            { id: 'pcEmpName',       val: empName      },
+            { id: 'pcRequestedPos',  val: requestedPos },
+            { id: 'pcEffectiveDate', val: effectDate   },
+            { id: 'pcReason',        val: reason       }
+        ].forEach(function (field) {
+            var el = document.getElementById(field.id);
+            if (!field.val) {
+                el.style.borderColor = '#dc3545';
+                valid = false;
+            } else {
+                el.style.borderColor = '';
+            }
+        });
+
+        if (!valid) {
+            showToast('info', 'Incomplete Form', 'Please fill in all required fields.');
+            return;
+        }
+
+        // Build new record
+        var currentPos = document.getElementById('pcCurrentPos').value.trim() || 'N/A';
+        var dept       = document.getElementById('pcDept').value.trim()       || 'N/A';
+
+        var newEntry = {
+            id:          generatePCRId(),
+            name:        empName,
+            empId:       empId || 'N/A',
+            dept:        dept,
+            position:    currentPos,
+            requestedPos: requestedPos,
+            effectiveDate: effectDate,
+            reason:      reason,
+            submitted:   new Date().toLocaleDateString(),
+            progress:    'Stage 1 of 3',
+            status:      'pending-hr',
+            statusLabel: 'Pending - HR Evaluator',
+            reviewedBy:  '---',
+            remarks:     'Position change request logged by ' + hrName + '.',
+            fileName:    'PCR_' + (positionChangeData.length + 1) + '.pdf'
+        };
+
+        positionChangeData.push(newEntry);
+
+        // Also push into main appData so it shows in the table
+        appData.push(newEntry);
+
+        // Close modal, reset form, switch back to New Employee tab
+        posModal.style.display = 'none';
+        resetPositionForm();
+        tabNew.classList.add('active');
+        tabPosition.classList.remove('active');
+        renderTable('Active');
+
+        showToast('info', 'Request Saved',
+            'Position change request for ' + empName + ' has been logged successfully.');
+    });
+
     // Modal approve / reject buttons
     document.getElementById('modalApproveBtn').addEventListener('click', function () {
         processApp(activeAppId, 'Approved');
@@ -295,6 +418,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cancel position-change modal
     document.getElementById('cancelRequest').addEventListener('click', function () {
         posModal.style.display = 'none';
+        resetPositionForm();
         tabNew.classList.add('active');
         tabPosition.classList.remove('active');
         renderTable('Active');
@@ -307,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (e.target === posModal) {
             posModal.style.display = 'none';
+            resetPositionForm();
             tabNew.classList.add('active');
             tabPosition.classList.remove('active');
             renderTable('Active');
@@ -318,6 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Escape') {
             closeViewModal();
             posModal.style.display = 'none';
+            resetPositionForm();
             tabNew.classList.add('active');
             tabPosition.classList.remove('active');
             renderTable('Active');

@@ -630,6 +630,20 @@ tbody td {
     resize: none;
 }
 
+/* Validation error highlight */
+.form-group input.field-error,
+.form-group select.field-error,
+.form-group textarea.field-error {
+    border-color: #dc3545;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-4px); }
+    75%       { transform: translateX(4px); }
+}
+
 .action-btns {
     display: flex;
     justify-content: flex-end;
