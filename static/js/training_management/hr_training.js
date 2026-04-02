@@ -24,17 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     
 
-    // --- Sidebar Toggle ---
+    // --- Sidebar: collapse / expand ────────────────────────────────────────
     closeBtn.addEventListener("click", () => {
         sidebar.classList.add("collapsed");
-        mainContent.style.marginLeft = "110px";
     });
 
     logoToggle.addEventListener("click", () => {
-        if (sidebar.classList.contains("collapsed")) {
-            sidebar.classList.remove("collapsed");
-            mainContent.style.marginLeft = "340px";
-        }
+        sidebar.classList.toggle("collapsed");
     });
 
     // --- Sidebar: tooltip data-text + active state ─────────────────────────
