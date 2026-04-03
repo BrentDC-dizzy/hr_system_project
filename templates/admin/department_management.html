@@ -232,12 +232,20 @@
                                 <button class="action-btn" onclick="toggleCardDropdown(this)">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
-                                <div class="dropdown-menu">
-                                    <a href="#" class="dropdown-item edit-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-edit"></i> Edit</a>
-                                    <a href="#" class="dropdown-item assign-head" data-dept-id="{{ dept.id }}"><i class="fas fa-user-tie"></i> Assign Head</a>
-                                    <hr>
-                                    <a href="#" class="dropdown-item delete-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-ban"></i> Deactivate</a>
-                                </div>
+                               <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item edit-dept" data-dept-id="{{ dept.id }}"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="#" class="dropdown-item assign-head" data-dept-id="{{ dept.id }}" data-dept-name="{{ dept.name }}"><i class="fas fa-user-tie"></i> Assign Head</a>
+                        <hr>
+                        {% if dept.is_active %}
+                            <a href="#" class="dropdown-item deactivate-dept" data-dept-id="{{ dept.id }}" data-action="deactivate">
+                                <i class="fas fa-ban"></i> Deactivate
+                            </a>
+                        {% else %}
+                            <a href="#" class="dropdown-item activate-dept" data-dept-id="{{ dept.id }}" data-action="activate">
+                                <i class="fas fa-check-circle"></i> Activate
+                            </a>
+                        {% endif %}
+                    </div>
                             </div>
                             <div class="card-body">
                                 <div class="dept-info">
@@ -324,30 +332,37 @@
     </div>
 
     <div id="departmentModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="deptModalTitle">Add Department</h2>
+    <div class="modal-content">
+        <span class="close" onclick="closeDepartmentModal()">&times;</span>
+        <h2 id="deptModalTitle">Add Department</h2>
 
-            <form id="departmentForm">
-                {% csrf_token %}
-                <input type="hidden" id="deptId">
+        <form id="departmentForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="deptId" name="dept_id">
 
-                <div class="form-group">
-                    <label>Department Name *</label>
-                    <input type="text" id="deptName" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label>College (If applicable)</label>
-                    <input type="text" id="deptCollege" name="college" placeholder="e.g. College of Arts and Sciences">
-                </div>
+            <div class="form-group">
+                <label>Department Name *</label>
+                <input type="text" id="deptName" name="name" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>College (If applicable)</label>
+                <input type="text" id="deptCollege" name="college" class="form-control" placeholder="e.g. College of Computing">
+            </div>
+            
+            <div class="form-group" id="statusGroup" style="display:none;">
+                <label>
+                    <input type="checkbox" name="is_active" id="deptStatus" checked>
+                    Department is Active
+                </label>
+            </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Department</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeDepartmentModal()">Cancel</button>
-                </div>
-            </form>
-        </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Department</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDepartmentModal()">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <div id="assignHeadModal" class="modal">
         <div class="modal-content">

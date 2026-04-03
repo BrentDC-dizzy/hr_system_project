@@ -324,8 +324,10 @@ def password_change(request):
 @login_required
 @user_passes_test(is_admin)
 def department_management(request):
-    departments = Department.objects.all().annotate(employee_count=Count('user')).order_by('name')
-    users = User.objects.filter(is_active=True).order_by('last_name')
+    # Using annotate is perfect for keeping the database query efficient
+    departments = Department.objects.all().annotate(employee_count=Count('user')).order_by('-is_active', 'name')
+    # Filter users to only show potential Heads (Role: HEAD) in the assignment modal
+    users = User.objects.filter(role='HEAD', is_active=True).order_by('last_name')
     
     context = {
         'departments': departments,
@@ -341,18 +343,19 @@ def create_department(request):
     if form.is_valid():
         form.save()
         return JsonResponse({'status': 'success', 'message': 'Department created successfully.'})
-    return JsonResponse({'status': 'error', 'errors': json.loads(form.errors.as_json())}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid form data.', 'errors': json.loads(form.errors.as_json())}, status=400)
 
 @login_required
 @user_passes_test(is_admin)
 @require_POST
 def edit_department(request, dept_id):
     dept = get_object_or_404(Department, pk=dept_id)
+    # This handles both general edits and the 'Assign Head' modal
     form = DepartmentForm(request.POST, instance=dept)
     if form.is_valid():
         form.save()
         return JsonResponse({'status': 'success', 'message': 'Department updated successfully.'})
-    return JsonResponse({'status': 'error', 'errors': json.loads(form.errors.as_json())}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Update failed.', 'errors': json.loads(form.errors.as_json())}, status=400)
 
 @login_required
 @user_passes_test(is_admin)
@@ -370,6 +373,8 @@ def get_department_data(request, dept_id):
 @require_POST
 def deactivate_department(request, dept_id):
     dept = get_object_or_404(Department, pk=dept_id)
-    dept.is_active = False
+    # Toggle logic: if active, deactivate. If inactive, re-activate.
+    dept.is_active = not dept.is_active
     dept.save()
-    return JsonResponse({'status': 'success', 'message': 'Department deactivated successfully.'})
+    status = "activated" if dept.is_active else "deactivated"
+    return JsonResponse({'status': 'success', 'message': f'Department {status} successfully.'})

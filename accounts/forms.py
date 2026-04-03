@@ -56,4 +56,15 @@ class AdminPasswordResetForm(forms.Form):
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
-        fields = ['name', 'college', 'head', 'is_active'] # Added is_active
+        fields = ['name', 'college', 'head', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'required': 'true'}),
+            'college': forms.TextInput(attrs={'class': 'form-control'}),
+            'head': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter 'head' to only show users with the 'HEAD' role
+        self.fields['head'].queryset = User.objects.filter(role='HEAD', is_active=True)
+        self.fields['head'].empty_label = "Select Department Head"
