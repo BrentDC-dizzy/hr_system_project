@@ -1,164 +1,395 @@
-document.addEventListener("DOMContentLoaded", () => {
+/* hr_training.js — layout aligned with hr_appmanagement.js */
 
-    // --- UI Elements ---
-    const sidebar       = document.getElementById("sidebar");
-    const logoToggle    = document.getElementById("logoToggle");
-    const closeBtn      = document.getElementById("closeBtn");
-    const menuItems     = document.querySelectorAll(".menu-item");
+const coordinatorName = 'HR Training';
 
-    const searchInput   = document.getElementById("tableSearch");
-    const tableBody     = document.getElementById("trainingTableBody");
-    const noResultsRow  = document.getElementById("noResultsRow");
-    const rows          = tableBody.querySelectorAll("tr:not(#noResultsRow)");
+let activeTrainingId = null;
 
-    const modal         = document.getElementById("addTrainingModal");
-    const addTrainingBtn = document.getElementById("addTrainingBtn");
-    const modalClose    = document.getElementById("modalClose");
-    const cancelBtn     = document.getElementById("cancelBtn");
-    const addTrainingForm = document.getElementById("addTrainingForm");
+let trainingData = [
+    {
+        id: '001',
+        name: 'Outcomes-Based Education Workshop',
+        category: 'Teaching',
+        date: '03/12/2026',
+        mode: 'Onsite',
+        slotsText: '25 / 30',
+        filled: 25,
+        total: 30,
+        progress: 'Enrollment open',
+        status: 'open',
+        statusLabel: 'Open',
+        remarks: 'Workshop on OBE implementation for faculty.',
+        venue: 'Main building, 2nd floor',
+        trainer: 'CCS Training Team'
+    },
+    {
+        id: '002',
+        name: 'Research Writing Seminar',
+        category: 'Research',
+        date: '03/20/2026',
+        mode: 'Online',
+        slotsText: '30 / 30',
+        filled: 30,
+        total: 30,
+        progress: 'At capacity',
+        status: 'full',
+        statusLabel: 'Full',
+        remarks: 'Publication skills and grant writing basics.',
+        venue: 'Zoom',
+        trainer: 'Dr. Santos'
+    },
+    {
+        id: '003',
+        name: 'Faculty Development Program',
+        category: 'Development',
+        date: '02/28/2026',
+        mode: 'Onsite',
+        slotsText: '20 / 20',
+        filled: 20,
+        total: 20,
+        progress: 'Completed',
+        status: 'completed',
+        statusLabel: 'Completed',
+        remarks: 'Annual faculty development seminar concluded.',
+        venue: 'Auditorium',
+        trainer: 'External Agency'
+    },
+    {
+        id: '004',
+        name: 'Safety & Emergency Response Training',
+        category: 'Safety',
+        date: '03/05/2026',
+        mode: 'Onsite',
+        slotsText: '15 / 25',
+        filled: 15,
+        total: 25,
+        progress: 'Session cancelled',
+        status: 'cancelled',
+        statusLabel: 'Cancelled',
+        remarks: 'Cancelled due to venue unavailability.',
+        venue: 'Gymnasium',
+        trainer: 'Safety Officer'
+    }
+];
 
-    const viewModal          = document.getElementById("viewTrainingModal");
-    const viewModalCancel    = document.getElementById("viewModalCancel");
-    const viewModalCloseStatus = document.getElementById("viewModalCloseStatus");
+function isFinalTrainingStatus(status) {
+    return status === 'completed' || status === 'cancelled';
+}
 
-    // ─── Sidebar: Tooltip data-text ─────────────────────────────────────────
-    menuItems.forEach(item => {
-        const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.innerText);
+function showToast(type, title, message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const icons = {
+        approved: 'fas fa-check-circle',
+        rejected: 'fas fa-times-circle',
+        info: 'fas fa-info-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML =
+        '<i class="' + icons[type] + ' toast-icon"></i>' +
+        '<div class="toast-body">' +
+            '<div class="toast-title">' + title + '</div>' +
+            '<div class="toast-msg">' + message + '</div>' +
+        '</div>' +
+        '<button class="toast-close" type="button"><i class="fas fa-times"></i></button>' +
+        '<div class="toast-progress"></div>';
+
+    toast.querySelector('.toast-close').addEventListener('click', function () {
+        removeToast(toast);
     });
 
-    // ─── Sidebar: collapse / expand ─────────────────────────────────────────
-    closeBtn.addEventListener("click", () => {
-        sidebar.classList.add("collapsed");
-    });
+    container.appendChild(toast);
+    setTimeout(function () { removeToast(toast); }, 4000);
+}
 
-    logoToggle.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-    });
+function removeToast(el) {
+    if (!el || !el.parentElement) return;
+    el.style.animation = 'toastOut 0.35s ease forwards';
+    setTimeout(function () { el.remove(); }, 340);
+}
 
-    // ─── Search / Filter ────────────────────────────────────────────────────
-    searchInput.addEventListener("keyup", () => {
-        const filter = searchInput.value.toLowerCase();
-        let visibleCount = 0;
+function renderTable() {
+    const body = document.getElementById('trainingTableBody');
+    const template = document.getElementById('trainingRowTemplate');
+    body.innerHTML = '';
 
-        rows.forEach(row => {
-            const match = row.innerText.toLowerCase().includes(filter);
-            row.style.display = match ? "" : "none";
-            if (match) visibleCount++;
-        });
+    if (trainingData.length === 0) {
+        body.innerHTML =
+            '<tr><td colspan="9" class="no-records">No records found.</td></tr>';
+        return;
+    }
 
-        noResultsRow.style.display = visibleCount === 0 ? "" : "none";
-    });
+    trainingData.forEach(function (t) {
+        const clone = template.content.cloneNode(true);
+        const isFinal = isFinalTrainingStatus(t.status);
 
-    // ─── Add Training Modal ─────────────────────────────────────────────────
-    const openModal  = () => modal.style.display = "flex";
-    const closeModal = () => modal.style.display = "none";
+        clone.querySelector('.col-id').innerText = t.id;
+        clone.querySelector('.col-tname').innerText = t.name;
+        clone.querySelector('.col-category').innerText = t.category;
+        clone.querySelector('.col-date').innerText = t.date;
+        clone.querySelector('.col-mode').innerText = t.mode;
+        clone.querySelector('.col-slots').innerText = t.slotsText;
+        clone.querySelector('.col-progress').innerText = t.progress;
+        clone.querySelector('.col-status').innerHTML =
+            '<span class="status-pill ' + t.status + '">' + t.statusLabel + '</span>';
 
-    addTrainingBtn.addEventListener("click", openModal);
-    modalClose.addEventListener("click", closeModal);
-    cancelBtn.addEventListener("click", closeModal);
+        const actionsCell = clone.querySelector('.col-actions');
 
-    // ─── Training Data ───────────────────────────────────────────────────────
-    const trainingData = {
-        "001": {
-            name:        "Outcomes-Based Education Workshop",
-            meta:        "Teaching &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; March 12, 2026",
-            status:      "open",
-            statusLabel: "Open",
-            description: "College of Computer Studies",
-            trainer:     "CCS - 201",
-            location:    "Main building 2nd floor",
-            maxSlots:    "30",
-            slotsFilled: "25 / 30"
-        },
-        "002": {
-            name:        "Research Writing Seminar",
-            meta:        "Research &nbsp;|&nbsp; Online &nbsp;|&nbsp; March 20, 2026",
-            status:      "full",
-            statusLabel: "Full",
-            description: "Research writing and publication skills",
-            trainer:     "Dr. Santos",
-            location:    "Zoom / Online",
-            maxSlots:    "30",
-            slotsFilled: "30 / 30"
-        },
-        "003": {
-            name:        "Faculty Development Program",
-            meta:        "Development &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; Feb. 28, 2026",
-            status:      "completed",
-            statusLabel: "Completed",
-            description: "Annual faculty development seminar",
-            trainer:     "External Agency",
-            location:    "Auditorium",
-            maxSlots:    "20",
-            slotsFilled: "20 / 20"
-        },
-        "004": {
-            name:        "Safety & Emergency Response Training",
-            meta:        "Safety &nbsp;|&nbsp; Onsite &nbsp;|&nbsp; March 5, 2026",
-            status:      "cancelled",
-            statusLabel: "Cancelled",
-            description: "Emergency procedures and safety protocols",
-            trainer:     "Safety Officer",
-            location:    "Gymnasium",
-            maxSlots:    "25",
-            slotsFilled: "15 / 25"
+        if (isFinal) {
+            actionsCell.innerHTML = '<span class="action-link view-link-btn">View Details</span>';
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(t.id);
+            });
+        } else {
+            actionsCell.innerHTML =
+                '<div class="actions-cell">' +
+                    '<span class="action-link view-link-btn">View Details</span>' +
+                    '<div class="dropdown">' +
+                        '<button type="button" class="update-link">Update <i class="fas fa-caret-down"></i></button>' +
+                        '<div class="dropdown-content">' +
+                            '<a href="#" class="complete-option" data-id="' + t.id + '">Mark Completed</a>' +
+                            '<a href="#" class="cancel-option" data-id="' + t.id + '">Cancel Training</a>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+            actionsCell.querySelector('.view-link-btn').addEventListener('click', function () {
+                openModal(t.id);
+            });
+            actionsCell.querySelector('.complete-option').addEventListener('click', function (e) {
+                e.preventDefault();
+                processTraining(t.id, 'Completed');
+            });
+            actionsCell.querySelector('.cancel-option').addEventListener('click', function (e) {
+                e.preventDefault();
+                processTraining(t.id, 'Cancelled');
+            });
         }
-    };
 
-    // ─── View Training Modal ─────────────────────────────────────────────────
-    const openViewModal = (id) => {
-        const data = trainingData[id];
-        if (!data) return;
+        body.appendChild(clone);
+    });
+}
 
-        document.getElementById("viewTrainingName").textContent  = data.name;
-        document.getElementById("viewTrainingMeta").innerHTML    = data.meta;
-        document.getElementById("viewDescription").textContent   = data.description;
-        document.getElementById("viewTrainer").textContent       = data.trainer;
-        document.getElementById("viewLocation").textContent      = data.location;
-        document.getElementById("viewMaxSlots").textContent      = data.maxSlots;
-        document.getElementById("viewSlotsFilled").textContent   = data.slotsFilled;
+function openModal(id) {
+    activeTrainingId = id;
+    const t = trainingData.find(function (x) { return x.id === id; });
+    if (!t) return;
 
-        const statusBadge = document.getElementById("viewTrainingStatus");
-        statusBadge.className   = `status-badge ${data.status} view-status-badge`;
-        statusBadge.textContent = data.statusLabel;
+    document.getElementById('modalTrainingTitle').innerText = t.name;
+    document.getElementById('trainingPlaceholder').innerHTML =
+        '<i class="fas fa-chalkboard-teacher"></i><p>' + t.name + '</p>';
+    document.getElementById('modalDate').innerText = t.date;
+    document.getElementById('modalCategory').innerText = t.category;
+    document.getElementById('modalMode').innerText = t.mode;
+    document.getElementById('modalSlots').innerText = t.slotsText;
+    document.getElementById('modalProgress').innerText = t.progress;
+    document.getElementById('modalRemarks').innerText = t.remarks;
+    document.getElementById('modalCoordinatorText').innerHTML =
+        '<small>Coordinator: ' + coordinatorName + '</small>';
+    document.getElementById('modalStatusContainer').innerHTML =
+        '<span class="status-pill ' + t.status + '">' + t.statusLabel + '</span>';
 
-        viewModal.style.display = "flex";
-    };
+    document.getElementById('modalActions').style.display =
+        isFinalTrainingStatus(t.status) ? 'none' : 'flex';
 
-    const closeViewModal = () => viewModal.style.display = "none";
+    document.getElementById('viewModal').style.display = 'flex';
+}
 
-    // Wire up all "View" links in the table
-    document.querySelectorAll(".action-links a:first-child").forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const row = e.target.closest("tr");
-            const id  = row.querySelector("td:first-child").textContent.trim();
-            openViewModal(id);
-        });
+function closeViewModal() {
+    document.getElementById('viewModal').style.display = 'none';
+}
+
+function processTraining(id, decision) {
+    const idx = trainingData.findIndex(function (x) { return x.id === id; });
+    if (idx === -1) return;
+
+    const t = trainingData[idx];
+    const dateStr = new Date().toLocaleDateString();
+
+    if (decision === 'Completed') {
+        t.status = 'completed';
+        t.statusLabel = 'Completed';
+        t.progress = 'Completed';
+        t.remarks = 'Marked completed on ' + dateStr + '.';
+        showToast('approved', 'Training Completed', '"' + t.name + '" has been marked completed.');
+    } else {
+        t.status = 'cancelled';
+        t.statusLabel = 'Cancelled';
+        t.progress = 'Session cancelled';
+        t.remarks = 'Cancelled on ' + dateStr + '.';
+        showToast('rejected', 'Training Cancelled', '"' + t.name + '" has been cancelled.');
+    }
+
+    document.getElementById('modalStatusContainer').innerHTML =
+        '<span class="status-pill ' + t.status + '">' + t.statusLabel + '</span>';
+    document.getElementById('modalProgress').innerText = t.progress;
+    document.getElementById('modalRemarks').innerText = t.remarks;
+    document.getElementById('modalActions').style.display = 'none';
+
+    renderTable();
+}
+
+function resetAddTrainingForm() {
+    document.getElementById('tName').value = '';
+    document.getElementById('tCategory').selectedIndex = 0;
+    document.getElementById('tMode').selectedIndex = 0;
+    document.getElementById('tDate').value = '';
+    document.getElementById('tTotalSlots').value = '';
+    document.getElementById('tVenue').value = '';
+    document.getElementById('tTrainer').value = '';
+    document.getElementById('tRemarks').value = '';
+
+    ['tName', 'tCategory', 'tMode', 'tDate', 'tTotalSlots'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.style.borderColor = '';
+    });
+}
+
+function padId(num) {
+    return String(num).padStart(3, '0');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const logoToggle = document.getElementById('logoToggle');
+    const closeBtn = document.getElementById('closeBtn');
+    const tabList = document.getElementById('tab-list');
+    const tabAdd = document.getElementById('tab-add');
+    const addModal = document.getElementById('addTrainingModal');
+    const viewModal = document.getElementById('viewModal');
+
+    document.querySelectorAll('.menu-item').forEach(function (item) {
+        const span = item.querySelector('span');
+        if (span) item.setAttribute('data-text', span.textContent.trim());
     });
 
-    viewModalCancel.addEventListener("click", closeViewModal);
-    viewModalCloseStatus.addEventListener("click", closeViewModal);
+    if (closeBtn) closeBtn.onclick = function () { sidebar.classList.add('collapsed'); };
+    if (logoToggle) logoToggle.onclick = function () { sidebar.classList.toggle('collapsed'); };
 
-    // ─── Close on backdrop click or Escape ──────────────────────────────────
-    window.addEventListener("click", (e) => {
-        if (e.target === modal)     closeModal();
+    tabList.addEventListener('click', function () {
+        tabList.classList.add('active');
+        tabAdd.classList.remove('active');
+        renderTable();
+    });
+
+    tabAdd.addEventListener('click', function () {
+        tabAdd.classList.add('active');
+        tabList.classList.remove('active');
+        addModal.style.display = 'flex';
+    });
+
+    document.getElementById('modalCompleteBtn').addEventListener('click', function () {
+        processTraining(activeTrainingId, 'Completed');
+    });
+    document.getElementById('modalCancelBtn').addEventListener('click', function () {
+        processTraining(activeTrainingId, 'Cancelled');
+    });
+    document.getElementById('modalCloseBtn').addEventListener('click', closeViewModal);
+
+    document.getElementById('cancelAddTraining').addEventListener('click', function () {
+        addModal.style.display = 'none';
+        resetAddTrainingForm();
+        tabList.classList.add('active');
+        tabAdd.classList.remove('active');
+        renderTable();
+    });
+
+    document.getElementById('saveTraining').addEventListener('click', function () {
+        var name = document.getElementById('tName').value.trim();
+        var category = document.getElementById('tCategory').value;
+        var mode = document.getElementById('tMode').value;
+        var dateVal = document.getElementById('tDate').value;
+        var totalSlots = parseInt(document.getElementById('tTotalSlots').value, 10);
+        var venue = document.getElementById('tVenue').value.trim();
+        var trainer = document.getElementById('tTrainer').value.trim();
+        var remarks = document.getElementById('tRemarks').value.trim();
+
+        var valid = true;
+        [
+            { id: 'tName', val: name },
+            { id: 'tCategory', val: category },
+            { id: 'tMode', val: mode },
+            { id: 'tDate', val: dateVal },
+            { id: 'tTotalSlots', val: totalSlots > 0 ? String(totalSlots) : '' }
+        ].forEach(function (field) {
+            var el = document.getElementById(field.id);
+            if (!field.val) {
+                el.style.borderColor = '#dc3545';
+                valid = false;
+            } else if (el) {
+                el.style.borderColor = '';
+            }
+        });
+
+        if (!valid) {
+            showToast('info', 'Incomplete Form', 'Please fill in all required fields.');
+            return;
+        }
+
+        var d = new Date(dateVal + 'T12:00:00');
+        var dateDisplay = (d.getMonth() + 1).toString().padStart(2, '0') + '/' +
+            d.getDate().toString().padStart(2, '0') + '/' + d.getFullYear();
+
+        var nextNum = trainingData.reduce(function (max, x) {
+            var n = parseInt(x.id, 10);
+            return n > max ? n : max;
+        }, 0) + 1;
+
+        trainingData.push({
+            id: padId(nextNum),
+            name: name,
+            category: category,
+            date: dateDisplay,
+            mode: mode,
+            slotsText: '0 / ' + totalSlots,
+            filled: 0,
+            total: totalSlots,
+            progress: 'Enrollment open',
+            status: 'open',
+            statusLabel: 'Open',
+            remarks: remarks || 'New training session created.',
+            venue: venue || '—',
+            trainer: trainer || '—'
+        });
+
+        addModal.style.display = 'none';
+        resetAddTrainingForm();
+        tabList.classList.add('active');
+        tabAdd.classList.remove('active');
+        renderTable();
+        showToast('info', 'Training Added', '"' + name + '" has been scheduled.');
+    });
+
+    window.addEventListener('click', function (e) {
         if (e.target === viewModal) closeViewModal();
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            closeModal();
-            closeViewModal();
+        if (e.target === addModal) {
+            addModal.style.display = 'none';
+            resetAddTrainingForm();
+            tabList.classList.add('active');
+            tabAdd.classList.remove('active');
+            renderTable();
         }
     });
 
-    // ─── Form Submission ─────────────────────────────────────────────────────
-    addTrainingForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        alert("Training saved successfully.");
-        closeModal();
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeViewModal();
+            addModal.style.display = 'none';
+            resetAddTrainingForm();
+            tabList.classList.add('active');
+            tabAdd.classList.remove('active');
+            renderTable();
+        }
     });
 
+    document.getElementById('tableSearch').addEventListener('keyup', function (e) {
+        var val = e.target.value.toLowerCase();
+        document.querySelectorAll('#trainingTableBody tr').forEach(function (row) {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+        });
+    });
+
+    renderTable();
 });
