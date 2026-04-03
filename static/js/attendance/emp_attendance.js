@@ -53,9 +53,7 @@ closeBtn.addEventListener("click", () => {
 });
 
 logoToggle.addEventListener("click", () => {
-    if (sidebar.classList.contains("collapsed")) {
-        sidebar.classList.remove("collapsed");
-    }
+    sidebar.classList.toggle("collapsed");
 });
 
 // Active state + tooltip data-text
