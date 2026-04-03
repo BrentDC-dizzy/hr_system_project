@@ -1,165 +1,521 @@
 /* ============================================================
-   hr_attendance.js
-   Save to: static/js/attendance/hr_attendance.js
+   head_attendancemonitoring.js
+   Path: static/js/attendance/head_attendancemonitoring.js
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // --- 1. DOM ELEMENTS ---
     const sidebar    = document.getElementById("sidebar");
     const logoToggle = document.getElementById("logoToggle");
     const closeBtn   = document.getElementById("closeBtn");
     const menuItems  = document.querySelectorAll(".menu-item");
 
+    const searchInput = document.querySelector(".search-pill input");
+
+    const statCards = Array.from(document.querySelectorAll(".stats-container .stat-card"));
+
+    const activeFiltersWrap = document.querySelector(".active-filters");
+    const actionButtons = Array.from(document.querySelectorAll(".action-buttons .btn-action"));
+    const filterBtn = actionButtons[0] || null;
+    const dateBtn   = actionButtons[1] || null;
+
+    const pager      = document.querySelector(".action-buttons .pagination");
+    const pagerPrev  = pager ? pager.querySelector(".fa-chevron-left") : null;
+    const pagerNext  = pager ? pager.querySelector(".fa-chevron-right") : null;
+    const pagerLabel = pager ? pager.querySelector("span") : null;
+
+    const table = document.querySelector(".attendance-table");
+    const tbody = table ? table.querySelector("tbody") : null;
+    const tableRows = tbody ? Array.from(tbody.querySelectorAll("tr")) : [];
+
     const modal      = document.getElementById("employeeModal");
     const closeSpan  = document.querySelector(".close-modal");
-    const tableRows  = document.querySelectorAll(".attendance-table tbody tr");
     const weeklyBtn  = document.getElementById("weeklyViewBtn");
     const monthlyBtn = document.getElementById("monthlyViewBtn");
+    const modalPrev  = modal ? modal.querySelector(".date-pager .fa-chevron-left") : null;
+    const modalNext  = modal ? modal.querySelector(".date-pager .fa-chevron-right") : null;
 
+    // ---------- Sidebar ----------
+    if (closeBtn) closeBtn.addEventListener("click", () => sidebar.classList.add("collapsed"));
+    if (logoToggle) logoToggle.addEventListener("click", () => sidebar.classList.toggle("collapsed"));
 
-    // --- 2. SIDEBAR LOGIC ---
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.add("collapsed");
+    menuItems.forEach(item => {
+        const span = item.querySelector("span");
+        if (span) item.setAttribute("data-text", span.innerText.trim());
+    });
+
+    // ---------- State ----------
+    const baseWeekStart = new Date(2026, 1, 2); // Feb 2, 2026 (Sunday) for sample Week 5 row
+    let weekOffset = 0;
+
+    const filterState = {
+        dept: "All",
+        status: "All",
+        date: null
+    };
+
+    // ---------- Filter popover (created by JS) ----------
+    const filterPopover = document.createElement("div");
+    filterPopover.className = "head-filter-popover";
+    filterPopover.style.display = "none";
+    filterPopover.innerHTML = `
+        <div class="head-filter-title">Filters</div>
+        <div class="head-filter-grid">
+            <label class="head-filter-label">Department</label>
+            <select id="hfDept" class="head-filter-select">
+                <option>All</option>
+                <option>CCS</option>
+                <option>CBA</option>
+                <option>CAS</option>
+                <option>COE</option>
+                <option>HR</option>
+                <option>CON</option>
+            </select>
+
+            <label class="head-filter-label">Status (Selected day)</label>
+            <select id="hfStatus" class="head-filter-select">
+                <option>All</option>
+                <option>Present</option>
+                <option>Late</option>
+                <option>Absent</option>
+                <option>Leave</option>
+                <option>Active</option>
+            </select>
+        </div>
+        <div class="head-filter-actions">
+            <button type="button" class="head-filter-btn head-filter-btn-ghost" id="hfClear">Clear</button>
+            <button type="button" class="head-filter-btn head-filter-btn-primary" id="hfApply">Apply</button>
+        </div>
+    `;
+
+    const controlsRow = document.querySelector(".controls-row");
+    if (controlsRow) {
+        controlsRow.style.position = "relative";
+        controlsRow.appendChild(filterPopover);
+    }
+
+    function toggleFilterPopover(forceOpen) {
+        const open = typeof forceOpen === "boolean" ? forceOpen : filterPopover.style.display !== "block";
+        filterPopover.style.display = open ? "block" : "none";
+    }
+
+    // ---------- Date picker (Sample Date) ----------
+    // Uses a real hidden input in the Head HTML for better browser support.
+    const dateInput = document.getElementById("sampleDateInput");
+
+    function setDateButtonLabel() {
+        if (!dateBtn) return;
+        if (!filterState.date) {
+            dateBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> Sample Date';
+            return;
+        }
+        const d = filterState.date;
+        const label = d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+        dateBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> ' + label;
+    }
+
+    // ---------- Helpers ----------
+    function stripTime(d) {
+        const x = new Date(d);
+        x.setHours(0, 0, 0, 0);
+        return x;
+    }
+
+    function getWeekStartDate() {
+        const d = new Date(baseWeekStart);
+        d.setDate(d.getDate() + weekOffset * 7);
+        return d;
+    }
+
+    function formatWeekRange(startDate) {
+        const end = new Date(startDate);
+        end.setDate(end.getDate() + 6);
+        const left  = startDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+        const right = end.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        return `${left} - ${right}`;
+    }
+
+    function getSelectedColumnIndex(startDate) {
+        const basis = filterState.date || new Date();
+        const diffDays = Math.floor((stripTime(basis) - stripTime(startDate)) / (24 * 3600 * 1000));
+        // Table cols: 0 employee, 1 Sun, 2 Mon ... 7 Sat
+        if (diffDays < 0 || diffDays > 6) return 2; // default Monday
+        return 1 + diffDays;
+    }
+
+    function getCellStatus(cell) {
+        const pill = cell ? cell.querySelector(".pill") : null;
+        if (!pill) return "None";
+        const text = (pill.textContent || "").trim().toLowerCase();
+        if (pill.classList.contains("pill-red") || text.includes("absent")) return "Absent";
+        if (pill.classList.contains("pill-purple") || text.includes("leave")) return "Leave";
+        if (pill.classList.contains("pill-tan") || text.includes("late") || /\\d+h/.test(text)) return "Late";
+        if (text.includes("active")) return "Active";
+        return "Present";
+    }
+
+    // ---------- Week pagination: update day numbers ----------
+    function updateDayNumbers() {
+        const start = getWeekStartDate();
+        tableRows.forEach(row => {
+            const nums = Array.from(row.querySelectorAll(".day-num"));
+            nums.forEach((span, idx) => {
+                const d = new Date(start);
+                d.setDate(d.getDate() + idx);
+                span.textContent = String(d.getDate());
+            });
+        });
+
+        if (pagerLabel) {
+            const baseWeekNum = 5;
+            pagerLabel.textContent = `Week ${baseWeekNum + weekOffset}`;
+        }
+    }
+
+    // ---------- Stats ----------
+    function setStatValue(index, value) {
+        const card = statCards[index];
+        const el = card ? card.querySelector(".value") : null;
+        if (el) el.textContent = String(value);
+    }
+
+    function updateStats() {
+        if (statCards.length < 5) return;
+        const start = getWeekStartDate();
+        const colIdx = getSelectedColumnIndex(start);
+
+        const visibleRows = tableRows.filter(r => r.style.display !== "none");
+
+        let present = 0;
+        let absent = 0;
+        let leave = 0;
+        let late = 0;
+
+        visibleRows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll("td"));
+            const status = getCellStatus(cells[colIdx]);
+            if (status === "Absent") absent++;
+            else if (status === "Leave") leave++;
+            else if (status === "Late") late++;
+            else if (status === "Present" || status === "Active") present++;
+        });
+
+        setStatValue(0, visibleRows.length);
+        setStatValue(1, present);
+        setStatValue(2, absent);
+        setStatValue(3, leave);
+        setStatValue(4, late);
+    }
+
+    // ---------- Filter tags ----------
+    function createFilterTag(label, onRemove) {
+        if (!activeFiltersWrap) return;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "filter-tag";
+        btn.innerHTML = `${label} <i class="fas fa-times"></i>`;
+        btn.querySelector(".fa-times")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onRemove();
+        });
+        activeFiltersWrap.appendChild(btn);
+    }
+
+    function syncFilterTags() {
+        if (!activeFiltersWrap) return;
+        activeFiltersWrap.innerHTML = "";
+
+        if (filterState.dept !== "All") {
+            createFilterTag(`Dept: ${filterState.dept}`, () => {
+                filterState.dept = "All";
+                applyFilters();
+            });
+        }
+
+        if (filterState.status !== "All") {
+            createFilterTag(`Status: ${filterState.status}`, () => {
+                filterState.status = "All";
+                applyFilters();
+            });
+        }
+
+        if (filterState.date) {
+            const label = filterState.date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+            createFilterTag(`Date: ${label}`, () => {
+                filterState.date = null;
+                if (dateInput) dateInput.value = "";
+                setDateButtonLabel();
+                applyFilters();
+            });
+        }
+    }
+
+    // ---------- Apply filters ----------
+    function rowMatchesFilters(row) {
+        const dept = (row.querySelector(".dept-badge")?.textContent || "").trim();
+        const name = (row.querySelector(".name")?.textContent || "").trim();
+        const title = (row.querySelector(".title")?.textContent || "").trim();
+
+        const q = (searchInput?.value || "").trim().toLowerCase();
+        if (q) {
+            const combined = (name + " " + dept + " " + title).toLowerCase();
+            if (!combined.includes(q)) return false;
+        }
+
+        if (filterState.dept !== "All" && dept !== filterState.dept) return false;
+
+        if (filterState.status !== "All") {
+            const start = getWeekStartDate();
+            const colIdx = getSelectedColumnIndex(start);
+            const cells = Array.from(row.querySelectorAll("td"));
+            const status = getCellStatus(cells[colIdx]);
+            if (status !== filterState.status) return false;
+        }
+
+        return true;
+    }
+
+    function applyFilters() {
+        tableRows.forEach(row => {
+            row.style.display = rowMatchesFilters(row) ? "" : "none";
+        });
+        syncFilterTags();
+        updateStats();
+    }
+
+    // ---------- Wire: Search ----------
+    if (searchInput) {
+        searchInput.addEventListener("input", applyFilters);
+    }
+
+    // ---------- Wire: Filter popover ----------
+    if (filterBtn) {
+        filterBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const deptSel = filterPopover.querySelector("#hfDept");
+            const statusSel = filterPopover.querySelector("#hfStatus");
+            if (deptSel) deptSel.value = filterState.dept;
+            if (statusSel) statusSel.value = filterState.status;
+
+            toggleFilterPopover();
         });
     }
 
-    if (logoToggle) {
-        logoToggle.addEventListener("click", () => {
-            if (sidebar.classList.contains("collapsed")) {
-                sidebar.classList.remove("collapsed");
+    document.addEventListener("click", (e) => {
+        if (filterPopover.style.display !== "block") return;
+        if (filterPopover.contains(e.target)) return;
+        if (filterBtn && filterBtn.contains(e.target)) return;
+        toggleFilterPopover(false);
+    });
+
+    filterPopover.querySelector("#hfApply")?.addEventListener("click", () => {
+        const deptSel = filterPopover.querySelector("#hfDept");
+        const statusSel = filterPopover.querySelector("#hfStatus");
+        filterState.dept = deptSel ? deptSel.value : "All";
+        filterState.status = statusSel ? statusSel.value : "All";
+        toggleFilterPopover(false);
+        applyFilters();
+    });
+
+    filterPopover.querySelector("#hfClear")?.addEventListener("click", () => {
+        filterState.dept = "All";
+        filterState.status = "All";
+        filterState.date = null;
+
+        if (searchInput) searchInput.value = "";
+        if (dateInput) dateInput.value = "";
+        setDateButtonLabel();
+
+        const deptSel = filterPopover.querySelector("#hfDept");
+        const statusSel = filterPopover.querySelector("#hfStatus");
+        if (deptSel) deptSel.value = "All";
+        if (statusSel) statusSel.value = "All";
+
+        toggleFilterPopover(false);
+        applyFilters();
+    });
+
+    // ---------- Wire: Date button ----------
+    if (dateBtn && dateInput) {
+        dateBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // keep input value in sync so picker opens at current selection
+            if (filterState.date) {
+                const y = filterState.date.getFullYear();
+                const m = String(filterState.date.getMonth() + 1).padStart(2, "0");
+                const d = String(filterState.date.getDate()).padStart(2, "0");
+                dateInput.value = `${y}-${m}-${d}`;
+            } else {
+                dateInput.value = "";
+            }
+
+            // Some browsers block programmatic click on hidden inputs; showPicker is best.
+            if (typeof dateInput.showPicker === "function") {
+                dateInput.showPicker();
+            } else {
+                dateInput.focus({ preventScroll: true });
+                dateInput.click();
             }
         });
     }
 
-    // Attach tooltip text and active-state switching
-    menuItems.forEach(item => {
-        const span = item.querySelector("span");
-        if (span) item.setAttribute("data-text", span.innerText.trim());
+    if (dateInput) {
+        dateInput.addEventListener("change", () => {
+            if (!dateInput.value) return;
+            const picked = new Date(dateInput.value + "T12:00:00");
+            filterState.date = picked;
+            setDateButtonLabel();
 
-        item.addEventListener("click", function () {
-            document.querySelector(".menu-item.active")?.classList.remove("active");
-            this.classList.add("active");
+            // Jump table pager to the week containing the picked date
+            const diffDays = Math.floor((stripTime(picked) - stripTime(baseWeekStart)) / (24 * 3600 * 1000));
+            weekOffset = Math.floor(diffDays / 7);
+
+            updateDayNumbers();
+            applyFilters();
         });
-    });
-
-
-    // --- 3. ATTENDANCE MODAL ---
-
-    // Open modal on row click
-    tableRows.forEach(row => {
-        row.style.cursor = "pointer";
-        row.addEventListener("click", () => {
-            const name     = row.querySelector(".name").innerText;
-            const position = row.querySelector(".title").innerText;
-            const dept     = row.querySelector(".dept-badge").innerText;
-
-            document.getElementById("modalEmployeeName").innerText = name;
-            document.getElementById("detPos").innerText            = position;
-            document.getElementById("detDept").innerText           = dept;
-
-            switchAttendanceView("weekly");
-            modal.style.display = "block";
-        });
-    });
-
-    // Close modal
-    if (closeSpan) {
-        closeSpan.onclick = () => (modal.style.display = "none");
     }
 
-    window.onclick = (event) => {
-        if (event.target === modal) modal.style.display = "none";
-    };
-
-    // Weekly / Monthly toggle
-    if (weeklyBtn && monthlyBtn) {
-        weeklyBtn.addEventListener("click",  (e) => { e.stopPropagation(); switchAttendanceView("weekly"); });
-        monthlyBtn.addEventListener("click", (e) => { e.stopPropagation(); switchAttendanceView("monthly"); });
+    // ---------- Wire: Week pager ----------
+    if (pagerPrev) {
+        pagerPrev.addEventListener("click", () => {
+            weekOffset -= 1;
+            updateDayNumbers();
+            applyFilters();
+        });
     }
 
-    /**
-     * Switches modal between Weekly and Monthly views.
-     * @param {"weekly"|"monthly"} type
-     */
-    function switchAttendanceView(type) {
+    if (pagerNext) {
+        pagerNext.addEventListener("click", () => {
+            weekOffset += 1;
+            updateDayNumbers();
+            applyFilters();
+        });
+    }
+
+    // ---------- Modal ----------
+    let modalMode = "weekly"; // weekly | monthly
+    let modalOffset = 0;
+
+    function renderModal() {
         const rangeText  = document.getElementById("dateRangeText");
         const periodText = document.getElementById("periodText");
         const totalValue = document.getElementById("totalHoursValue");
+        const tbodyEl    = document.getElementById("modalTableBody");
+        if (!tbodyEl) return;
 
-        if (type === "weekly") {
-            weeklyBtn.classList.add("active");
-            monthlyBtn.classList.remove("active");
-            rangeText.innerText  = "February 4 - 10, 2026";
-            periodText.innerText = "Week";
-            totalValue.innerText = "42h 15m";
-            renderModalTableRows(7);
+        tbodyEl.innerHTML = "";
+
+        if (modalMode === "weekly") {
+            const start = getWeekStartDate();
+            start.setDate(start.getDate() + modalOffset * 7);
+
+            if (rangeText) rangeText.textContent = formatWeekRange(start);
+            if (periodText) periodText.textContent = "Week";
+            if (totalValue) totalValue.textContent = "42h 15m";
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                const dateText = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                const dayText  = d.toLocaleDateString("en-US", { weekday: "long" });
+                tbodyEl.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${dateText}</td>
+                        <td>${dayText}</td>
+                        <td>8:03 AM</td>
+                        <td>5:02 PM</td>
+                        <td>8h 59m</td>
+                        <td><span class="pill pill-green">Present</span></td>
+                    </tr>
+                `);
+            }
         } else {
-            monthlyBtn.classList.add("active");
-            weeklyBtn.classList.remove("active");
-            rangeText.innerText  = "February 2026";
-            periodText.innerText = "Month";
-            totalValue.innerText = "160h 00m";
-            renderModalTableRows(20);
+            const monthBase = new Date(2026, 1, 1);
+            monthBase.setMonth(monthBase.getMonth() + modalOffset);
+
+            const monthLabel = monthBase.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+            if (rangeText) rangeText.textContent = monthLabel;
+            if (periodText) periodText.textContent = "Month";
+            if (totalValue) totalValue.textContent = "160h 00m";
+
+            for (let i = 1; i <= 20; i++) {
+                const d = new Date(monthBase);
+                d.setDate(i);
+                const dateText = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                const dayText  = d.toLocaleDateString("en-US", { weekday: "long" });
+                tbodyEl.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${dateText}</td>
+                        <td>${dayText}</td>
+                        <td>8:10 AM</td>
+                        <td>5:00 PM</td>
+                        <td>8h 50m</td>
+                        <td><span class="pill pill-green">Present</span></td>
+                    </tr>
+                `);
+            }
         }
     }
 
-    /**
-     * Populates the modal table with sample attendance rows.
-     * @param {number} rowCount
-     */
-    function renderModalTableRows(rowCount) {
-        const tbody = document.getElementById("modalTableBody");
-        if (!tbody) return;
-
-        tbody.innerHTML = "";
-        for (let i = 1; i <= rowCount; i++) {
-            const dayNum = i + 3; // Starts from Feb 4
-            tbody.innerHTML += `
-                <tr>
-                    <td>February ${dayNum}, 2026</td>
-                    <td>${getDayName(dayNum)}</td>
-                    <td>8:03 AM</td>
-                    <td>5:02 PM</td>
-                    <td>8h 59m</td>
-                    <td><span class="pill pill-green">Present</span></td>
-                </tr>
-            `;
-        }
+    function setModalView(type) {
+        modalMode = type;
+        modalOffset = 0;
+        weeklyBtn?.classList.toggle("active", type === "weekly");
+        monthlyBtn?.classList.toggle("active", type === "monthly");
+        renderModal();
     }
 
-    /**
-     * Returns the day name for a given day number.
-     * Feb 4, 2026 = Wednesday (offset 3).
-     * @param {number} day
-     * @returns {string}
-     */
-    function getDayName(day) {
-        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        return days[(day + 1) % 7];
+    function openModalForRow(row) {
+        if (!modal) return;
+        const name     = row.querySelector(".name")?.innerText || "Employee Name";
+        const position = row.querySelector(".title")?.innerText || "—";
+        const dept     = row.querySelector(".dept-badge")?.innerText || "—";
+
+        document.getElementById("modalEmployeeName").innerText = name;
+        document.getElementById("detPos").innerText            = position;
+        document.getElementById("detDept").innerText           = dept;
+
+        modal.style.display = "block";
+        setModalView("weekly");
     }
 
+    tableRows.forEach(row => {
+        row.style.cursor = "pointer";
+        row.addEventListener("click", () => openModalForRow(row));
+    });
 
-    // --- 4. FILTER TAG DISMISS ---
-    const filterTag = document.querySelector(".filter-tag");
-    if (filterTag) {
-        filterTag.querySelector(".fa-times")?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            filterTag.style.display = "none";
-        });
-    }
+    if (closeSpan) closeSpan.addEventListener("click", () => (modal.style.display = "none"));
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) modal.style.display = "none";
+    });
 
+    weeklyBtn?.addEventListener("click", (e) => { e.stopPropagation(); setModalView("weekly"); });
+    monthlyBtn?.addEventListener("click", (e) => { e.stopPropagation(); setModalView("monthly"); });
 
-    // --- 5. RESPONSIVE SIDEBAR ---
+    modalPrev?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        modalOffset -= 1;
+        renderModal();
+    });
+    modalNext?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        modalOffset += 1;
+        renderModal();
+    });
+
+    // ---------- Responsive sidebar ----------
     const handleResize = () => {
-        if (window.innerWidth <= 1100) {
-            sidebar.classList.add("collapsed");
-        } else {
-            sidebar.classList.remove("collapsed");
-        }
+        if (!sidebar) return;
+        if (window.innerWidth <= 1100) sidebar.classList.add("collapsed");
+        else sidebar.classList.remove("collapsed");
     };
-
     window.addEventListener("resize", handleResize);
-    handleResize(); // run on load
+
+    // ---------- Init ----------
+    setDateButtonLabel();
+    updateDayNumbers();
+    applyFilters();
+    handleResize();
 });

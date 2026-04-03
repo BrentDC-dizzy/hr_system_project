@@ -326,6 +326,89 @@ hr {
     cursor: pointer;
 }
 
+/* ============================================================
+   Head Attendance Monitoring — JS-created controls
+   ============================================================ */
+.head-filter-popover {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+    padding: 16px 16px 14px;
+    z-index: 50;
+}
+
+.head-filter-title {
+    font-weight: 800;
+    font-size: 14px;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.head-filter-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.head-filter-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 8px;
+}
+
+.head-filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e7e7e7;
+    outline: none;
+    font-size: 13px;
+    background: #fff;
+}
+
+.head-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.head-filter-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.head-filter-btn-ghost {
+    background: #f1f1f1;
+    color: #333;
+}
+
+.head-filter-btn-primary {
+    background: #4a1d1d;
+    color: #fff;
+}
+
+/* Hidden date input used by Sample Date button */
+.head-hidden-date {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+}
+
 
 /* --- 7. ATTENDANCE TABLE --- */
 .table-card {
