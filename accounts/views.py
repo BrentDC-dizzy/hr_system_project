@@ -386,46 +386,9 @@ def deactivate_department(request, dept_id):
     status = "activated" if dept.is_active else "deactivated"
     return JsonResponse({'status': 'success', 'message': f'Department {status} successfully.'})
 
-@login_required
-@user_passes_test(is_admin) # Or is_hr if you have that helper
-def employee_list(request):
-    # We use select_related to grab the Profile and Department in one go (faster!)
-    employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
-    
-    # Simple search logic
-    search_query = request.GET.get('search', '')
-    if search_query:
-        employees = employees.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) |
-            Q(profile__employee_id__icontains=search_query)
-        )
-
-    return render(request, 'hr/employee_management/hr_employeelist.html', {
-        'employees': employees,
-    })
 # ===========================================================
 # TASK 04: EMPLOYEE RECORDS (HR CORE)
 # ===========================================================
-
-@login_required
-@user_passes_test(is_admin)
-def employee_list(request):
-    """ View to list all employees with search and filter """
-    # select_related makes the page load faster by grabbing profile & dept in 1 query
-    employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
-    
-    search_query = request.GET.get('search', '')
-    if search_query:
-        employees = employees.filter(
-            Q(first_name__icontains=search_query) | 
-            Q(last_name__icontains=search_query) |
-            Q(profile__employee_id__icontains=search_query)
-        )
-
-    return render(request, 'hr/employee_management/hr_employeelist.html', {
-        'employees': employees,
-    })
 
 # === TASK 04: EMPLOYEE RECORDS (HR CORE) ===
 
