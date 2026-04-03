@@ -243,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const label = filterState.date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
             createFilterTag(`Date: ${label}`, () => {
                 filterState.date = null;
+                if (dateInput) dateInput.value = "";
                 setDateButtonLabel();
                 applyFilters();
             });
