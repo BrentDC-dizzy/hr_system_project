@@ -34,6 +34,18 @@ menuItems.forEach(item => {
     item.addEventListener('click', () => {
         document.querySelector('.menu-item.active')?.classList.remove('active');
         item.classList.add('active');
+
+        // Handle navigation for sidebar menu items
+        const targetUrl = item.getAttribute('href');
+        // If href is a placeholder like '#', check for a data-target-url attribute
+        if (targetUrl === '#' || !targetUrl) {
+            const dataTargetUrl = item.dataset.targetUrl;
+            if (dataTargetUrl) {
+                window.location.href = dataTargetUrl;
+            }
+        } else if (targetUrl) { // If href is a valid URL, navigate
+            window.location.href = targetUrl;
+        }
     });
 });
 

@@ -2,6 +2,8 @@
    User Management JavaScript
    ================================= */
 
+console.log("User Management JS Loaded - Version 4. If you do not see this, YOUR BROWSER IS CACHING THE OLD FILE!");
+
 let currentEditingUserId = null;
 let selectedUsers = [];
 let confirmedAction = null; // To store the action for the confirm modal
@@ -19,7 +21,14 @@ function initializeUserManagement() {
 
 function setupEventListeners() {
     // Create User Button
-    document.getElementById('createUserBtn')?.addEventListener('click', openUserModal);
+    // Ultimate failsafe: Listen to the whole page and catch clicks on the button or its icons
+    document.body.addEventListener('click', function(e) {
+        const createBtn = e.target.closest('#createUserBtn, [onclick*="openUserModal"]');
+        if (createBtn) {
+            e.preventDefault();
+            openUserModal();
+        }
+    });
 
     // Edit User Links
     document.querySelectorAll('.edit-user').forEach(btn => {
@@ -180,22 +189,36 @@ function updateSelectedUsers() {
 }
 
 function openUserModal() {
-    const modal = document.getElementById('userModal');
-    const form = document.getElementById('userForm');
-    
-    document.getElementById('modalTitle').textContent = 'Create New User';
-    document.getElementById('password').required = true;
-    document.getElementById('confirmPassword').required = true;
-    document.getElementById('userIdForEdit').value = ''; // Clear user ID for create
-    form.reset();
-    currentEditingUserId = null;
-    
-    // Hide department select by default
-    document.getElementById('departmentSelectGroupUserModal').style.display = 'none';
-    document.getElementById('departmentUserModal').required = false;
+    console.log("1. Button clicked! Trying to open modal...");
 
+    const modal = document.getElementById('userModal');
+    if (!modal) {
+        console.error("ERROR: Cannot find the modal HTML. Did the ID get deleted?");
+        alert("Developer Error: Modal not found. Check F12 Console.");
+        return;
+    }
+
+    const form = document.getElementById('userForm');
+    if (form) form.reset(); // Clear out any old text
+
+    // Reset hidden fields and titles safely
+    const titleField = document.getElementById('modalTitle');
+    if (titleField) titleField.textContent = 'Create New User';
+
+    const userIdField = document.getElementById('userIdForEdit');
+    if (userIdField) userIdField.value = '';
+
+    // Hide the department dropdown for new users safely
+    const deptGroup = document.getElementById('departmentSelectGroupUserModal');
+    if (deptGroup) deptGroup.style.display = 'none';
+
+    // Finally, force it to show!
     modal.classList.add('show');
+    console.log("2. Modal opened successfully!");
 }
+// Make the function globally available so the inline `onclick="openUserModal()"` attribute can find it.
+window.openUserModal = openUserModal;
+
 
 function closeUserModal() {
     document.getElementById('userModal').classList.remove('show');
@@ -220,10 +243,16 @@ async function editUser(userId) {
         document.getElementById('userIdForEdit').value = userId;
 
         // Password fields are not required for edit unless explicitly changing
-        document.getElementById('password').required = false;
-        document.getElementById('confirmPassword').required = false;
-        document.getElementById('password').value = '';
-        document.getElementById('confirmPassword').value = '';
+        const pwdField = document.getElementById('password');
+        const confirmPwdField = document.getElementById('confirmPassword');
+        if (pwdField) {
+            pwdField.required = false;
+            pwdField.value = '';
+        }
+        if (confirmPwdField) {
+            confirmPwdField.required = false;
+            confirmPwdField.value = '';
+        }
 
         // Handle department for HEAD role
         const deptGroup = document.getElementById('departmentSelectGroupUserModal');
@@ -236,8 +265,6 @@ async function editUser(userId) {
             document.getElementById('departmentUserModal').required = false;
             document.getElementById('departmentUserModal').value = '';
         }
-
-    document.getElementById('password').required = false;
 
     document.getElementById('modalTitle').textContent = 'Edit User';
     document.getElementById('userModal').classList.add('show');
@@ -297,14 +324,22 @@ async function handleUserFormSubmit(e) {
     const formData = new FormData(form);
     const userId = document.getElementById('userIdForEdit').value;
 
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirm_password');
+    // Grab whatever the HTML input names are (usually password / confirm_password)
+    const pwd = formData.get('password') || formData.get('password1');
+    const confirmPwd = formData.get('confirm_password') || formData.get('confirmPassword') || formData.get('password2');
 
-    if (password && password !== confirmPassword) {
+    // Force them into the names Django's CustomUserCreationForm expects
+    if (pwd) formData.set('password1', pwd);
+    if (confirmPwd) formData.set('password2', confirmPwd);
+
+    // Validation
+    if (pwd && pwd !== confirmPwd) {
         showAlert('Passwords do not match!', 'danger');
         return;
     }
-    if (password && password.length < 8) {
+    
+    // Safety check: only check length if password actually exists
+    if (pwd && pwd.length < 8) {
         showAlert('Password must be at least 8 characters long!', 'danger');
         return;
     }
@@ -325,15 +360,18 @@ async function handleUserFormSubmit(e) {
         if (response.ok) {
             showAlert(data.message, 'success');
             closeUserModal();
-            // Reload the page or update the table dynamically
             location.reload();
         } else {
             showAlert(data.message || 'An error occurred.', 'danger');
-            // Display form errors if available
             if (data.errors) {
+                console.error('Form errors:', data.errors);
                 for (const field in data.errors) {
                     const errorList = data.errors[field];
-                    errorList.forEach(error => showAlert(`${field}: ${error.message}`, 'danger'));
+                    // If Django returns an object, we get the message string
+                    errorList.forEach(error => {
+                        const msg = typeof error === 'string' ? error : error.message;
+                        showAlert(`${field}: ${msg}`, 'danger');
+                    });
                 }
             }
         }

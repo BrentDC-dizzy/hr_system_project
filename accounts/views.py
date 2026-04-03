@@ -18,6 +18,16 @@ def is_admin(user):
     return user.is_authenticated and user.role == 'ADMIN'
 
 def login_view(request):
+    # If a user is already logged in, redirect them from the login page.
+    if request.user.is_authenticated:
+        # If they must change their password, send them there first.
+        if getattr(request.user, 'must_change_password', False):
+            return redirect('password_change')
+        # Otherwise, send them to their respective dashboard.
+        if request.user.role == 'ADMIN':
+            return redirect('admin_dashboard')
+        return redirect('employee_dashboard')
+
     if request.method == 'POST':
         username_or_email = request.POST.get('username')
         password = request.POST.get('password')
@@ -71,6 +81,11 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
             
     return render(request, 'login/login.html')
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, "You have been successfully logged out.")
+    return redirect('login')
 
 @login_required
 @user_passes_test(is_admin)
@@ -132,6 +147,21 @@ def employee_dashboard(request):
     return render(request, 'dashboards/emp_dash.html')
 
 @login_required
+def employee_profile(request):
+    # This view will render the employee's profile page
+    return render(request, 'dashboards/employee_profile.html')
+
+@login_required
+def employee_attendance(request):
+    # This view will render the employee's attendance page
+    return render(request, 'dashboards/employee_attendance.html')
+
+@login_required
+def employee_documents(request):
+    # This view will render the employee's documents page
+    return render(request, 'dashboards/employee_documents.html')
+
+@login_required
 @user_passes_test(is_admin)
 @require_POST
 def create_user(request):
@@ -141,6 +171,7 @@ def create_user(request):
         messages.success(request, f"User {user.username} created successfully. Password change required on first login.")
         return JsonResponse({'status': 'success', 'message': 'User created successfully.'})
     else:
+        print(form.errors) # Log form errors to the console for debugging
         errors = form.errors.as_json()
         return JsonResponse({'status': 'error', 'message': 'Error creating user.', 'errors': json.loads(errors)}, status=400)
 
@@ -159,6 +190,7 @@ def get_user_data(request, user_id):
         'is_locked': user.is_locked,
         'must_change_password': user.must_change_password,
         'profile_pic_url': user.profile_pic.url if user.profile_pic else None,
+        'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
     }
     return JsonResponse(data)
 

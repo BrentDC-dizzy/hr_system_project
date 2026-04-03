@@ -1,16 +1,20 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView
+# from django.contrib.auth.views import LogoutView
 from . import views
 
 urlpatterns = [
     # Authentication
     path('', views.login_view, name='login'),
-    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('logout/', views.logout_view, name='logout'),
     path('password-change/', views.password_change, name='password_change'),
 
     # Dashboards
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('employee-dashboard/', views.employee_dashboard, name='employee_dashboard'),
+    # Employee Dashboard Sub-pages
+    path('employee-dashboard/profile/', views.employee_profile, name='employee_profile'),
+    path('employee-dashboard/attendance/', views.employee_attendance, name='employee_attendance'),
+    path('employee-dashboard/documents/', views.employee_documents, name='employee_documents'),
 
     # User Management (Functional/AJAX)
     path('accounts/create-user/', views.create_user, name='create_user'),
