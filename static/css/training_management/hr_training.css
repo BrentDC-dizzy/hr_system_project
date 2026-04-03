@@ -37,3 +37,18 @@
     color: #333;
     line-height: 1.4;
 }
+
+/* Add Training modal — same as #cancelRequest in hr_appmanagement.css */
+#cancelAddTraining {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#cancelAddTraining:hover {
+    background: #cacaca;
+}
