@@ -74,6 +74,25 @@ body, html {
     width: 100%;
 }
 
+.form-header.centered-header {
+    background: #ffffff;
+    padding: 20px 60px;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    flex-shrink: 0;
+    min-height: 160px;
+}
+
+.header-logo {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    margin-top: -20px;
+}
+
 /* ── Form Content (Two Columns) ── */
 .form-content {
     display: grid;
