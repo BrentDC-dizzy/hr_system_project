@@ -243,6 +243,9 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.8);
     max-width: 1250px;
     margin: 0 auto;
+    width: 100%;             /* ← add */
+    overflow-y: auto;        /* ← add: scroll happens here */
+    overflow-x: hidden;      /* ← add */
 }
 
 /* Adjustments for cards inside the white wrapper */
@@ -256,6 +259,15 @@ body {
     margin-top: 0;
     background: linear-gradient(135deg, #4a1d1d 0%, #6b2a2a 45%, #8b3d3d 100%);
     border: none;
+}
+/* replace .main-container::-webkit-scrollbar with: */
+.master-content-wrapper::-webkit-scrollbar { width: 8px; }
+.master-content-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(74, 29, 29, 0.25);
+    border-radius: 10px;
+}
+.master-content-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .menu {
@@ -376,18 +388,15 @@ hr {
 
 /* ── MAIN CONTAINER ──────────────────────────────────────── */
 
+/* ── MAIN CONTAINER ──────────────────────────────────────── */
 .main-container {
-
     margin-left: 340px;
-
     height: 100vh;
-
     padding: 30px;
-
-    overflow-y: auto;
-
+    overflow: hidden;        /* ← change from overflow-y: auto */
+    display: flex;           /* ← add */
+    align-items: stretch;   /* ← add */
     transition: margin-left 0.35s ease;
-
 }
 
 
