@@ -226,6 +226,143 @@ hr {
     box-sizing: border-box;
 }
 
+/* Form Card */
+.form-card {
+    background: #ffffff;
+    border-radius: 25px;
+    padding: 40px;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.form-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 30px;
+}
+
+.position-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-row.full-width {
+    grid-template-columns: 1fr;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #555;
+    background: #f9f9f9;
+    font-family: 'Segoe UI', sans-serif;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.form-group input:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-cancel {
+    padding: 12px 40px;
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #c0c0c0;
+}
+
+.btn-save {
+    padding: 12px 40px;
+    background: #4a1d1d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+}
+
+.btn-save:hover {
+    background: #3a1515;
+}
+
 /* 5. Header & Exact HR Table Design */
 .header { 
     display: flex;
@@ -282,96 +419,6 @@ hr {
     color: white;
 }
 
-.form-body {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 5px;
-    
-    /* Hide for Firefox */
-    scrollbar-width: none;
-    /* Hide for IE/Edge */
-    -ms-overflow-style: none;
-}
-
-.form-body::-webkit-scrollbar {
-    display: none;
-}
-
-.form-body::-webkit-scrollbar-thumb {
-    background: #e0e0e0;
-    border-radius: 10px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-}
-
-thead th {
-    text-align: left;
-    padding: 12px 10px;
-    border-bottom: 2px solid #eee;
-    color: #555;
-    font-size: 12px;
-    text-transform: uppercase;
-}
-
-tbody td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #f5f5f5;
-    font-size: 13px;
-    color: #333;
-}
-
-/* Status Badges */
-.status-pill {
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 11px;
-    display: inline-block;
-    min-width: 85px;
-    text-align: center;
-}
-
-.status-pill.pending {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.status-pill.approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-pill.rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-pill.approved-by-head {
-    background-color: #cfe2ff;
-    color: #084298;
-}
-
-.action-link {
-    color: #4a1d1d;
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.action-link:hover {
-    text-decoration: underline;
-}
-
 /* 6. Modal Styles (Unified Design) */
 .modal-overlay {
     position: fixed;
@@ -382,147 +429,4 @@ tbody td {
     justify-content: center;
     align-items: center;
     z-index: 2000;
-}
-
-.view-modal-content {
-    background: white;
-    width: 950px;
-    max-width: 95%;
-    border-radius: 25px;
-    padding: 35px;
-    animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 12px;
-    margin-bottom: 25px;
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 35px;
-}
-
-/* Info Area Alignment */
-.info-item {
-    margin-bottom: 18px;
-}
-
-/* Unified Font Styling for all Modal Labels */
-.info-item label,
-.status-box label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #888;
-    font-weight: 700;
-    margin-bottom: 0.3rem;
-}
-
-.info-item p {
-    font-size: 14px;
-    color: #333;
-    line-height: 1.4;
-}
-
-/* Doc Preview Area */
-.doc-tab-label {
-    background: #e0e0e0;
-    padding: 8px 15px;
-    border-radius: 10px 10px 0 0;
-    font-weight: 700;
-    font-size: 12px;
-    display: inline-block;
-    border: 1px solid #ddd;
-    border-bottom: none;
-}
-
-.doc-box {
-    border: 1px solid #ddd;
-    border-radius: 0 15px 15px 15px;
-    overflow: hidden;
-}
-
-.doc-header {
-    background: #fff;
-    padding: 10px 15px;
-    font-size: 13px;
-    border-bottom: 1px solid #eee;
-}
-
-.pdf-placeholder {
-    height: 320px;
-    background: #f9f9f9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #bbb;
-}
-
-.pdf-placeholder i {
-    font-size: 50px;
-    margin-bottom: 10px;
-}
-
-/* Status Pill Breathing Room */
-#modalStatusContainer {
-    padding-top: 0.3rem;
-    padding-bottom: 0.3rem;
-    display: block;
-}
-
-#modalReviewer {
-    margin-top: 4px;
-    display: block;
-    color: #777;
-    font-size: 12px;
-}
-
-/* HR Action Buttons */
-.modal-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.btn-approve {
-    background: #d4edda;
-    color: #155724;
-    border: none;
-    padding: 14px;
-    flex: 1;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.btn-reject {
-    background: #f8d7da;
-    color: #721c24;
-    border: none;
-    padding: 14px;
-    flex: 1;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.modal-close-btn {
-    width: 100%;
-    padding: 12px;
-    background: #4a1d1d;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 15px;
 }
