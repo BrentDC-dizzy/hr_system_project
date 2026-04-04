@@ -89,104 +89,107 @@
 
         <main class="main-container" id="mainContent">
 
-            <div class="content-card header-banner">
-                <div class="header-banner-inner">
-                    <div class="header-greeting">
-                        <p class="header-kicker">Employee portal</p>
-                        <h1>Good morning, Juan!</h1>
-                        <p class="header-sub">Track your time and weekly attendance at a glance.</p>
-                    </div>
-                    <div class="header-weather" aria-hidden="true"><i class="fas fa-sun"></i></div>
-                </div>
-            </div>
+            <div class="master-content-wrapper">
 
-            <div class="dashboard-grid">
-                <div class="content-card attendance-section">
-                    <div class="attendance-card-accent"></div>
-                    <div class="card-header">
-                        <div class="card-title-group">
-                            <span class="card-icon-wrap" aria-hidden="true"><i class="fas fa-fingerprint"></i></span>
-                            <h2>Today’s attendance</h2>
+                <div class="content-card header-banner">
+                    <div class="header-banner-inner">
+                        <div class="header-greeting">
+                            <p class="header-kicker">Employee portal</p>
+                            <h1>Good morning, Juan!</h1>
+                            <p class="header-sub">Track your time and weekly attendance at a glance.</p>
                         </div>
-                        <span class="date-now">Monday, February 8 | 8:14 AM</span>
+                        <div class="header-weather" aria-hidden="true"><i class="fas fa-sun"></i></div>
                     </div>
-                    <p class="status-text">Ready when you are — clock in to start your shift.</p>
-                    <div class="stats-row">
-                        <div class="stat-chip">
-                            <span class="stat-chip-label"><i class="fas fa-stopwatch"></i> Session</span>
-                            <p id="workingTime" class="stat-chip-value">Working for: 0h</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="content-card attendance-section">
+                        <div class="attendance-card-accent"></div>
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="card-icon-wrap" aria-hidden="true"><i class="fas fa-fingerprint"></i></span>
+                                <h2>Today’s attendance</h2>
+                            </div>
+                            <span class="date-now">Monday, February 8 | 8:14 AM</span>
                         </div>
-                        <div class="stat-chip">
-                            <span class="stat-chip-label"><i class="fas fa-sign-in-alt"></i> Start</span>
-                            <p id="timeInDisplay" class="stat-chip-value">Time In: --</p>
+                        <p class="status-text">Ready when you are — clock in to start your shift.</p>
+                        <div class="stats-row">
+                            <div class="stat-chip">
+                                <span class="stat-chip-label"><i class="fas fa-stopwatch"></i> Session</span>
+                                <p id="workingTime" class="stat-chip-value">Working for: 0h</p>
+                            </div>
+                            <div class="stat-chip">
+                                <span class="stat-chip-label"><i class="fas fa-sign-in-alt"></i> Start</span>
+                                <p id="timeInDisplay" class="stat-chip-value">Time In: --</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-clock-in" id="clockBtn">Clock in</button>
+                    </div>
+
+                    <div class="content-card profile-preview">
+                        <div class="profile-flex">
+                            <div class="avatar-box">
+                                <img src="../../static/img/man.jpeg" alt="Juan Dela Cruz">
+                            </div>
+                            <div class="profile-details">
+                                <h3>Juan Dela Cruz</h3>
+                                <p class="profile-role">Department Head</p>
+                                <p class="emp-id">Employee ID: 001</p>
+                                <a href="../employee/emp_profile_view.html" class="btn-secondary">View Profile</a>
+                            </div>
                         </div>
                     </div>
-                    <button type="button" class="btn-clock-in" id="clockBtn">Clock in</button>
                 </div>
 
-                <div class="content-card profile-preview">
-                    <div class="profile-flex">
-                        <div class="avatar-box">
-                            <img src="../../static/img/man.jpeg" alt="Juan Dela Cruz">
+                <div class="content-card summary-section">
+                    <div class="summary-header">
+                        <div class="summary-title-wrap">
+                            <span class="card-icon-wrap card-icon-wrap--muted" aria-hidden="true"><i class="fas fa-calendar-week"></i></span>
+                            <h2>Weekly summary</h2>
                         </div>
-                        <div class="profile-details">
-                            <h3>Juan Dela Cruz</h3>
-                            <p class="profile-role">Department Head</p>
-                            <p class="emp-id">Employee ID: 001</p>
-                            <a href="../employee/emp_profile_view.html" class="btn-secondary">View Profile</a>
+                        <div class="week-picker">
+                            <button type="button" class="week-nav" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
+                            <span>Week 5</span>
+                            <button type="button" class="week-nav" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="content-card summary-section">
-                <div class="summary-header">
-                    <div class="summary-title-wrap">
-                        <span class="card-icon-wrap card-icon-wrap--muted" aria-hidden="true"><i class="fas fa-calendar-week"></i></span>
-                        <h2>Weekly summary</h2>
+                    <div class="table-wrapper">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Week</th>
+                                    <th>Sunday</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Saturday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="week-label">Feb 3 — Feb 10</td>
+                                    <td>2</td>
+                                    <td><span class="pill pill-warning">4h 36m</span></td>
+                                    <td><span class="pill pill-purple">Leave</span></td>
+                                    <td><span class="pill pill-success-check">8h 39m</span></td>
+                                    <td><span class="pill pill-success-check">8 hours</span></td>
+                                    <td><span class="pill pill-active">Active</span></td>
+                                    <td>8</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="week-picker">
-                        <button type="button" class="week-nav" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
-                        <span>Week 5</span>
-                        <button type="button" class="week-nav" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
+
+                    <div class="footer-actions">
+                        <button class="btn-history" id="openHistory">View Full History</button>
                     </div>
                 </div>
 
-                <div class="table-wrapper">
-                    <table class="attendance-table">
-                        <thead>
-                            <tr>
-                                <th>Week</th>
-                                <th>Sunday</th>
-                                <th>Monday</th>
-                                <th>Tuesday</th>
-                                <th>Wednesday</th>
-                                <th>Thursday</th>
-                                <th>Friday</th>
-                                <th>Saturday</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="week-label">Feb 3 — Feb 10</td>
-                                <td>2</td>
-                                <td><span class="pill pill-warning">4h 36m</span></td>
-                                <td><span class="pill pill-purple">Leave</span></td>
-                                <td><span class="pill pill-success-check">8h 39m</span></td>
-                                <td><span class="pill pill-success-check">8 hours</span></td>
-                                <td><span class="pill pill-active">Active</span></td>
-                                <td>8</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="footer-actions">
-                    <button class="btn-history" id="openHistory">View Full History</button>
-                </div>
-            </div>
-
-        </main>
+            </div> 
+            </main>
 
         <div class="history-modal" id="historyModal">
             <div class="history-modal-content">
@@ -274,6 +277,7 @@
             </div>
         </div>
 
-    </div> <script src="../../static/js/attendance/emp_attendance.js"></script>
+    </div> 
+    <script src="../../static/js/attendance/emp_attendance.js"></script>
 </body>
 </html>

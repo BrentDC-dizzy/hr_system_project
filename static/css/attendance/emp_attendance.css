@@ -234,7 +234,29 @@ body {
 
 }
 
+/* --- Master Wrapper for the Main Content --- */
+.master-content-wrapper {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 35px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    max-width: 1250px;
+    margin: 0 auto;
+}
 
+/* Adjustments for cards inside the white wrapper */
+.master-content-wrapper .content-card {
+    background: #fdfdfd; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f0f0f0;
+}
+
+.master-content-wrapper .header-banner {
+    margin-top: 0;
+    background: linear-gradient(135deg, #4a1d1d 0%, #6b2a2a 45%, #8b3d3d 100%);
+    border: none;
+}
 
 .menu {
 
