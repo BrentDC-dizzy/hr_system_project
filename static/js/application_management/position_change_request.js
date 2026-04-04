@@ -174,31 +174,9 @@ function submitRequest() {
 
 // ── DOM Ready ──
 document.addEventListener('DOMContentLoaded', function () {
-    const sidebar = document.getElementById('sidebar');
-    const logoToggle = document.getElementById('logoToggle');
-    const closeBtn = document.getElementById('closeBtn');
     const empNameEl = document.getElementById('empName');
     const cancelBtn = document.getElementById('cancelBtn');
     const submitBtn = document.getElementById('submitBtn');
-
-    // Sidebar tooltips
-    document.querySelectorAll('.menu-item').forEach(function (item) {
-        const text = item.querySelector('span').innerText;
-        item.setAttribute('data-text', text);
-    });
-
-    // Sidebar toggle
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('collapsed');
-        });
-    }
-
-    if (logoToggle) {
-        logoToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('collapsed');
-        });
-    }
 
     // Auto-fill employee details
     empNameEl.addEventListener('blur', function () {
