@@ -1,296 +1,300 @@
-/* ============================================================
-   position_change_request.js
-   ============================================================ */
+/* =================================
+   Employee Dashboard JavaScript
+   ================================= */
 
-// ── Mock employee lookup ──
-const employeeDirectory = {
-    'dela cruz, juan':   { id: 'EMP-001', email: 'jdelacruz@uphsd.edu', phone: '+63-2-8891-5000', position: 'Instructor',         dept: 'CCS' },
-    'santos, maria':     { id: 'EMP-002', email: 'msantos@uphsd.edu', phone: '+63-2-8891-5001', position: 'Professor',           dept: 'CBA' },
-    'reyes, ricardo':    { id: 'EMP-003', email: 'rreyes@uphsd.edu', phone: '+63-2-8891-5002', position: 'Registrar',           dept: 'COE' },
-    'gomez, patricia':   { id: 'EMP-004', email: 'pgomez@uphsd.edu', phone: '+63-2-8891-5003', position: 'Assistant Professor', dept: 'CAS' },
-    'torres, miguel':    { id: 'EMP-005', email: 'mtorres@uphsd.edu', phone: '+63-2-8891-5004', position: 'Clinical Instructor', dept: 'CON' },
-    'johnson, alice':    { id: 'EMP-006', email: 'ajohnson@uphsd.edu', phone: '+63-2-8891-5005', position: 'Senior Instructor',   dept: 'CAS' }
-};
+// Daily Quotes Array
+const inspirationalQuotes = [
+    "Success is the sum of small efforts repeated day in and day out.",
+    "The only way to do great work is to love what you do.",
+    "Your work is going to fill a large part of your life.",
+    "Great things never come from comfort zones.",
+    "Don't watch the clock; do what it does. Keep going.",
+    "The future depends on what you do today.",
+    "Success doesn't just find you. You have to go out and get it.",
+    "Opportunities don't happen. You create them.",
+    "Believe you can and you're halfway there.",
+    "Excellence is not a skill, it's an attitude."
+];
 
-let positionChangeRequests = [];
+// Initialize Dashboard on DOM Load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboard();
+    setupEventListeners();
+    loadDailyQuote();
+});
 
-// ── Helper Functions ──
-function generatePCRId() {
-    return 'PCR-' + new Date().getFullYear() + '-' + String(positionChangeRequests.length + 1).padStart(4, '0');
-}
-
-function autoFillEmployee(name) {
-    const key = name.trim().toLowerCase();
-    const emp = employeeDirectory[key];
-    const idEl = document.getElementById('empId');
-    const deptEl = document.getElementById('currentDept');
-    const posEl = document.getElementById('currentPos');
-
-    if (emp) {
-        idEl.value = emp.id;
-        deptEl.value = emp.dept;
-        posEl.value = emp.position;
-    } else {
-        idEl.value = '';
-        deptEl.value = '';
-        posEl.value = '';
-    }
-}
-
-function resetForm() {
-    document.getElementById('empName').value = '';
-    document.getElementById('empId').value = '';
-    document.getElementById('currentDept').value = '';
-    document.getElementById('currentPos').value = '';
-    document.getElementById('requestedPos').value = '';
-    document.getElementById('effectiveDate').value = '';
-    document.getElementById('reason').value = '';
-
-    // Clear validation highlights
-    ['empName', 'requestedPos', 'effectiveDate', 'reason'].forEach(function (id) {
-        document.getElementById(id).style.borderColor = '';
-        document.getElementById(id).style.boxShadow = '';
-    });
-}
-
-function validateForm() {
-    const empName = document.getElementById('empName').value.trim();
-    const requestedPos = document.getElementById('requestedPos').value.trim();
-    const effectiveDate = document.getElementById('effectiveDate').value;
-    const reason = document.getElementById('reason').value.trim();
-
-    const errors = [];
-    const errorFields = [];
-
-    if (!empName) {
-        errors.push('Please enter employee name.');
-        errorFields.push('empName');
-    }
-
-    if (!requestedPos) {
-        errors.push('Please select a requested position.');
-        errorFields.push('requestedPos');
-    }
-
-    if (!effectiveDate) {
-        errors.push('Please select an effective date.');
-        errorFields.push('effectiveDate');
-    }
-
-    if (!reason) {
-        errors.push('Please provide a reason for the position change.');
-        errorFields.push('reason');
-    }
-
-    if (errors.length > 0) {
-        errorFields.forEach(function (id) {
-            document.getElementById(id).style.borderColor = '#dc3545';
-            document.getElementById(id).style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
-        });
-        showToast('error', 'Validation Error', errors.join(' '));
-        return false;
-    }
-
-    return true;
-}
-
-// ── Toast System ──
-function showToast(type, title, message) {
-    const container = document.getElementById('toast-container');
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        info: 'fas fa-info-circle'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = 'toast ' + type;
-    toast.innerHTML =
-        '<i class="' + icons[type] + ' toast-icon"></i>' +
-        '<div class="toast-body">' +
-            '<div class="toast-title">' + title + '</div>' +
-            '<div class="toast-msg">' + message + '</div>' +
-        '</div>' +
-        '<button class="toast-close" id="toastCloseBtn"><i class="fas fa-times"></i></button>';
-
-    toast.querySelector('#toastCloseBtn').addEventListener('click', function () {
-        removeToast(toast);
-    });
-
-    container.appendChild(toast);
-    setTimeout(function () { removeToast(toast); }, 4000);
-}
-
-function removeToast(el) {
-    if (!el || !el.parentElement) return;
-    el.style.animation = 'toastOut 0.35s ease forwards';
-    setTimeout(function () { el.remove(); }, 350);
-}
-
-// ── Render Table ──
-function renderTable() {
-    const tbody = document.getElementById('tableBody');
+function initializeDashboard() {
+    // Initialize charts
+    initializeAttendanceChart();
     
-    if (positionChangeRequests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="no-records">No position change requests yet. Click "New Request" to create one.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = '';
-    positionChangeRequests.forEach(function (req) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${req.id}</strong></td>
-            <td>${req.empName}</td>
-            <td>${req.currentDept}</td>
-            <td>${req.currentPos}</td>
-            <td>${req.requestedPos}</td>
-            <td>${req.effectiveDate}</td>
-            <td>${req.submittedDate}</td>
-            <td><span class="status-pill pending">${req.status}</span></td>
-            <td><a class="action-link" onclick="openModal('${req.id}')">View</a></td>
-        `;
-        tbody.appendChild(row);
-    });
+    // Load dynamic data
+    loadDashboardData();
+    
+    // Setup quote rotation
+    setDailyQuote();
 }
 
-// ── Modal Functions ──
-function openModal() {
-    const modal = document.getElementById('requestModal');
-    modal.classList.add('active');
-    resetForm();
-}
+/* =================================
+   SIDEBAR FUNCTIONALITY
+   ================================= */
 
-function closeModal() {
-    const modal = document.getElementById('requestModal');
-    modal.classList.remove('active');
-}
-
-// ── Form Submission ──
-function submitRequest() {
-    if (!validateForm()) {
-        return;
-    }
-
-    const empName = document.getElementById('empName').value.trim();
-    const empId = document.getElementById('empId').value;
-    const currentPos = document.getElementById('currentPos').value;
-    const currentDept = document.getElementById('currentDept').value;
-    const requestedPos = document.getElementById('requestedPos').value;
-    const effectiveDate = document.getElementById('effectiveDate').value;
-    const reason = document.getElementById('reason').value.trim();
-
-    const newRequest = {
-        id: generatePCRId(),
-        empName: empName,
-        empId: empId,
-        currentPos: currentPos,
-        currentDept: currentDept,
-        requestedPos: requestedPos,
-        effectiveDate: effectiveDate,
-        reason: reason,
-        submittedDate: new Date().toLocaleDateString(),
-        status: 'Pending'
-    };
-
-    positionChangeRequests.push(newRequest);
-
-    showToast('success', 'Request Submitted',
-        'Position change request ' + newRequest.id + ' has been submitted successfully.');
-
-    renderTable();
-    setTimeout(function () {
-        closeModal();
-    }, 1500);
-}
-
-// ── DOM Ready ──
-document.addEventListener('DOMContentLoaded', function () {
-    const empNameEl = document.getElementById('empName');
-    const cancelBtn = document.getElementById('cancelRequest');
-    const submitBtn = document.getElementById('submitRequest');
-    const newRequestBtn = document.getElementById('newRequestBtn');
-    const modal = document.getElementById('requestModal');
-    const tabRecords = document.getElementById('tab-records');
-    const tabPosition = document.getElementById('tab-position');
-    const tableHeader = document.getElementById('tableHeader');
-    const positionChangeTable = document.getElementById('positionChangeTable');
-
-    // ── Tab Switching ──
-    function showTab(tab) {
-        if (tab === 'position') {
-            tabPosition.classList.add('active');
-            tabRecords.classList.remove('active');
-            tableHeader.style.display = 'flex';
-            positionChangeTable.style.display = 'table';
-        } else if (tab === 'records') {
-            tabRecords.classList.add('active');
-            tabPosition.classList.remove('active');
-            tableHeader.style.display = 'none';
-            positionChangeTable.style.display = 'none';
-        }
-    }
-
-    if (tabRecords) {
-        tabRecords.addEventListener('click', function () {
-            showTab('records');
+function setupEventListeners() {
+    const sidebar = document.getElementById('sidebar');
+    const logoToggle = document.getElementById('logoToggle');
+    const closeBtn = document.getElementById('closeBtn');
+    const menuItems = document.querySelectorAll('.menu-item');
+    
+    // Close button (only when expanded)
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
         });
     }
-
-    if (tabPosition) {
-        tabPosition.addEventListener('click', function () {
-            showTab('position');
-        });
-    }
-
-    // Open modal on new request
-    if (newRequestBtn) {
-        newRequestBtn.addEventListener('click', openModal);
-    }
-
-    // Close modal on cancel
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', closeModal);
-    }
-
-    // Close modal on overlay click
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
+    
+    // Open via logo click
+    if (logoToggle) {
+        logoToggle.addEventListener('click', () => {
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
             }
         });
     }
-
-    // Auto-fill employee details
-    empNameEl.addEventListener('blur', function () {
-        autoFillEmployee(empNameEl.value);
-    });
-
-    // Clear validation error styling on input
-    ['empName', 'requestedPos', 'effectiveDate', 'reason'].forEach(function (id) {
-        document.getElementById(id).addEventListener('input', function () {
-            this.style.borderColor = '';
-            this.style.boxShadow = '';
-        });
-        document.getElementById(id).addEventListener('change', function () {
-            this.style.borderColor = '';
-            this.style.boxShadow = '';
+    
+    // Set menu item attributes for tooltips
+    menuItems.forEach(item => {
+        const text = item.querySelector('span');
+        if (text) {
+            item.setAttribute('data-text', text.innerText);
+        }
+        
+        item.addEventListener('click', () => {
+            document.querySelector('.menu-item.active')?.classList.remove('active');
+            item.classList.add('active');
         });
     });
+    
+    // Evaluation card click
+    setupEvaluationCard();
+    
+    // Notification clear button
+    setupNotificationPanel();
+}
 
-    // Submit button
-    if (submitBtn) {
-        submitBtn.addEventListener('click', submitRequest);
+/* =================================
+   EVALUATION CARD
+   ================================= */
+
+function setupEvaluationCard() {
+    const evaluationCard = document.getElementById('evaluationCard');
+    
+    if (evaluationCard) {
+        evaluationCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Navigate to evaluation page
+            window.location.href = evaluationCard.getAttribute('href');
+        });
     }
+}
 
-    // Allow Enter key to submit in reason textarea
-    document.getElementById('reason').addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.key === 'Enter') {
-            submitRequest();
+/* =================================
+   NOTIFICATION PANEL
+   ================================= */
+
+function setupNotificationPanel() {
+    const clearBtn = document.querySelector('.notification-clear');
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            clearAllNotifications();
+        });
+    }
+}
+
+function clearAllNotifications() {
+    const notificationsList = document.querySelector('.notifications-list');
+    if (notificationsList) {
+        notificationsList.innerHTML = '';
+        const emptyMessage = document.createElement('div');
+        emptyMessage.style.cssText = 'padding: 2rem 1.5rem; text-align: center; color: var(--hr-text-light); font-size: 0.9rem;';
+        emptyMessage.innerText = 'No notifications';
+        notificationsList.appendChild(emptyMessage);
+    }
+}
+
+/* =================================
+   ATTENDANCE CHART (EMPLOYEE-SPECIFIC)
+   ================================= */
+
+function initializeAttendanceChart() {
+    const ctx = document.getElementById('attendanceChart');
+    if (!ctx) return;
+    
+    // Get last 7 days
+    const labels = getLast7Days();
+    
+    // Employee-specific attendance data (simulated)
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Hours Worked',
+                data: [8, 8.5, 8, 7.5, 8, 8.5, 0],
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderColor: '#2563eb',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }
+        ]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15,
+                        font: { size: 12, weight: '500' },
+                        color: '#1e293b'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'h';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 12 }
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 12 }
+                    }
+                }
+            }
         }
     });
+}
 
-    // Initial render
-    renderTable();
-});
+/* =================================
+   DATE & QUOTE UTILITIES
+   ================================= */
+
+function getLast7Days() {
+    const days = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dayIndex = date.getDay();
+        const day = dayNames[dayIndex];
+        const dateNum = date.getDate();
+        days.push(`${day} ${dateNum}`);
+    }
+    
+    return days;
+}
+
+function setDailyQuote() {
+    const quoteElement = document.getElementById('dailyQuote');
+    if (quoteElement) {
+        // Get quote based on day of year for consistency
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+        const quoteIndex = dayOfYear % inspirationalQuotes.length;
+        
+        quoteElement.textContent = inspirationalQuotes[quoteIndex];
+    }
+}
+
+function loadDailyQuote() {
+    setDailyQuote();
+    
+    // Refresh quote at midnight
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timeUntilMidnight = tomorrow - now;
+    
+    setTimeout(() => {
+        setDailyQuote();
+        // Then refresh every 24 hours
+        setInterval(setDailyQuote, 24 * 60 * 60 * 1000);
+    }, timeUntilMidnight);
+}
+
+/* =================================
+   DASHBOARD DATA
+   ================================= */
+
+function loadDashboardData() {
+    // Load evaluation data
+    loadEvaluationData();
+}
+
+function loadEvaluationData() {
+    // Simulate loading employee evaluation data
+    const scoreEl = document.getElementById('evaluationScore');
+    const starsEl = document.getElementById('evaluationStars');
+    const dateEl = document.getElementById('evaluationDate');
+    
+    // Simulated employee evaluation data
+    const evaluationData = {
+        score: 4.2,
+        stars: '⭐⭐⭐⭐',
+        date: 'March 15, 2026'
+    };
+    
+    if (scoreEl) {
+        animateScore(scoreEl, 0, evaluationData.score, 800);
+    }
+    
+    if (starsEl) {
+        setTimeout(() => {
+            starsEl.textContent = evaluationData.stars;
+        }, 800);
+    }
+    
+    if (dateEl) {
+        dateEl.textContent = `Last evaluated: ${evaluationData.date}`;
+    }
+}
+
+function animateScore(element, start, end, duration) {
+    let startTimestamp = null;
+    
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const value = (progress * (end - start) + start).toFixed(1);
+        element.textContent = value;
+        
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        }
+    };
+    
+    requestAnimationFrame(step);
+}
