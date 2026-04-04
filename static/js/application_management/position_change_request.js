@@ -211,6 +211,37 @@ document.addEventListener('DOMContentLoaded', function () {
     const submitBtn = document.getElementById('submitRequest');
     const newRequestBtn = document.getElementById('newRequestBtn');
     const modal = document.getElementById('requestModal');
+    const tabRecords = document.getElementById('tab-records');
+    const tabPosition = document.getElementById('tab-position');
+    const tableHeader = document.getElementById('tableHeader');
+    const positionChangeTable = document.getElementById('positionChangeTable');
+
+    // ── Tab Switching ──
+    function showTab(tab) {
+        if (tab === 'position') {
+            tabPosition.classList.add('active');
+            tabRecords.classList.remove('active');
+            tableHeader.style.display = 'flex';
+            positionChangeTable.style.display = 'table';
+        } else if (tab === 'records') {
+            tabRecords.classList.add('active');
+            tabPosition.classList.remove('active');
+            tableHeader.style.display = 'none';
+            positionChangeTable.style.display = 'none';
+        }
+    }
+
+    if (tabRecords) {
+        tabRecords.addEventListener('click', function () {
+            showTab('records');
+        });
+    }
+
+    if (tabPosition) {
+        tabPosition.addEventListener('click', function () {
+            showTab('position');
+        });
+    }
 
     // Open modal on new request
     if (newRequestBtn) {

@@ -88,15 +88,21 @@
 
             <!-- HEADER -->
             <div class="header">
-                <h1>Position Change Requests</h1>
+                <h1>Applications Management</h1>
                 <div class="search-add">
                     <input type="text" placeholder="Search by Name / ID / Dept" id="searchInput">
-                    <button class="btn-new" id="newRequestBtn">New Request</button>
+                    <div class="tab-group">
+                        <button class="tab-btn" id="tab-records">Records</button>
+                        <button class="tab-btn active" id="tab-position">Position Change Requests</button>
+                    </div>
                 </div>
             </div>
 
             <!-- TABLE -->
             <div class="form-body">
+                <div class="table-header" id="tableHeader" style="display: none;">
+                    <button class="btn-new" id="newRequestBtn">+ New Request</button>
+                </div>
                 <table id="positionChangeTable">
                     <thead>
                         <tr>
@@ -113,7 +119,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="9" class="no-records">No position change requests yet. Click "New Request" to create one.</td>
+                            <td colspan="9" class="no-records">No position change requests yet. Click "+ New Request" to create one.</td>
                         </tr>
                     </tbody>
                 </table>
