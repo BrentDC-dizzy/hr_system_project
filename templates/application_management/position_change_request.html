@@ -6,6 +6,7 @@
     <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
     <link rel="stylesheet" href="../../static/css/application_management/position_change_request.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
 </head>
 <body>
     <div class="background"></div>
@@ -103,13 +104,20 @@
         </main>
     </div>
 
-    <div id="viewModal" class="modal-overlay">
-        <!-- Modal not used for position change requests -->
+    <!-- ── Cancel Confirmation Modal ── -->
+    <div id="cancelModal">
+        <div class="modal-content">
+            <div class="modal-icon-circle">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h2>Cancel Progress?</h2>
+            <p>Are you sure you want to cancel? All unsaved progress will be lost.</p>
+            <div class="modal-footer">
+                <button class="btn-yes-cancel" id="confirmCancelBtn">YES, CANCEL</button>
+                <button class="btn-no-stay"    id="stayBtn">NO, STAY</button>
+            </div>
+        </div>
     </div>
-
-    <template id="leaveRowTemplate">
-        <!-- Template not used for position change requests -->
-    </template>
 
     <script src="../../static/js/application_management/position_change_request.js"></script>
 </body>

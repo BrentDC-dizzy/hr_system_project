@@ -46,7 +46,6 @@ body, html {
     width: 90px;
 }
 
-/* Sidebar Internal spacing */
 .top-section {
     display: flex;
     align-items: center;
@@ -143,7 +142,7 @@ body, html {
     background: rgba(255,255,255,0.25);
 }
 
-/* --- FIXED: LABEL TOOLTIP FOR COLLAPSED SIDEBAR --- */
+/* Tooltip for collapsed sidebar */
 .sidebar.collapsed .menu-item:hover::after {
     content: attr(data-text);
     position: absolute;
@@ -162,7 +161,6 @@ body, html {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-/* Optional: Pointer triangle for the tooltip */
 .sidebar.collapsed .menu-item:hover::before {
     content: "";
     position: absolute;
@@ -184,7 +182,7 @@ hr {
     margin-top: auto;
 }
 
-/* 4. MASTER LAYOUT & GLIDE LOGIC (ZOOM SAFE) */
+/* 4. Master Layout */
 .dashboard-viewport {
     display: flex;
     height: 100vh;
@@ -194,40 +192,21 @@ hr {
     gap: 20px;
 }
 
-/* IMPORTANT: MAIN CONTENT MUST RESERVE SIDEBAR SPACE */
 .main-content {
     flex: 1;
     height: 100%;
-    margin-left: 320px; /* 300 sidebar + 20 gap */
+    margin-left: 320px;
     display: flex;
     flex-direction: column;
     min-width: 0;
     transition: margin-left 0.35s ease;
 }
 
-/* WHEN SIDEBAR COLLAPSED */
 .sidebar.collapsed ~ .dashboard-viewport .main-content {
-    margin-left: 110px; /* 90 sidebar + 20 gap */
+    margin-left: 110px;
 }
 
-/* Leave Card (FULL WIDTH ALWAYS) */
-.leave-card {
-    background: #ffffff;
-    border-radius: 25px;
-    padding: 25px 40px;
-    width: 100%;
-    height: 100%;
-    flex: 1;
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    box-sizing: border-box;
-}
-
-/* Form Card */
+/* 5. Form Card */
 .form-card {
     background: #ffffff;
     border-radius: 25px;
@@ -260,10 +239,6 @@ hr {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-}
-
-.form-row.full-width {
-    grid-template-columns: 1fr;
 }
 
 .form-group {
@@ -363,248 +338,7 @@ hr {
     background: #3a1515;
 }
 
-/* 5. Header & Exact HR Table Design */
-.header { 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    width: 100%;
-}
-
-.header h1 {
-    font-size: 30px;
-    color: #1a1a1a;
-    white-space: nowrap;
-    margin: 0;
-}
-
-.search-add {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.search-add input {
-    padding: 10px 15px;
-    width: 280px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    font-size: 13px;
-    outline: none;
-}
-
-.tab-group {
-    display: flex;
-    gap: 5px;
-    background: #f0f0f0;
-    padding: 5px;
-    border-radius: 12px;
-}
-
-.tab-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: 0.3s;
-    color: #666;
-    white-space: nowrap;
-}
-
-.tab-btn.active {
-    background: #4a1d1d;
-    color: white;
-}
-
-/* 6. Modal Styles (Unified Design) */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-.confirm-modal {
-    background: white;
-    border-radius: 15px;
-    padding: 40px;
-    width: 90%;
-    max-width: 420px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 15px;
-    padding: 40px;
-    width: 90%;
-    max-width: 420px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.confirm-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    font-size: 40px;
-}
-
-.confirm-icon.warning {
-    background: #f39c12;
-    color: white;
-}
-
-.confirm-icon.success {
-    background: #4CAF50;
-    color: white;
-}
-
-.warning-icon {
-    font-size: 60px;
-    color: #f39c12;
-    margin-bottom: 20px;
-}
-
-.modal-warning-title {
-    margin-top: 15px;
-}
-
-.confirm-modal h3 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 10px 0;
-}
-
-.confirm-modal p {
-    font-size: 14px;
-    color: #666;
-    margin: 0 0 30px 0;
-    line-height: 1.5;
-}
-
-.modal-content h2 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 10px 0;
-}
-
-.modal-content p {
-    font-size: 14px;
-    color: #666;
-    margin: 0 0 25px 0;
-    line-height: 1.5;
-}
-
-.confirm-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    width: 100%;
-}
-
-.confirm-actions button {
-    padding: 14px 50px;
-    border: none;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-    flex: 1;
-    max-width: 180px;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 10px;
-    margin-top: 25px;
-    justify-content: center;
-}
-
-.btn-flex {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-}
-
-.confirm-cancel {
-    background: #e0e0e0;
-    color: #333;
-}
-
-.confirm-cancel:hover {
-    background: #c0c0c0;
-}
-
-.confirm-confirm {
-    background: #4a1d1d;
-    color: white;
-}
-
-.confirm-confirm:hover {
-    background: #3a1515;
-}
-
-.btn-cancel {
-    background: #e0e0e0;
-    color: #333;
-}
-
-.btn-cancel:hover {
-    background: #c0c0c0;
-}
-
-.btn-save {
-    background: #4a1d1d;
-    color: white;
-}
-
-.btn-save:hover {
-    background: #3a1515;
-}
-
-/* Toast Notifications */
+/* 6. Toast Notifications */
 #toast-container {
     position: fixed;
     top: 30px;
@@ -669,23 +403,119 @@ hr {
 }
 
 @keyframes toastSlide {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+    from { transform: translateX(400px); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
 }
 
 @keyframes toastExit {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(400px);
-        opacity: 0;
-    }
+    from { transform: translateX(0);     opacity: 1; }
+    to   { transform: translateX(400px); opacity: 0; }
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Cancel Confirmation Modal                                         */
+/* ------------------------------------------------------------------ */
+#cancelModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+#cancelModal.active {
+    display: flex;
+}
+
+#cancelModal .modal-content {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 45px 40px 40px 40px;
+    width: 90%;
+    max-width: 440px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.25s ease;
+}
+
+#cancelModal .modal-icon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #f39c12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px auto;
+}
+
+#cancelModal .modal-icon-circle i {
+    font-size: 36px;
+    color: #ffffff;
+}
+
+#cancelModal .modal-content h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0 0 12px 0;
+}
+
+#cancelModal .modal-content p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0 0 30px 0;
+}
+
+#cancelModal .modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+#cancelModal .btn-yes-cancel {
+    flex: 1;
+    padding: 14px 10px;
+    background: #e0e0e0;
+    color: #333333;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#cancelModal .btn-yes-cancel:hover {
+    background: #c8c8c8;
+}
+
+#cancelModal .btn-no-stay {
+    flex: 1;
+    padding: 14px 10px;
+    background: #4a1d1d;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#cancelModal .btn-no-stay:hover {
+    background: #3a1515;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
 }
