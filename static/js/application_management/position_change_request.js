@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Cancel button
+    // Cancel button - Show confirmation dialog
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to cancel? All data will be lost.')) {
+            showConfirmDialog('Cancel Progress?', 'Are you sure you want to cancel? All unsaved progress will be lost.', () => {
                 document.getElementById('positionForm').reset();
                 document.getElementById('empId').value = '';
                 document.getElementById('currentPos').value = '';
                 document.getElementById('currentDept').value = '';
-            }
+            });
         });
     }
 
-    // Submit button
+    // Submit button - Show success notification
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
             const empName = document.getElementById('empName').value.trim();
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Validation
             if (!empName || !requestedPos || !effectiveDate || !reason) {
-                alert('Please fill in all required fields.');
+                showToast('Please fill in all required fields.');
                 return;
             }
 
@@ -75,14 +75,127 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentPos = document.getElementById('currentPos').value;
             const currentDept = document.getElementById('currentDept').value;
 
-            // Success message
-            alert(`Position Change Request submitted!\n\nEmployee: ${empName}\nCurrent Position: ${currentPos}\nRequested Position: ${requestedPos}\nEffective Date: ${effectiveDate}`);
+            // Show success notification
+            showSuccessNotification(`${empName}'s position change request has been successfully submitted.`);
 
-            // Reset form
-            document.getElementById('positionForm').reset();
-            document.getElementById('empId').value = '';
-            document.getElementById('currentPos').value = '';
-            document.getElementById('currentDept').value = '';
+            // Reset form after notification
+            setTimeout(() => {
+                document.getElementById('positionForm').reset();
+                document.getElementById('empId').value = '';
+                document.getElementById('currentPos').value = '';
+                document.getElementById('currentDept').value = '';
+            }, 1500);
         });
     }
 });
+
+// ── Confirmation Dialog ──
+function showConfirmDialog(title, message, onConfirm) {
+    let modal = document.getElementById('confirmModal');
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'confirmModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="confirm-modal">
+                <div class="confirm-icon warning"><i class="fas fa-exclamation"></i></div>
+                <h3 id="confirmTitle"></h3>
+                <p id="confirmMessage"></p>
+                <div class="confirm-actions">
+                    <button class="confirm-cancel" id="confirmCancel">YES, CANCEL</button>
+                    <button class="confirm-confirm" id="confirmStay">NO, STAY</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('confirmCancel').addEventListener('click', () => {
+            modal.classList.remove('active');
+            onConfirm();
+        });
+
+        document.getElementById('confirmStay').addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    modal.classList.add('active');
+}
+
+// ── Success Notification ──
+function showSuccessNotification(message) {
+    let container = document.getElementById('toast-container');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast success';
+    toast.innerHTML = `
+        <i class="fas fa-check-circle toast-icon"></i>
+        <div class="toast-content">
+            <h4>Position Change Request Submitted</h4>
+            <p>${message}</p>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+
+    container.appendChild(toast);
+
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.style.animation = 'toastExit 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    setTimeout(() => {
+        toast.style.animation = 'toastExit 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ── Simple Toast for Errors ──
+function showToast(message) {
+    let container = document.getElementById('toast-container');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.borderLeftColor = '#ef4444';
+    toast.innerHTML = `
+        <i class="fas fa-exclamation-circle toast-icon" style="color: #ef4444;"></i>
+        <div class="toast-content">
+            <h4>Validation Error</h4>
+            <p>${message}</p>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+
+    container.appendChild(toast);
+
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.style.animation = 'toastExit 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    setTimeout(() => {
+        toast.style.animation = 'toastExit 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
