@@ -1,8 +1,11 @@
 from django.urls import path
 from . import views
 
-# Make sure it's exactly 'urlpatterns' in lowercase
+app_name = 'documents'
+
 urlpatterns = [
-    # You can leave this list empty for now, or add a path:
-    # path('', views.attendance_view, name='attendance_view'),
+    path('upload/', views.upload_document, name='upload_document'),
+    path('view/', views.view_documents, name='view_documents'),
+    path('download/<int:document_id>/', views.download_document, name='download_document'),
+    path('delete/<int:document_id>/', views.delete_document, name='delete_document'),
 ]

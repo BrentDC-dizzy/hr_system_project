@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>My Documents</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Upload Date</th>
+            <th>Expiry Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for document in documents %}
+        <tr {% if document.is_expired %}style="color: red;"{% elif document.is_approaching_expiry %}style="color: orange;"{% endif %}>
+            <td>{{ document.document_type }}</td>
+            <td>{{ document.upload_date|date:"M d, Y" }}</td>
+            <td>
+                {{ document.expiry_date|default:"N/A" }}
+                {% if document.is_expired %}<strong>(Expired)</strong>{% elif document.is_approaching_expiry %}<strong>(Expiring)</strong>{% endif %}
+            </td>
+            <td>
+                <a href="{% url 'documents:download_document' document.id %}">Download</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No documents found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
