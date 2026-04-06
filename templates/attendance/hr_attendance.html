@@ -220,14 +220,29 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Day</th>
+                                <th>Employee</th>
                                 <th>Time In</th>
                                 <th>Time Out</th>
                                 <th>Total Hours</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="weeklyTableBody"></tbody>
+                        <tbody id="weeklyTableBody">
+                            {% for log in attendance_logs %}
+                            <tr>
+                                <td>{{ log.date|date:"F d, Y" }}</td>
+                                <td>{{ log.employee.get_full_name|default:"N/A" }}</td>
+                                <td>{{ log.time_in|time:"h:i A"|default:"--" }}</td>
+                                <td>{{ log.time_out|time:"h :i A"|default:"--" }}</td>
+                                <td>--</td>
+                                <td><span class="status-badge {{ log.status|lower }}">{{ log.get_status_display }}</span></td>
+                                <td><a href="{% url 'attendance:edit_attendance_log' log.id %}" class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; text-decoration: none;">Edit</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem;">No attendance records found.</td></tr>
+                            {% endfor %}
+                        </tbody>
                     </table>
                     <div class="monthly-grid" id="monthlyGrid"></div>
                 </div>

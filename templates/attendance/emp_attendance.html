@@ -223,7 +223,19 @@
                                     </tr>
                                 </thead>
                                 <tbody id="weeklyTableBody">
-                                    </tbody>
+                                    {% for log in attendance_logs %}
+                                    <tr>
+                                        <td>{{ log.date|date:"F d, Y" }}</td>
+                                        <td>{{ log.date|date:"l" }}</td>
+                                        <td>{{ log.time_in|time:"h:i A"|default:"--" }}</td>
+                                        <td>{{ log.time_out|time:"h:i A"|default:"--" }}</td>
+                                        <td>--</td>
+                                        <td><span class="status-badge {{ log.status|lower }}">{{ log.get_status_display }}</span></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" style="text-align: center; padding: 2rem;">No attendance records found.</td></tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
                             <div class="monthly-grid" id="monthlyGrid">
                                 </div>
