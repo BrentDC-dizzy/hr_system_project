@@ -1,12 +1,21 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Department
+from .models import User, Department, EmployeeProfile # 
+
+# This allows you to edit Profile fields (like can_self_upload) 
+# directly on the User admin page.
+class EmployeeProfileInline(admin.StackedInline):
+    model = EmployeeProfile
+    can_delete = False
+    verbose_name_plural = 'Employee Profile Settings'
+    fields = ('employee_id', 'employment_type', 'can_self_upload', 'is_active')
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    # This allows you to see and edit your custom fields in the standard Django admin
+    inlines = (EmployeeProfileInline, ) # Attach the profile to the User admin
+    
     fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': (
+        ('Custom Role & Security', {'fields': (
             'role', 
             'department', 
             'profile_pic', 
@@ -16,8 +25,11 @@ class CustomUserAdmin(UserAdmin):
             'last_password_change'
         )}),
     )
-    list_display = ['username', 'email', 'role', 'department', 'is_staff', 'is_locked']
+    list_display = ['username', 'last_name', 'first_name', 'role', 'department', 'is_locked']
     list_filter = ['role', 'department', 'is_locked', 'is_staff']
 
+# Registering models
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Department)
+# Optionally register it separately if you want a dedicated list view
+admin.site.register(EmployeeProfile)

@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -32,8 +31,8 @@ class User(AbstractUser):
         
         # AUTOMATIC PROFILE CREATION:
         # Every time a User is created, they get a blank EmployeeProfile automatically
-        if is_new:
-            EmployeeProfile.objects.get_or_create(user=self)
+       # if is_new:
+        #    EmployeeProfile.objects.get_or_create(user=self)
 
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -68,6 +67,8 @@ class EmployeeProfile(models.Model):
     emergency_contact_num = models.CharField(max_length=15, blank=True)
     
     is_active = models.BooleanField(default=True)
+
+    can_self_upload = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.employee_id if self.employee_id else 'No ID'})"

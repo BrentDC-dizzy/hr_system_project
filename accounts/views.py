@@ -10,9 +10,10 @@ from django.utils import timezone
 import json 
 from django.db import models, transaction # Correctly added here
 from django.db.models import Q, Count
-from django.db import transaction
 
 from .models import User, Department, EmployeeProfile
+from documents.models import Document
+from documents.forms import DocumentUploadForm
 # ADDED AddEmployeeForm TO THIS LIST BELOW:
 from .forms import (
     CustomUserCreationForm, CustomUserChangeForm, AssignRoleForm, 
@@ -155,8 +156,15 @@ def employee_dashboard(request):
 
 @login_required
 def employee_profile(request):
-    # This view will render the employee's profile page
-    return render(request, 'dashboards/employee_profile.html')
+    # Fetch all Document objects belonging to the logged-in user
+    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
+    
+    context = {
+        'documents': documents,
+        'user': request.user,
+        'upload_form': DocumentUploadForm(user=request.user)
+    }
+    return render(request, 'employee/emp_profile_view.html', context)
 
 @login_required
 def employee_attendance(request):
@@ -436,16 +444,20 @@ def add_employee(request):
                         user.profile_pic = request.FILES['profile_pic']
                     user.save()
 
-                    # 2. Update the existing Profile
-                    profile = user.profile 
-                    profile.employee_id = form.cleaned_data['employee_id']
-                    profile.employment_type = form.cleaned_data['employment_type']
-                    profile.middle_name = form.cleaned_data['middle_name']
-                    profile.contact_number = form.cleaned_data['contact_number']
-                    profile.address = form.cleaned_data['address']
-                    profile.birth_date = form.cleaned_data['birth_date']
-                    profile.emergency_contact_name = form.cleaned_data['emergency_contact_name']
-                    profile.emergency_contact_num = form.cleaned_data['emergency_contact_num']
+                    # 2. Manually Create/Update the Profile
+                    # We use get_or_create to ensure no duplicate profiles are made
+                    profile, created = EmployeeProfile.objects.get_or_create(user=user)
+                    
+                    # 3. Populate Profile Details from the Form safely
+                    profile.employee_id = form.cleaned_data.get('employee_id')
+                    profile.employment_type = form.cleaned_data.get('employment_type')
+                    profile.middle_name = form.cleaned_data.get('middle_name')
+                    profile.contact_number = form.cleaned_data.get('contact_number')
+                    profile.address = form.cleaned_data.get('address')
+                    profile.birth_date = form.cleaned_data.get('birth_date')
+                    profile.emergency_contact_name = form.cleaned_data.get('emergency_contact_name')
+                    profile.emergency_contact_num = form.cleaned_data.get('emergency_contact_num')
+                    
                     profile.save()
 
                 messages.success(request, f"Employee {user.get_full_name()} added successfully!")

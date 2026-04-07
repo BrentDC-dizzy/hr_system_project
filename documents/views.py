@@ -33,7 +33,7 @@ def upload_document(request):
                 document.employee = user.profile
             document.save()
             messages.success(request, "Document uploaded successfully.")
-            return redirect('documents:view_documents')
+            return redirect('employee_profile')
     else:
         form = DocumentUploadForm(user=user)
 
