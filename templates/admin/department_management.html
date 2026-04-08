@@ -377,7 +377,12 @@
                 <div class="form-group">
                     <label>Select Department Head *</label>
                     <div class="head-selection">
-                        <input type="text" id="headSearch" placeholder="Search by name or email...">
+                        <input type="text" id="headSearch" list="userList" placeholder="Search by name or email...">
+                        <datalist id="userList">
+                            {% for user in users %}
+                            <option value="{{ user.email }}">{{ user.get_full_name }}</option>
+                            {% endfor %}
+                        </datalist>
                         <div id="headList" class="head-list">
                             {% for user in users %}
                             <div class="head-option" data-user-id="{{ user.id }}">

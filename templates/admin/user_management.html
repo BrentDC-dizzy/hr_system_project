@@ -146,17 +146,16 @@
 </head>
 <body>
      <div id="userModal" class="modal-overlay" 
-     style="display: flex; 
+     style="display: none; 
             position: fixed !important; 
             top: 0 !important; 
             left: 0 !important; 
             width: 100vw !important; 
             height: 100vh !important; 
             background: rgba(0,0,0,0.8) !important; 
-            z-index: 9999999 !important; 
-            align-items: center; 
-            justify-content: center; 
-            visibility: visible !important;">
+            z-index: 9999999 !important;
+            align-items: center;
+            justify-content: center;">
 
         <div class="modal-content" 
              style="background: #ffffff !important; width: 480px !important; padding: 40px !important; border-radius: 35px !important; position: relative !important; box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important; display: block !important;">
@@ -196,7 +195,7 @@
         <select id="role" name="role" required style="width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 15px; background: white;">
     <option value="">Select Role</option>
     <option value="ADMIN">Admin</option>      <option value="HR">HR</option>            <option value="HEAD">Department Head</option> <option value="EMPLOYEE">Employee</option> </select>
-    
+        </select>
     </div>
 
     <div style="margin-bottom: 18px;">
@@ -288,7 +287,12 @@
                     <div class="filters-container">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="userSearch" placeholder="Search by name, email, or ID..." value="{{ current_search }}">
+                            <input type="text" id="userSearch" name="user_id" list="userOptions" placeholder="Search by name or email...">
+                            <datalist id="userOptions">
+                                {% for user in all_users %}
+                                    <option value="{{ user.get_full_name }} ({{ user.email }})"></option>
+                                {% endfor %}
+                            </datalist>
                         </div>
                         <select id="roleFilter" class="filter-select">
                             <option value="">All Roles</option>

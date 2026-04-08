@@ -99,6 +99,7 @@ def logout_view(request):
 def admin_dashboard(request):
     # This view will now serve as the user management list
     users = User.objects.all().order_by('last_name', 'first_name')
+    all_users = User.objects.all().order_by('last_name', 'first_name')
     departments = Department.objects.all()
     
     # Apply filters if present in GET request
@@ -139,6 +140,7 @@ def admin_dashboard(request):
 
     context = {
         'users': users,
+        'all_users': all_users,
         'roles': User.ROLE_CHOICES,
         'departments': departments,
         'current_search': search_term,
@@ -333,8 +335,8 @@ def password_change(request):
 def department_management(request):
     # Using annotate is perfect for keeping the database query efficient
     departments = Department.objects.all().annotate(employee_count=Count('user')).order_by('-is_active', 'name')
-    # Filter users to only show potential Heads (Role: HEAD) in the assignment modal
-    users = User.objects.filter(role='HEAD', is_active=True).order_by('last_name')
+    # Pass a list of users to populate the searchable dropdown
+    users = User.objects.all().order_by('last_name')
     
     context = {
         'departments': departments,
@@ -348,7 +350,11 @@ def department_management(request):
 def create_department(request):
     form = DepartmentForm(request.POST)
     if form.is_valid():
-        form.save()
+        dept_obj = form.save()
+        if dept_obj.head:
+            dept_obj.head.role = 'HEAD'
+            dept_obj.head.department = dept_obj
+            dept_obj.head.save()
         return JsonResponse({'status': 'success', 'message': 'Department created successfully.'})
     return JsonResponse({'status': 'error', 'message': 'Invalid form data.', 'errors': json.loads(form.errors.as_json())}, status=400)
 
@@ -356,13 +362,23 @@ def create_department(request):
 @user_passes_test(is_admin)
 @require_POST
 def edit_department(request, dept_id):
+    print("--- DEBUG DATA ---")
+    print(request.POST)
     dept = get_object_or_404(Department, pk=dept_id)
     # This handles both general edits and the 'Assign Head' modal
     form = DepartmentForm(request.POST, instance=dept)
     if form.is_valid():
-        form.save()
+        dept_obj = form.save()
+        if dept_obj.head:
+            dept_obj.head.role = 'HEAD'
+            dept_obj.head.department = dept_obj
+            dept_obj.head.save()
         return JsonResponse({'status': 'success', 'message': 'Department updated successfully.'})
-    return JsonResponse({'status': 'error', 'message': 'Update failed.', 'errors': json.loads(form.errors.as_json())}, status=400)
+    else:
+        print("--- FORM ERRORS ---")
+        print(form.errors.as_data()) # THIS WILL TELL YOU THE REAL REASON
+        from django.http import HttpResponseBadRequest
+        return HttpResponseBadRequest("Validation Failed")
 
 @login_required
 @user_passes_test(is_admin)
