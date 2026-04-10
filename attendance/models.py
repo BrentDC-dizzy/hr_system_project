@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from datetime import time
 
 # Create your models here.
 class AttendanceLog(models.Model):
@@ -27,3 +28,17 @@ class AttendanceLog(models.Model):
 
     def __str__(self):
         return f"{self.employee.get_full_name()} - {self.date} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate status only if not edited by HR to preserve manual overrides
+        if not self.edited_by:
+            if not self.time_in and not self.time_out:
+                self.status = self.Status.ABSENT
+            elif self.time_in:
+                if self.time_in > time(8, 0):  # After 8:00 AM is Late
+                    self.status = self.Status.LATE
+                elif self.time_out and self.time_out < time(17, 0): # Before 5:00 PM is Undertime
+                    self.status = self.Status.UNDERTIME
+                else:
+                    self.status = self.Status.PRESENT
+        super().save(*args, **kwargs)

@@ -1,12 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Log | School Director System</title>
-    <link rel="shortcut icon" type="image/png" href="../../static/img/general/uph.png">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../static/css/sd/sd_attendance.css">
+    <link rel="stylesheet" href="{% static 'css/sd/sd_attendance.css' %}">
 </head>
 <body>
 
@@ -17,7 +18,7 @@
         <div class="sidebar" id="sidebar">
             <div class="top-section">
                 <div class="logo-wrapper" id="logoToggle">
-                    <img src="../../static/img/general/uph.png" class="logo" alt="Logo">
+                    <img src="{% static 'img/general/uph.png' %}" class="logo" alt="Logo">
                     <div class="open-icon">
                         <i class="fas fa-chevron-right"></i>
                     </div>
@@ -28,19 +29,19 @@
             </div>
 
             <ul class="menu">
-                <li><a href="sd_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-                <li><a href="sd_profile_view.html" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+                <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
                 <hr>
-                <li><a href="sd_appmanagement.html" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-                <li><a href="sd_employeelist.html" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-                <li><a href="sd_attendancemonitoring.html" class="menu-item active"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-                <li><a href="sd_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+                <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
+                <li><a href="{% url 'attendance:sd_attendance_summary' %}" class="menu-item active"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
+                <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
                 <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-                <li><a href="sd_reports.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+                <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
             </ul>
 
             <div class="bottom-section">
-                <a href="../login/login.html" class="menu-item logout">
+                <a href="{% url 'logout' %}" class="menu-item logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Log Out</span>
                 </a>
@@ -54,8 +55,8 @@
             <div class="dashboard-header dashboard-header--compact-right dashboard-header--title-tabs">
                 <h1 style="color: #000000;">Attendance Log</h1>
                 <div class="view-toggle-header">
-                    <a href="../sd/sd_attendance.html" class="toggle-btn active" id="tab-log">Attendance Log</a>
-                    <a href="../sd/sd_attendancemonitoring.html" class="toggle-btn" id="tab-monitoring">Attendance Monitoring</a>
+                    <a href="{% url 'attendance:sd_attendance_summary' %}" class="toggle-btn active" id="tab-log">Attendance Log</a>
+                    <a href="#" class="toggle-btn" id="tab-monitoring">Attendance Monitoring</a>
                 </div>
             </div>
 
@@ -210,6 +211,6 @@
         </div>
 
     </div> 
-    <script src="../../static/js/sd/sd_attendance.js"></script>
+    <script src="{% static 'js/sd/sd_attendance.js' %}"></script>
 </body>
 </html>

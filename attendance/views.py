@@ -12,20 +12,20 @@ from accounts.models import User, Department
 
 # Create your views here.
 
-# --- Helper functions for role checks ---
-def is_hr_or_admin(user):
-    return user.is_authenticated and user.role in ['HR', 'ADMIN']
-
+# --- Role Check Helpers ---
 def is_head(user):
     return user.is_authenticated and user.role == 'HEAD'
 
-def is_sd_or_admin(user):
-    # Assuming School Director (SD) is a role
-    return user.is_authenticated and user.role in ['ADMIN', 'SD']
+def is_hr(user):
+    return user.is_authenticated and user.role == 'HR'
+
+def is_sd(user):
+    # Assuming School Director has ADMIN level privileges for viewing summaries
+    return user.is_authenticated and user.role == 'ADMIN'
 
 
-# @login_required # Temporarily commented out for testing
-# @user_passes_test(is_hr_or_admin) # Temporarily commented out for testing
+@login_required
+@user_passes_test(is_hr)
 def hr_attendance(request):
     """
     Displays all attendance logs for HR and Admins with filtering.
@@ -54,53 +54,40 @@ def hr_attendance(request):
         'filter_values': request.GET,
         'page_title': 'Master Attendance Log'
     }
-    return render(request, 'attendance/hr_attendance.html', context)
+    return render(request, 'hr/hr_attendance.html', context)
 
-# @login_required # Temporarily commented out for testing
+@login_required
 def emp_attendance(request):
     """
     Displays attendance logs for the currently logged-in employee.
     Displays attendance logs for the currently logged-in employee with date filtering.
     """
-    if request.user.is_authenticated:
-        employee = request.user
-        logs = AttendanceLog.objects.filter(employee=employee).order_by('-date')
-        
-        # Date range filtering
-        start_date_str = request.GET.get('start_date')
-        end_date_str = request.GET.get('end_date')
+    employee = request.user
+    logs = AttendanceLog.objects.filter(employee=employee).order_by('-date')
+    
+    # Date range filtering
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
 
-        if start_date_str and (start_date := parse_date(start_date_str)):
-            logs = logs.filter(date__gte=start_date)
-        if end_date_str and (end_date := parse_date(end_date_str)):
-            logs = logs.filter(date__lte=end_date)
-    else:
-        # Fallback for testing: return all logs if no user is logged in
-        logs = AttendanceLog.objects.all().order_by('-date') # Or .none() if you prefer empty
+    if start_date_str and (start_date := parse_date(start_date_str)):
+        logs = logs.filter(date__gte=start_date)
+    if end_date_str and (end_date := parse_date(end_date_str)):
+        logs = logs.filter(date__lte=end_date)
 
     context = {
         'attendance_logs': logs,
         'filter_values': request.GET,
         'page_title': 'My Attendance Records'
     }
-    return render(request, 'attendance/emp_attendance.html', context)
+    return render(request, 'employee/emp_attendance.html', context)
 
-# @login_required # Temporarily commented out for testing
-# @user_passes_test(is_head) # Temporarily commented out for testing
+@login_required
+@user_passes_test(is_head)
 def head_attendance(request):
     """
     Displays attendance logs for employees in the department of the logged-in Head.
     """
-    department = None
-    # --- TEMPORARY TESTING CODE ---
-    if request.user.is_authenticated and request.user.role == 'HEAD':
-        department = request.user.department
-    else:
-        # Fallback for testing: find the first department that has a head.
-        head_user = User.objects.filter(role='HEAD', department__isnull=False).first()
-        if head_user:
-            department = head_user.department
-    # --- END TEMPORARY CODE ---
+    department = request.user.department
 
     if department:
         logs = AttendanceLog.objects.filter(employee__department=department).select_related('employee').order_by('-date', 'employee__last_name')
@@ -112,10 +99,10 @@ def head_attendance(request):
         'department': department,
         'page_title': f'{department.name} Department Attendance' if department else 'Department Attendance'
     }
-    return render(request, 'attendance/head_attendance.html', context)
+    return render(request, 'head/head_attendance.html', context)
 
-# @login_required # Temporarily commented out for testing
-# @user_passes_test(is_sd_or_admin) # Temporarily commented out for testing
+@login_required
+@user_passes_test(is_sd)
 def sd_attendance(request):
     """
     Displays an aggregated summary of attendance for a given month and year.
@@ -143,10 +130,10 @@ def sd_attendance(request):
         'months': [(i, calendar.month_name[i]) for i in range(1, 13)],
         'page_title': 'Monthly Attendance Summary'
     }
-    return render(request, 'attendance/sd_attendance.html', context)
+    return render(request, 'sd/sd_attendance.html', context)
 
-# @login_required # Temporarily commented out for testing
-# @user_passes_test(is_hr_or_admin) # Temporarily commented out for testing
+@login_required
+@user_passes_test(is_hr)
 def edit_log(request, log_id):
     """
     Handles the editing of a specific attendance log by HR/Admin.
@@ -157,15 +144,7 @@ def edit_log(request, log_id):
         form = AttendanceEditForm(request.POST, instance=log_instance)
         if form.is_valid():
             log = form.save(commit=False)
-            
-            # --- TEMPORARY TESTING CODE ---
-            if request.user.is_authenticated:
-                log.edited_by = request.user
-            else:
-                # Fallback for testing when no user is logged in
-                editor = User.objects.filter(role__in=['ADMIN', 'HR']).first() or User.objects.first()
-                log.edited_by = editor
-            # --- END TEMPORARY CODE ---
+            log.edited_by = request.user
             log.save()
             messages.success(request, f"Attendance log for {log_instance.employee.get_full_name()} on {log_instance.date} has been updated.")
             return redirect('attendance:hr_attendance')
