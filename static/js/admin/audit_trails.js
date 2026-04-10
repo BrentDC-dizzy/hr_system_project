@@ -33,8 +33,18 @@ function setupEventListeners() {
 
     // Modal Close Buttons
     document.querySelectorAll('.modal .close').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             this.closest('.modal').classList.remove('show');
+        });
+    });
+
+    // Close modal when clicking outside of it to prevent overlay blocking
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
         });
     });
 
