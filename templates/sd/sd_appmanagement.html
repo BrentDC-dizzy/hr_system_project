@@ -112,7 +112,28 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="applicationTableBody"></tbody>
+                    <tbody id="applicationTableBody">
+                        {% for app in applications %}
+                        <tr>
+                            <td class="col-id">#{{ app.id }}</td>
+                            <td class="col-name">{{ app.applicant_name }}</td>
+                            <td class="col-dept">{{ app.target_department.name|default:app.target_department }}</td>
+                            <td class="col-position">{{ app.target_position|default:"-" }}</td>
+                            <td class="col-submitted">{{ app.history.first.timestamp|date:"M d, Y"|default:"N/A" }}</td>
+                            <td class="col-progress">{{ app.status }}</td>
+                            <td class="col-status">
+                                <span class="status-badge status-{{ app.status|slugify }}">{{ app.status }}</span>
+                            </td>
+                            <td class="col-actions">
+                                <a href="{% url 'applications:application_detail' app.id %}" class="btn-view">View Details</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" style="text-align: center;">No applications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
 
