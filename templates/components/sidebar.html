@@ -11,7 +11,13 @@
     <ul class="menu">
         <li>
             <a href="{% url 'admin_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                <i class="fas fa-home"></i> <span>Dashboard</span>
+                <i class="fas fa-users-cog"></i> <span>User Management</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'employee_list' %}" class="menu-item {% if request.resolver_match.url_name == 'employee_list' %}active{% endif %}">
+                <i class="fas fa-id-badge"></i> <span>Employee Records</span>
             </a>
         </li>
 
@@ -24,6 +30,12 @@
         <li>
             <a href="{% url 'audit_trails' %}" class="menu-item {% if request.resolver_match.url_name == 'audit_trails' %}active{% endif %}">
                 <i class="fas fa-history"></i> <span>Audit Trails</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'security_settings' %}" class="menu-item {% if request.resolver_match.url_name == 'security_settings' %}active{% endif %}">
+                <i class="fas fa-shield-alt"></i> <span>Security Settings</span>
             </a>
         </li>
     </ul>
