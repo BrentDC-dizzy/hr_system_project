@@ -45,6 +45,9 @@ def is_sd(user):
 def is_emp(user):
     return user.is_authenticated and user.role == 'EMP'
 
+def is_hr_or_admin(user):
+    return user.is_authenticated and user.role in ['HR', 'ADMIN']
+
 def login_view(request):
     # If a user is already logged in, redirect them from the login page.
     if request.user.is_authenticated:
@@ -797,7 +800,7 @@ def deactivate_department(request, dept_id):
 # === TASK 04: EMPLOYEE RECORDS (HR CORE) ===
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_hr_or_admin)
 def employee_list(request):
     """ View to list all employees with search and filter """
     employees = User.objects.all().select_related('profile', 'department').order_by('last_name')
@@ -816,7 +819,7 @@ def employee_list(request):
 
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_hr_or_admin)
 def add_employee(request):
     """ View to create both a User and their EmployeeProfile safely """
     if request.method == 'POST':
@@ -869,14 +872,14 @@ def add_employee(request):
     return render(request, 'hr/hr_addemployee.html', {'form': form})
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_hr_or_admin)
 def employee_profile_view(request, user_id):
     # Fetch the employee or show 404 if not found
     employee = get_object_or_404(User, id=user_id)
     return render(request, 'hr/hr_profile_view.html', {'employee': employee})
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_hr_or_admin)
 def edit_employee(request, user_id):
     employee = get_object_or_404(User, id=user_id)
     profile = getattr(employee, 'profile', None)
@@ -933,7 +936,7 @@ def edit_employee(request, user_id):
     return render(request, 'hr/hr_employee_edit.html', {'form': form, 'employee': employee})
 
 @login_required
-@user_passes_test(is_admin)
+@user_passes_test(is_hr_or_admin)
 def delete_employee(request, user_id):
     employee = get_object_or_404(User, id=user_id)
     if request.method == 'POST':
