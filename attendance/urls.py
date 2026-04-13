@@ -19,4 +19,5 @@ urlpatterns = [
     # SD URLs
     path('sd/summary/', views.sd_attendance, name='sd_attendance_summary'),
     path('sd/monitoring/', views.sd_attendance_monitoring, name='sd_attendance_monitoring'),
+    path('sd/export/', views.sd_export_attendance, name='sd_export_attendance'),
 ]

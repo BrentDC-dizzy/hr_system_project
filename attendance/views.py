@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.contrib import messages
 from django.utils.dateparse import parse_date
 import calendar
+import csv
+from django.http import HttpResponse
 
 from .models import AttendanceLog
 from .forms import AttendanceEditForm
@@ -184,3 +186,21 @@ def edit_log(request, log_id):
         'page_title': f'Edit Log for {log_instance.employee.get_full_name()}'
     }
     return render(request, 'attendance/edit_log.html', context)
+
+@login_required
+@user_passes_test(is_sd)
+def sd_export_attendance(request):
+    """
+    Allows the SD to export attendance logs as a CSV file.
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="institution_attendance.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Employee', 'Department', 'Time In', 'Time Out', 'Status'])
+    
+    logs = AttendanceLog.objects.all().select_related('employee', 'employee__department').order_by('-date')
+    for log in logs:
+        department_name = log.employee.department.name if log.employee.department else 'N/A'
+        writer.writerow([log.date, log.employee.get_full_name(), department_name, log.time_in, log.time_out, log.get_status_display()])
+        
+    return response

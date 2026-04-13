@@ -40,7 +40,8 @@ def is_head(user):
     return user.is_authenticated and user.role == 'HEAD'
 
 def is_sd(user):
-    return user.is_authenticated and user.role == 'SD'
+    # Allow ADMIN privileges to access SD views to match other apps
+    return user.is_authenticated and user.role in ['SD', 'ADMIN']
 
 def is_emp(user):
     return user.is_authenticated and user.role == 'EMP'
@@ -467,6 +468,21 @@ def sd_profile(request):
         'upload_form': DocumentUploadForm(user=request.user)
     }
     return render(request, 'sd/sd_profile_view.html', context)
+
+@login_required
+@user_passes_test(is_sd)
+def sd_profile_edit(request):
+    return render(request, 'sd/sd_profile_edit.html', {'user': request.user})
+
+@login_required
+@user_passes_test(is_sd)
+def sd_documents_view(request):
+    return render(request, 'sd/sd_documents_view.html')
+
+@login_required
+@user_passes_test(is_sd)
+def sd_reports(request):
+    return render(request, 'sd/sd_reports.html')
 
 @login_required
 def employee_attendance(request):

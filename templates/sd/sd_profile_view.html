@@ -38,7 +38,7 @@
             <li><a href="{% url 'attendance:sd_attendance_summary' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
             <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
             <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-            <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+            <li><a href="{% url 'sd_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
         </ul>
 
         <div class="bottom-section">
@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="profile-right">
-                    <a href="#">
+                    <a href="{% url 'sd_profile_edit' %}">
                         <button class="edit-btn">Edit Profile</button>
                     </a>
 

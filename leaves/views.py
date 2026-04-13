@@ -176,6 +176,23 @@ def sd_leave_history(request):
     leave_requests = LeaveRequest.objects.all().order_by('-created_at')
     return render(request, 'sd/sd_leaverequest.html', {'leave_requests': leave_requests})
 
+@login_required
+@user_passes_test(is_sd)
+def sd_leave_overview(request):
+    """View for SD to see all leave requests across the institution."""
+    leave_requests = LeaveRequest.objects.all().order_by('-created_at')
+    return render(request, 'sd/sd_leaveselect.html', {'leave_requests': leave_requests})
+
+@login_required
+@user_passes_test(is_sd)
+@require_POST
+def sd_forward_leave(request, request_id):
+    """View for SD to forward a leave request (read-only approval exception)."""
+    leave_request = get_object_or_404(LeaveRequest, id=request_id)
+    leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
+    leave_request.save()
+    messages.success(request, f"Leave request for {leave_request.user.get_full_name()} has been forwarded.")
+    return redirect('leaves:sd_leave_overview')
 
 # --- Approval Views ---
 

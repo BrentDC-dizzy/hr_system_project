@@ -14,6 +14,11 @@ urlpatterns = [
     path('sd-dashboard/', views.sd_dashboard, name='sd_dashboard'),
     path('employee-dashboard/', views.employee_dashboard, name='employee_dashboard'),
     
+    # SD Dashboard Sub-pages
+    path('accounts/sd/profile/edit/', views.sd_profile_edit, name='sd_profile_edit'),
+    path('accounts/sd/documents/', views.sd_documents_view, name='sd_documents_view'),
+    path('accounts/sd/reports/', views.sd_reports, name='sd_reports'),
+
     # Employee Dashboard Sub-pages
     path('employee-dashboard/profile/', views.employee_profile, name='employee_profile'),
     path('employee-dashboard/attendance/', views.employee_attendance, name='employee_attendance'),
