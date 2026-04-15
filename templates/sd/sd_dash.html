@@ -31,7 +31,7 @@
             <li><a href="{% url 'sd_dashboard' %}" class="menu-item active"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
             <li><a href="{% url 'history:sd_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
             <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
             <li><a href="{% url 'attendance:sd_attendance_monitoring' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
             <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
@@ -54,7 +54,7 @@
                 <!-- Header Section -->
                 <div class="dashboard-header">
                     <h1 class="dashboard-title">Dashboard</h1>
-                    <p class="dashboard-greeting">Hello, <span id="userName">Director</span>! 👋</p>
+                    <p class="dashboard-greeting">Hello, <span id="userName">{{ welcome_name }}</span>! 👋</p>
                     <p class="daily-quote" id="dailyQuote">Success is the sum of small efforts repeated day in and day out.</p>
                 </div>
 
@@ -68,7 +68,7 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Total Employees</p>
-                                <p class="kpi-number" id="totalEmployees">450</p>
+                                <p class="kpi-number" id="totalEmployees">{{ total_employees }}</p>
                                 <p class="kpi-change positive">
                                     <i class="fas fa-arrow-up"></i> 12 this quarter
                                 </p>
@@ -80,7 +80,7 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Active Employees</p>
-                                <p class="kpi-number" id="activeEmployees">428</p>
+                                <p class="kpi-number" id="activeEmployees">{{ active_employees }}</p>
                                 <p class="kpi-change positive">
                                     <i class="fas fa-arrow-up"></i> 95% active rate
                                 </p>
@@ -92,10 +92,40 @@
                             </div>
                             <div class="kpi-content">
                                 <p class="kpi-label">Employees on Leave</p>
-                                <p class="kpi-number" id="onLeave">22</p>
+                                <p class="kpi-number" id="onLeave">{{ attendance_chart_data.on_leave }}</p>
                                 <p class="kpi-change neutral">
                                     <i class="fas fa-info-circle"></i> 5% on leave
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="kpi-section">
+                    <h2 class="section-title">Pending Executive Actions</h2>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon leave-icon"><i class="fas fa-briefcase"></i></div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Leaves Pending SD</p>
+                                <p class="kpi-number">{{ pending_sd_actions.leave_requests }}</p>
+                                <p class="kpi-change neutral"><a href="{{ quick_action_urls.view_leave_summary }}">Open leave queue</a></p>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon employees-icon"><i class="fas fa-user-plus"></i></div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">New Hires Pending SD</p>
+                                <p class="kpi-number">{{ pending_sd_actions.new_hire_applications }}</p>
+                                <p class="kpi-change neutral"><a href="{{ quick_action_urls.view_application_queue }}">Open app queue</a></p>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon active-icon"><i class="fas fa-user-edit"></i></div>
+                            <div class="kpi-content">
+                                <p class="kpi-label">Position Changes Pending SD</p>
+                                <p class="kpi-number">{{ pending_sd_actions.position_change_requests }}</p>
+                                <p class="kpi-change neutral">{{ pending_sd_actions.total }} total pending SD actions</p>
                             </div>
                         </div>
                     </div>
@@ -130,38 +160,31 @@
                     </button>
                 </div>
                 <div class="notifications-list">
-                    <div class="notification-item">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p class="notification-message">Leave request approved</p>
-                            <p class="notification-time">2 hours ago</p>
-                        </div>
-                    </div>
+                    {% for note in hr_announcements %}
                     <div class="notification-item">
                         <div class="notification-icon info">
                             <i class="fas fa-info-circle"></i>
                         </div>
                         <div class="notification-content">
-                            <p class="notification-message">New policy updated</p>
-                            <p class="notification-time">1 day ago</p>
+                            <p class="notification-message">{{ note.message|truncatechars:70 }}</p>
+                            <p class="notification-time">{{ note.created_at|timesince }} ago</p>
                         </div>
                     </div>
+                    {% empty %}
                     <div class="notification-item">
-                        <div class="notification-icon warning">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
+                        <div class="notification-icon info"><i class="fas fa-bell"></i></div>
                         <div class="notification-content">
-                            <p class="notification-message">Pending reports review</p>
-                            <p class="notification-time">3 days ago</p>
+                            <p class="notification-message">No new announcements</p>
+                            <p class="notification-time">Just now</p>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
             </aside>
         </div>
     </main>
 
+    <script id="sdAttendanceData" type="application/json">{{ attendance_data|safe }}</script>
     <script src="{% static 'js/sd/sd_dash.js' %}"></script>
 </body>
 </html>

@@ -44,7 +44,7 @@
                 <h1>Leave Management</h1>
                 
                 <div class="form-body">
-                    <form id="leaveRequestForm">
+                    <form id="leaveRequestForm" data-history-url="{% url 'leaves:leave_history' %}">
                         <label class="section-label">Select Leave</label>
                         <div class="leave-type-grid">
                             <button type="button" class="type-btn active">Sick Leave</button>

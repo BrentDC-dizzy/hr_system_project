@@ -227,6 +227,7 @@ def admin_dashboard(request):
 
 from attendance.models import AttendanceLog
 from leaves.models import LeaveRequest
+from applications.models import Application
 from notifications.models import Notification
 
 @login_required
@@ -394,8 +395,25 @@ def sd_dashboard(request):
     leave_overview = {
         'pending_head': LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING_HEAD_APPROVAL).count(),
         'pending_hr': LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING_HR_APPROVAL).count(),
+        'pending_sd': LeaveRequest.objects.filter(status=LeaveRequest.Status.PENDING_SD_APPROVAL).count(),
         'approved': LeaveRequest.objects.filter(status=LeaveRequest.Status.APPROVED).count(),
         'rejected': LeaveRequest.objects.filter(status=LeaveRequest.Status.REJECTED).count(),
+    }
+
+    pending_new_hire_sd = Application.objects.filter(
+        type=Application.Type.NEW_EMPLOYEE,
+        status=Application.Status.PENDING_SD,
+    ).count()
+    pending_position_change_sd = Application.objects.filter(
+        type=Application.Type.POSITION_CHANGE,
+        status=Application.Status.PENDING_SD,
+    ).count()
+
+    pending_sd_actions = {
+        'leave_requests': leave_overview['pending_sd'],
+        'new_hire_applications': pending_new_hire_sd,
+        'position_change_requests': pending_position_change_sd,
+        'total': leave_overview['pending_sd'] + pending_new_hire_sd + pending_position_change_sd,
     }
 
     hr_announcements = Notification.objects.filter(
@@ -409,11 +427,13 @@ def sd_dashboard(request):
         'active_employees': active_employees,
         'total_departments': total_departments,
         'leave_overview': leave_overview,
+        'pending_sd_actions': pending_sd_actions,
         'attendance_chart_data': attendance_counts,
         'attendance_data': json.dumps(attendance_counts),
         'hr_announcements': hr_announcements,
         'quick_action_urls': {
-            'view_leave_summary': safe_reverse('leaves:leave_summary', '#'),
+            'view_leave_summary': safe_reverse('leaves:sd_leave_overview', '#'),
+            'view_application_queue': safe_reverse('sd_application_overview', '#'),
             'view_history': safe_reverse('history:sd_profile', '#'),
         },
     }
@@ -503,7 +523,8 @@ def sd_profile_edit(request):
 @login_required
 @user_passes_test(is_sd)
 def sd_documents_view(request):
-    return render(request, 'sd/sd_documents_view.html')
+    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
+    return render(request, 'sd/sd_documents_view.html', {'documents': documents})
 
 @login_required
 @user_passes_test(is_sd)

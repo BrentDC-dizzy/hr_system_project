@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.models import User
 from .models import EmploymentHistory
+from documents.models import Document
+from documents.forms import DocumentUploadForm
 
 # Create your views here.
 
@@ -90,9 +92,23 @@ def head_profile(request):
 @user_passes_test(is_sd)
 def sd_profile(request):
     history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
+    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
     context = {
         'employee': request.user,
         'target_employee': request.user,
-        'history_entries': history_entries
+        'history_entries': history_entries,
+        'documents': documents,
+        'upload_form': DocumentUploadForm(user=request.user),
     }
     return render(request, 'sd/sd_profile_view.html', context)
+
+
+@login_required
+@user_passes_test(is_sd)
+def sd_employment_history(request):
+    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
+    context = {
+        'employee': request.user,
+        'history_entries': history_entries,
+    }
+    return render(request, 'sd/sd_employment_history.html', context)

@@ -8,6 +8,7 @@ from django.db import transaction
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
+from utils.decorators import sd_elevated_required
 
 # Create your views here.
 
@@ -18,8 +19,11 @@ def is_head(user):
 def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
 
-def is_sd(user):
-    return user.is_authenticated and user.role in ['SD', 'ADMIN']
+ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD', 'SD'}
+
+
+def _requires_sd_final_review(leave_request):
+    return (leave_request.user.role or '').upper() in ADMINISTRATIVE_LEAVE_ROLES
 
 @login_required
 def leave_select_view(request):
@@ -144,14 +148,14 @@ def hr_leave_history(request):
 # --- SD Views (Management & Personal) ---
 
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 def sd_leave_select(request):
     """Renders the main leave selection page for the School Director."""
     return render(request, 'sd/sd_leaveselect.html')
 
 
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 def sd_apply_leave(request):
     """View for SD to apply for personal leave."""
     if request.method == 'POST':
@@ -169,26 +173,70 @@ def sd_apply_leave(request):
 
 
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 def sd_leave_history(request):
-    """View for SD to see all leave requests across the institution."""
-    leave_requests = LeaveRequest.objects.all().order_by('-created_at')
-    return render(request, 'sd/sd_leaverequest.html', {'leave_requests': leave_requests})
+    """Legacy route maintained for compatibility; redirects to SD approval overview."""
+    return redirect('leaves:sd_leave_overview')
 
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 def sd_leave_overview(request):
-    """View for SD to see all leave requests across the institution."""
-    leave_requests = LeaveRequest.objects.all().order_by('-created_at')
-    return render(request, 'sd/sd_leaveselect.html', {'leave_requests': leave_requests})
+    """SD final-approval queue for leave requests from administrative roles."""
+    if request.method == 'POST':
+        request_id = request.POST.get('request_id')
+        leave_request = get_object_or_404(
+            LeaveRequest,
+            id=request_id,
+            status=LeaveRequest.Status.PENDING_SD_APPROVAL,
+        )
+        form = LeaveActionForm(request.POST)
+        if form.is_valid():
+            if not _requires_sd_final_review(leave_request):
+                messages.error(request, "This leave request does not require SD final approval.")
+                return redirect('leaves:sd_leave_overview')
+
+            action = form.cleaned_data['action']
+            leave_request.reviewed_by_sd = request.user
+            leave_request.sd_remarks = form.cleaned_data['remarks']
+            leave_request.status = (
+                LeaveRequest.Status.APPROVED
+                if action == 'APPROVE'
+                else LeaveRequest.Status.REJECTED
+            )
+            leave_request.save()
+            messages.success(
+                request,
+                f"Leave request for {leave_request.user.get_full_name()} was {'approved' if action == 'APPROVE' else 'rejected'} by SD.",
+            )
+        else:
+            messages.error(request, "Invalid action submitted.")
+        return redirect('leaves:sd_leave_overview')
+
+    leave_requests = LeaveRequest.objects.filter(
+        user__role__in=ADMINISTRATIVE_LEAVE_ROLES,
+    ).select_related(
+        'user', 'leave_type', 'reviewed_by_head', 'reviewed_by_hr', 'reviewed_by_sd'
+    ).order_by('-created_at')
+
+    pending_requests = leave_requests.filter(status=LeaveRequest.Status.PENDING_SD_APPROVAL)
+    reviewed_requests = leave_requests.exclude(status=LeaveRequest.Status.PENDING_SD_APPROVAL)
+
+    return render(
+        request,
+        'sd/sd_leaverequest.html',
+        {
+            'pending_requests': pending_requests,
+            'reviewed_requests': reviewed_requests,
+        },
+    )
 
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 @require_POST
 def sd_forward_leave(request, request_id):
     """View for SD to forward a leave request (read-only approval exception)."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id)
-    leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
+    leave_request.status = LeaveRequest.Status.PENDING_SD_APPROVAL
     leave_request.save()
     messages.success(request, f"Leave request for {leave_request.user.get_full_name()} has been forwarded.")
     return redirect('leaves:sd_leave_overview')
@@ -208,7 +256,7 @@ def head_approve(request, request_id):
         leave_request.head_remarks = form.cleaned_data['remarks']
         leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL if action == 'APPROVE' else LeaveRequest.Status.REJECTED
         leave_request.save()
-    return redirect('leaves:leave_history') # Placeholder redirect
+    return redirect('leaves:head_leave_history')
 
 
 @login_required
@@ -216,21 +264,28 @@ def head_approve(request, request_id):
 @require_POST
 @transaction.atomic
 def hr_final_approve(request, request_id):
-    """View for HR to give final approval or rejection."""
+    """View for HR to approve/reject and route administrative leaves for SD final approval."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id, status=LeaveRequest.Status.PENDING_HR_APPROVAL)
     form = LeaveActionForm(request.POST)
     if form.is_valid():
         action = form.cleaned_data['action']
         leave_request.reviewed_by_hr = request.user
         leave_request.hr_remarks = form.cleaned_data['remarks']
-        leave_request.status = LeaveRequest.Status.APPROVED if action == 'APPROVE' else LeaveRequest.Status.REJECTED
+        if action == 'APPROVE':
+            leave_request.status = (
+                LeaveRequest.Status.PENDING_SD_APPROVAL
+                if _requires_sd_final_review(leave_request)
+                else LeaveRequest.Status.APPROVED
+            )
+        else:
+            leave_request.status = LeaveRequest.Status.REJECTED
         leave_request.save() # This triggers the post_save signal
-    return redirect('leaves:leave_history') # Placeholder redirect
+    return redirect('leaves:hr_leave_history')
 
 
 # --- SD View ---
 @login_required
-@user_passes_test(is_sd)
+@sd_elevated_required
 def leave_summary(request):
     """A view-only summary for the School Director."""
     all_requests = LeaveRequest.objects.all().order_by('-created_at')

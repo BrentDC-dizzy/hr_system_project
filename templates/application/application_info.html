@@ -101,7 +101,7 @@
                 </div>
 
                 <!-- Review Section -->
-                {% if request.user.role in 'HR,Head,HEAD' %}
+                {% if request.user.role == 'HR' or request.user.role == 'HEAD' or request.user.role == 'SD' or request.user.role == 'ADMIN' %}
                 <div class="review-section" style="margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1.5rem;">
                     <h3 class="section-title">Review Application</h3>
                     <form method="POST" action="{% url 'process_application_action' application.pk %}">

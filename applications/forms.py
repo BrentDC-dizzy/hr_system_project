@@ -5,7 +5,6 @@ class ApplicationActionForm(forms.Form):
     DECISION_CHOICES = (
         ('Approve', 'Approve'),
         ('Reject', 'Reject'),
-        ('Forward', 'Forward'),
     )
     decision = forms.ChoiceField(
         choices=DECISION_CHOICES,

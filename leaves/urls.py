@@ -24,6 +24,7 @@ urlpatterns = [
 
     # SD Management URLs
     path('sd/select/', views.sd_leave_select, name='sd_leave_select'),
+    path('sd/overview/', views.sd_leave_overview, name='sd_leave_overview'),
     path('sd/apply/', views.sd_apply_leave, name='sd_apply_leave'),
     path('sd/history/', views.sd_leave_history, name='sd_leave_history'),
 

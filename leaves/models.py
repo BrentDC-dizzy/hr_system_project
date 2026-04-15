@@ -44,6 +44,7 @@ class LeaveRequest(models.Model):
     class Status(models.TextChoices):
         PENDING_HEAD_APPROVAL = 'PENDING_HEAD', 'Pending Head Approval'
         PENDING_HR_APPROVAL = 'PENDING_HR', 'Pending HR Approval'
+        PENDING_SD_APPROVAL = 'PENDING_SD', 'Pending SD Approval'
         APPROVED = 'APPROVED', 'Approved'
         REJECTED = 'REJECTED', 'Rejected'
         CANCELLED = 'CANCELLED', 'Cancelled'
@@ -76,6 +77,8 @@ class LeaveRequest(models.Model):
     reviewed_by_head = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='head_approved_leaves')
     hr_remarks = models.TextField(blank=True, null=True)
     reviewed_by_hr = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='hr_approved_leaves')
+    sd_remarks = models.TextField(blank=True, null=True)
+    reviewed_by_sd = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='sd_approved_leaves')
 
     # Signal Control
     is_balance_deducted = models.BooleanField(default=False)

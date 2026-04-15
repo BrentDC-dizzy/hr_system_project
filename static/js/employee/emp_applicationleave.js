@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (leaveForm) {
         leaveForm.onsubmit = (e) => {
             e.preventDefault();
+            const historyUrl = leaveForm.dataset.historyUrl || '/leaves/employee/history/';
 
             const TOTAL_SICK_CREDITS = 15;
             let finalMessage = "Leave request submitted successfully";
@@ -74,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonColor: '#4a1d1d' 
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = 'emp_leaverequest.html';
+                    window.location.href = historyUrl;
                 }
             });
         };

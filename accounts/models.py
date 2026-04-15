@@ -63,7 +63,7 @@ class Department(models.Model):
     ]
 
     name = models.CharField(max_length=50, choices=DEPT_CHOICES, unique=True)
-    college = models.CharField(max_length=100, blank=True)
+    college = models.CharField(max_length=100, null=True, blank=True)
     head = models.ForeignKey(
         'User',
         on_delete=models.SET_NULL,

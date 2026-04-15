@@ -30,10 +30,10 @@
         </div>
 
         <ul class="menu">
-            <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+            <li><a href="{% url 'sd_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
             <li><a href="{% url 'history:sd_profile' %}" class="menu-item active"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
             <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
             <li><a href="{% url 'attendance:sd_attendance_summary' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
             <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
@@ -108,6 +108,10 @@
 
                 <div class="tab-content-item" id="docs">
 
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+                        <a href="{% url 'sd_documents_view' %}" class="edit-btn" style="text-decoration:none;">Open Dedicated Documents View</a>
+                    </div>
+
                     <div class="doc-header">
                         <span>{{ documents|length }} uploaded</span>
                         {% if user.profile.can_self_upload %}
@@ -162,7 +166,39 @@
 
                 <div class="tab-content-item" id="history">
 
-                    {% include 'history/timeline.html' %}
+                    <div class="info-card">
+                        <h4>Employment History</h4>
+                        <p style="margin-bottom: 12px; color: #666;">View your complete employment timeline in the dedicated SD history page.</p>
+                        <a href="{% url 'history:sd_employment_history' %}" class="edit-btn" style="text-decoration:none;">Open Employment History</a>
+                    </div>
+
+                    <div class="info-card" style="margin-top: 14px;">
+                        <h4>Recent Changes</h4>
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Change</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in history_entries|slice:":5" %}
+                                <tr>
+                                    <td>{{ entry.date|date:"M d, Y" }}</td>
+                                    <td>{{ entry.change_type }}</td>
+                                    <td>{{ entry.from_value|default:"-" }}</td>
+                                    <td>{{ entry.to_value|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" style="text-align:center;">No recent employment history entries.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
 

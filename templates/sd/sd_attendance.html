@@ -4,214 +4,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Log | School Director System</title>
+    <title>Attendance Summary | SD System</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/sd/sd_attendance.css' %}">
+    <style>
+        .summary-layout {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .summary-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 700;
+            color: #1f1f1f;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .filter-bar select,
+        .filter-bar button {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #d0d0d0;
+            font-size: 13px;
+        }
+
+        .filter-bar button {
+            background: #4a1d1d;
+            color: #fff;
+            border-color: #4a1d1d;
+            cursor: pointer;
+        }
+
+        .read-only-note {
+            margin-top: 14px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .summary-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="background"></div>
+<div class="background"></div>
 
-    <div class="master-app-container">
-
-        <div class="sidebar" id="sidebar">
-            <div class="top-section">
-                <div class="logo-wrapper" id="logoToggle">
-                    <img src="{% static 'img/general/uph.png' %}" class="logo" alt="Logo">
-                    <div class="open-icon">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-                <button class="close-btn" id="closeBtn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
+<div class="master-app-container">
+    <div class="sidebar" id="sidebar">
+        <div class="top-section">
+            <div class="logo-wrapper" id="logoToggle">
+                <img src="{% static 'img/general/uph.png' %}" class="logo" alt="Logo">
+                <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
             </div>
-
-            <ul class="menu">
-                <li><a href="{% url 'admin_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-                <li><a href="#" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
-                <hr>
-                <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-                <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-                <li><a href="{% url 'attendance:sd_attendance_summary' %}" class="menu-item active"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-                <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
-                <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-                <li><a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
-            </ul>
-
-            <div class="bottom-section">
-                <a href="{% url 'logout' %}" class="menu-item logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Log Out</span>
-                </a>
-            </div>
+            <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
         </div>
 
-        <main class="main-container" id="mainContent">
+        <ul class="menu">
+            <li><a href="{% url 'sd_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+            <li><a href="{% url 'history:sd_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+            <hr>
+            <li><a href="{% url 'application_list' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="{% url 'employee_list' %}" class="menu-item"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
+            <li><a href="{% url 'attendance:sd_attendance_summary' %}" class="menu-item active"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
+            <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+            <li><a href="{% url 'sd_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
+        </ul>
 
-            <div class="master-content-wrapper">
+        <div class="bottom-section">
+            <a href="{% url 'logout' %}" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+        </div>
+    </div>
 
+    <main class="main-container" id="mainContent">
+        <div class="master-content-wrapper">
             <div class="dashboard-header dashboard-header--compact-right dashboard-header--title-tabs">
-                <h1 style="color: #000000;">Attendance Log</h1>
+                <h1 style="color: #000000;">Monthly Attendance Summary</h1>
                 <div class="view-toggle-header">
-                    <a href="{% url 'attendance:sd_attendance_summary' %}" class="toggle-btn active" id="tab-log">Attendance Log</a>
-                    <a href="{% url 'attendance:sd_attendance_monitoring' %}" class="toggle-btn" id="tab-monitoring">Attendance Monitoring</a>
+                    <a href="{% url 'attendance:sd_attendance_summary' %}" class="toggle-btn active">Attendance Summary</a>
+                    <a href="{% url 'attendance:sd_attendance_monitoring' %}" class="toggle-btn">Attendance Monitoring</a>
                     <a href="{% url 'attendance:sd_export_attendance' %}" class="toggle-btn"><i class="fas fa-file-export"></i> Export CSV</a>
                 </div>
             </div>
 
-            <div class="dashboard-grid">
-                <div class="content-card attendance-section">
-                    <div class="attendance-card-accent"></div>
-                    <div class="card-header">
-                        <div class="card-title-group">
-                            <span class="card-icon-wrap"><i class="fas fa-fingerprint"></i></span>
-                            <h2>Today's attendance</h2>
-                        </div>
-                        <span class="date-now" id="dateNow">Loading...</span>
-                    </div>
-                    <p class="status-text">Ready when you are — clock in to start your shift.</p>
-                    <div class="stats-row">
-                        <div class="stat-chip">
-                            <span class="stat-chip-label"><i class="fas fa-stopwatch"></i> Session</span>
-                            <p id="workingTime" class="stat-chip-value">Working for: 0h 00m</p>
-                        </div>
-                        <div class="stat-chip">
-                            <span class="stat-chip-label"><i class="fas fa-sign-in-alt"></i> Start</span>
-                            <p id="timeInDisplay" class="stat-chip-value">Time In: --</p>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-clock-in" id="clockBtn">Clock in</button>
-                </div>
-            </div>
-
             <div class="content-card summary-section">
-                <div class="summary-header">
-                    <div class="summary-title-wrap">
-                        <span class="card-icon-wrap card-icon-wrap--muted"><i class="fas fa-calendar-week"></i></span>
-                        <h2>Weekly summary</h2>
-                    </div>
-                    <div class="week-picker">
-                        <button type="button" class="week-nav" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
-                        <span>Week 5</span>
-                        <button type="button" class="week-nav" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                </div>
-                <div class="table-wrapper">
-                    <table class="attendance-table">
-                        <thead>
-                            <tr>
-                                <th>Week</th>
-                                <th>Sunday</th>
-                                <th>Monday</th>
-                                <th>Tuesday</th>
-                                <th>Wednesday</th>
-                                <th>Thursday</th>
-                                <th>Friday</th>
-                                <th>Saturday</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="week-label">Feb 3 — Feb 10</td>
-                                <td>2</td>
-                                <td><span class="pill pill-warning">4h 36m</span></td>
-                                <td><span class="pill pill-purple">Leave</span></td>
-                                <td><span class="pill pill-success-check">8h 39m</span></td>
-                                <td><span class="pill pill-success-check">8 hours</span></td>
-                                <td><span class="pill pill-active">Active</span></td>
-                                <td>8</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="footer-actions">
-                    <button class="btn-history" id="openHistory">View Full History</button>
-                </div>
-            </div>
+                <form method="get" class="filter-bar">
+                    <label for="month">Month:</label>
+                    <select name="month" id="month">
+                        {% for month_number, month_name in months %}
+                            <option value="{{ month_number }}" {% if month_number == selected_month %}selected{% endif %}>{{ month_name }}</option>
+                        {% endfor %}
+                    </select>
 
-            </div> 
-            </main>
+                    <label for="year">Year:</label>
+                    <select name="year" id="year">
+                        {% for yr in years %}
+                            <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
+                        {% endfor %}
+                    </select>
 
-        <div class="history-modal" id="historyModal">
-            <div class="history-modal-content">
-        <div class="history-modal-header">
-            <div class="employee-tab">Dela Cruz, Juan</div>
-            <div class="header-controls">
-                <div class="modal-view-toggle">
-                    <button class="view-btn active" id="weeklyViewBtn">Weekly View</button>
-                    <button class="view-btn" id="monthlyViewBtn">Monthly View</button>
-                </div>
-                <div class="date-navigator">
-                    <i class="fas fa-chevron-left" id="prevPeriod"></i>
-                    <span id="historyDateRange">February 4 – 10, 2026</span>
-                    <i class="fas fa-chevron-right" id="nextPeriod"></i>
-                </div>
-            </div>
-            <span class="close-history" id="closeHistory">&times;</span>
-        </div>
-        <div class="history-modal-body">
-            <div class="history-layout-grid">
-                <div class="table-section">
-                    <table class="history-log-table" id="weeklyTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Day</th>
-                                <th>Time In</th>
-                                <th>Time Out</th>
-                                <th>Total Hours</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="weeklyTableBody"></tbody>
-                    </table>
-                    <div class="monthly-grid" id="monthlyGrid"></div>
-                </div>
-                <aside class="history-sidebar">
-                    <div class="employee-details-card">
-                        <h3>Employee Details</h3>
-                        <div class="profile-circle"><i class="fas fa-user"></i></div>
-                        <div class="details-rows">
-                            <div class="detail-item"><strong>Employee ID</strong><span>001</span></div>
-                            <div class="detail-item"><strong>Position</strong><span>Instructor</span></div>
-                            <div class="detail-item"><strong>Department</strong><span>CCS</span></div>
-                            <div class="detail-item"><strong>Employment Type</strong><span>Full-Time</span></div>
-                        </div>
+                    <button type="submit">Apply</button>
+                </form>
+
+                <div class="summary-layout">
+                    <div class="summary-card">
+                        <h3>Total Employees</h3>
+                        <p>{{ total_employees }}</p>
                     </div>
-                    <div class="hours-summary-box">
-                        Total Hours This Week
-                        <span id="totalHoursCount">42h 15m</span>
+                    <div class="summary-card">
+                        <h3>Present</h3>
+                        <p>{{ summary.present_count|default:0 }}</p>
                     </div>
-                </aside>
+                    <div class="summary-card">
+                        <h3>Absent</h3>
+                        <p>{{ summary.absent_count|default:0 }}</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Late</h3>
+                        <p>{{ summary.late_count|default:0 }}</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Undertime</h3>
+                        <p>{{ summary.undertime_count|default:0 }}</p>
+                    </div>
+                </div>
+
+                <p class="read-only-note">
+                    This SD attendance view is read-only and institution-level. No clock-in/out or attendance mutations are allowed from this page.
+                </p>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
-<div id="clockOutOverlay" class="clock-out-overlay" aria-hidden="true">
-    <div class="clock-out-dialog" role="dialog" aria-modal="true">
-        <div id="clockOutConfirmStep" class="clock-out-step">
-            <div class="clock-out-icon clock-out-icon--confirm"><i class="fas fa-door-open"></i></div>
-            <h2 class="clock-out-title">Clock out now?</h2>
-            <p class="clock-out-message">Your shift will end and today's working time will be recorded.</p>
-            <div class="clock-out-actions">
-                <button type="button" class="clock-out-btn clock-out-btn--ghost" id="clockOutCancel">Cancel</button>
-                <button type="button" class="clock-out-btn clock-out-btn--danger" id="clockOutConfirmBtn">Yes, clock out</button>
-            </div>
-        </div>
-        <div id="clockOutSuccessStep" class="clock-out-step clock-out-step--hidden" hidden>
-            <div class="clock-out-icon clock-out-icon--success"><i class="fas fa-check"></i></div>
-            <h2 class="clock-out-title">You're clocked out</h2>
-            <p class="clock-out-duration" id="clockOutDurationText">Total time: 0h 00m</p>
-            <p class="clock-out-sub">Shift saved. See you next time.</p>
-            <button type="button" class="clock-out-btn clock-out-btn--primary" id="clockOutDismiss">Done</button>
-                </div>
-            </div>
-        </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var sidebar = document.getElementById('sidebar');
+        var closeBtn = document.getElementById('closeBtn');
+        var logoToggle = document.getElementById('logoToggle');
 
-    </div> 
-    <script src="{% static 'js/sd/sd_attendance.js' %}"></script>
+        document.querySelectorAll('.menu-item').forEach(function (item) {
+            var text = item.querySelector('span');
+            if (text) {
+                item.setAttribute('data-text', text.innerText);
+            }
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                sidebar.classList.add('collapsed');
+            });
+        }
+
+        if (logoToggle) {
+            logoToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('collapsed');
+            });
+        }
+    });
+</script>
 </body>
 </html>
