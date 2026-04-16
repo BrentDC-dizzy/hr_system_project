@@ -87,6 +87,13 @@
             </div>
 
             <div class="form-body">
+                {% if not has_department_scope %}
+                <!-- FIX: Graceful no-scope notice instead of silent empty queue. -->
+                <div class="empty-state" style="margin-bottom: 12px;">
+                    No department is assigned to your Head account yet, so no applications can be reviewed.
+                </div>
+                {% endif %}
+
                 <table id="applicationTable">
                     <thead>
                         <tr>

@@ -8,6 +8,25 @@ from .forms import ApplicationActionForm, PositionChangeRequestForm
 from .models import Application, ApplicationStatusHistory
 
 
+def _get_head_department_scope_ids(user):
+    """Return department ids that a HEAD user is allowed to manage."""
+    department_ids = set()
+
+    if getattr(user, 'department_id', None):
+        department_ids.add(user.department_id)
+
+    # FIX: Include departments explicitly assigned to this user as department head.
+    department_ids.update(user.headed_department.values_list('id', flat=True))
+    return department_ids
+
+
+def _head_can_access_application(user, application):
+    """Check whether a HEAD user can access the given application."""
+    if not application.target_department_id:
+        return False
+    return application.target_department_id in _get_head_department_scope_ids(user)
+
+
 def _normalize_decision(raw_decision):
     decision = (raw_decision or '').strip().upper()
     if decision in {'APPROVE', 'APPROVED'}:
@@ -57,20 +76,37 @@ def application_list(request):
         return redirect('sd_application_overview')
 
     applications = Application.objects.select_related('target_department').order_by('-id')
+    context = {'applications': applications}
 
     if role == 'HR':
         template_name = 'hr/hr_appmanagement.html'
     elif role == 'HEAD':
         template_name = 'head/head_appmanagement.html'
-        # A Head should only see applications targeting their own department.
-        if request.user.department:
-            applications = applications.filter(target_department=request.user.department)
+        scope_ids = _get_head_department_scope_ids(request.user)
+
+        # FIX: Gracefully handle null department by resolving all valid department scopes.
+        if scope_ids:
+            applications = applications.filter(target_department_id__in=scope_ids)
         else:
-            applications = applications.none() # If head has no department, show no applications.
+            applications = applications.none()
+
+        context.update(
+            {
+                'applications': applications,
+                'has_department_scope': bool(scope_ids),
+                'head_department_scope_names': sorted(
+                    {department.get_name_display() for department in request.user.headed_department.all()}
+                    | ({request.user.department.get_name_display()} if request.user.department else set())
+                ),
+            }
+        )
     else:
         template_name = 'hr/hr_appmanagement.html'
 
-    return render(request, template_name, {'applications': applications})
+    if role != 'HEAD':
+        context['applications'] = applications
+
+    return render(request, template_name, context)
 
 
 @login_required
@@ -80,6 +116,13 @@ def application_detail(request, pk):
         Application.objects.select_related('target_department').prefetch_related('history__actor'),
         pk=pk,
     )
+
+    role = (request.user.role or '').upper()
+    if role == 'HEAD' and not _head_can_access_application(request.user, application):
+        # FIX: Prevent HEAD users from reading cross-department application details.
+        messages.error(request, 'You are not authorized to view this application.')
+        return redirect('application_list')
+
     return render(
         request,
         'application/application_info.html',
@@ -96,6 +139,13 @@ def application_detail(request, pk):
 def process_application_action(request, pk):
     """Process application actions by workflow stage and actor role."""
     application = get_object_or_404(Application, pk=pk)
+    role = (request.user.role or '').upper()
+
+    if role == 'HEAD' and not _head_can_access_application(request.user, application):
+        # FIX: Prevent HEAD users from updating applications outside their department scope.
+        messages.error(request, 'You are not authorized to update this application.')
+        return redirect('application_list')
+
     form = ApplicationActionForm(request.POST)
 
     if not form.is_valid():
@@ -108,8 +158,6 @@ def process_application_action(request, pk):
     if not decision:
         messages.error(request, 'Unsupported decision value.')
         return redirect('application_detail', pk=pk)
-
-    role = (request.user.role or '').upper()
 
     if role == 'HEAD':
         if application.status != Application.Status.PENDING:
