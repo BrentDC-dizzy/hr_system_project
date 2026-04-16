@@ -8,6 +8,7 @@ from django.db import transaction
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
+from accounts.models import Department
 from utils.decorators import sd_elevated_required
 
 # Create your views here.
@@ -19,11 +20,23 @@ def is_head(user):
 def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
 
-ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD', 'SD'}
+ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD', 'SD', 'EMP'}
 
 
 def _requires_sd_final_review(leave_request):
     return (leave_request.user.role or '').upper() in ADMINISTRATIVE_LEAVE_ROLES
+
+
+def _get_head_department_scope_ids(user):
+    department_ids = set()
+
+    if getattr(user, 'department_id', None):
+        department_ids.add(user.department_id)
+
+    headed_department_ids = Department.objects.filter(head=user).values_list('id', flat=True)
+    department_ids.update(headed_department_ids)
+
+    return department_ids
 
 @login_required
 def leave_select_view(request):
@@ -105,15 +118,22 @@ def head_apply_leave(request):
 @login_required
 @user_passes_test(is_head)
 def head_leave_history(request):
-    """View for a Department Head to see their personal leave history."""
-    # B-1: Heads should see requests from their entire department, not just their own.
-    if request.user.department:
-        leave_requests = LeaveRequest.objects.filter(user__department=request.user.department).select_related(
+    """View for a Department Head to see leave requests within their approval scope."""
+    department_scope_ids = _get_head_department_scope_ids(request.user)
+    queue_mode = str(request.GET.get('queue', '')).lower() in {'1', 'true', 'yes'}
+
+    if department_scope_ids:
+        leave_requests = LeaveRequest.objects.filter(user__department_id__in=department_scope_ids).select_related(
             'user', 'leave_type'
         ).order_by('-created_at')
     else:
-        # Fallback for a Head with no department assigned: only show their own.
-        leave_requests = LeaveRequest.objects.filter(user=request.user).order_by('-created_at')
+        leave_requests = LeaveRequest.objects.none()
+
+    if queue_mode:
+        leave_requests = leave_requests.filter(
+            status=LeaveRequest.Status.PENDING_HEAD_APPROVAL
+        ).exclude(user=request.user)
+
     # Return JSON if requested by the JavaScript fetch call
     if request.headers.get('Accept') == 'application/json' or request.GET.get('format') == 'json':
         history_data = list(leave_requests.values(
@@ -281,7 +301,7 @@ def head_approve(request, request_id):
 @require_POST
 @transaction.atomic
 def hr_final_approve(request, request_id):
-    """View for HR to approve/reject and route administrative leaves for SD final approval."""
+    """View for HR to approve/reject and route leave requests for SD final approval."""
     leave_request = get_object_or_404(LeaveRequest, id=request_id, status=LeaveRequest.Status.PENDING_HR_APPROVAL)
     form = LeaveActionForm(request.POST)
     if form.is_valid():

@@ -346,6 +346,10 @@ def head_dashboard(request):
         is_read=False,
     ).order_by('-created_at')[:5]
 
+    head_leave_history_url = safe_reverse('leaves:head_leave_history', '#')
+    if head_leave_history_url != '#':
+        head_leave_history_url = f"{head_leave_history_url}?queue=1"
+
     context = {
         'welcome_name': request.user.first_name or request.user.username,
         'department_name': department.name if department else 'No Department',
@@ -357,7 +361,7 @@ def head_dashboard(request):
         'pending_leave_approvals': pending_leave_approvals,
         'evaluation_reminders': evaluation_reminders,
         'quick_action_urls': {
-            'view_leaves': safe_reverse('leaves:head_leave_history', '#'),
+            'view_leaves': head_leave_history_url,
             'view_evaluations': safe_reverse('history:head_profile', '#'),
             'view_attendance': safe_reverse('attendance:employee_attendance_records', '#'),
         },
