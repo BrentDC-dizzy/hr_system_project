@@ -232,7 +232,7 @@ def admin_dashboard(request):
             'export_report': reverse('audit_trails'),
         },
     }
-    return render(request, 'admin/admin_dash.html', context)
+    return render(request, 'admin/dashboard.html', context)
 
 from attendance.models import AttendanceLog
 from leaves.models import LeaveRequest
