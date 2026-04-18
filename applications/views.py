@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from notifications.utils import send_notification
@@ -20,33 +21,36 @@ DASHBOARD_BY_ROLE = {
 User = get_user_model()
 
 
-def _notify_recipients(recipients, message, notification_type):
+def _notify_recipients(recipients, message, notification_type, target_url=None):
     for recipient in recipients:
         if recipient and recipient.is_active:
-            send_notification(recipient, message, notification_type)
+            send_notification(recipient, message, notification_type, target_url=target_url)
 
 
 def _notify_application_pending_approval(application):
     message = f"Pending approval: Application #{application.id} ({application.type}) submitted by {application.applicant_name}."
 
     if application.status == Application.Status.PENDING_HEAD:
+        target_url = reverse('application_detail', kwargs={'pk': application.id})
         department = application.target_department
         head_user = getattr(department, 'head', None) if department else None
         if head_user:
-            _notify_recipients([head_user], message, 'Pending Approval')
+            _notify_recipients([head_user], message, 'Pending Approval', target_url=target_url)
             return
         hr_users = User.objects.filter(role='HR', is_active=True)
-        _notify_recipients(hr_users, message, 'Pending Approval')
+        _notify_recipients(hr_users, message, 'Pending Approval', target_url=target_url)
         return
 
     if application.status == Application.Status.PENDING_HR:
+        target_url = reverse('application_detail', kwargs={'pk': application.id})
         hr_users = User.objects.filter(role='HR', is_active=True)
-        _notify_recipients(hr_users, message, 'Pending Approval')
+        _notify_recipients(hr_users, message, 'Pending Approval', target_url=target_url)
         return
 
     if application.status == Application.Status.PENDING_SD:
+        target_url = reverse('sd_application_overview')
         sd_users = User.objects.filter(role='SD', is_active=True)
-        _notify_recipients(sd_users, message, 'Pending Approval')
+        _notify_recipients(sd_users, message, 'Pending Approval', target_url=target_url)
 
 
 def _get_head_department_scope_ids(user):
@@ -259,7 +263,7 @@ def process_application_action(request, pk):
     _record_status_change(application, request.user, new_status, remarks)
     _notify_application_pending_approval(application)
 
-    if role in {'SD', 'ADMIN'}:
+    if role == 'SD':
         messages.success(request, f'Application #{application.id} marked as {new_status}.')
         return redirect('sd_application_overview')
 

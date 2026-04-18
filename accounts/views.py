@@ -30,7 +30,7 @@ from utils.excel_generator import generate_excel
 from .forms import (
     CustomUserCreationForm, CustomUserChangeForm, AssignRoleForm, 
     AccountStatusForm, AdminPasswordResetForm, DepartmentForm, 
-    AddEmployeeForm
+    AddEmployeeForm, SdProfileEditForm
 )
 
 # Helper function for admin check
@@ -529,9 +529,21 @@ def sd_profile(request):
     return render(request, 'sd/sd_profile_view.html', context)
 
 @login_required
-@user_passes_test(is_sd)
+@user_passes_test(is_sd_only)
 def sd_profile_edit(request):
-    return render(request, 'sd/sd_profile_edit.html', {'user': request.user})
+    EmployeeProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = SdProfileEditForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('history:sd_profile')
+        messages.error(request, 'Please review the highlighted fields and try again.')
+    else:
+        form = SdProfileEditForm(user=request.user)
+
+    return render(request, 'sd/sd_profile_edit.html', {'form': form, 'user': request.user})
 
 @login_required
 @user_passes_test(is_sd)
@@ -1211,20 +1223,63 @@ def deactivate_department(request, dept_id):
 @login_required
 def employee_list(request):
     user = request.user
+    search_term = (request.GET.get('search') or '').strip()
     
     # 1. If Admin or HR: See everyone
-    if user.role in ['ADMIN', 'HR']: # (Make sure these strings match your actual role choices)
-        employees = User.objects.all().order_by('-date_joined')
-        
-    # 2. If Department Head: See ONLY their department
-    elif user.role == 'HEAD' or user.role == 'Department Head': 
-        employees = User.objects.filter(department=user.department).order_by('-date_joined')
-        
-    # 3. Regular Employees: Should they even be here? (Optional fallback)
+    if user.role in ['ADMIN', 'HR']:
+        employees = User.objects.select_related('department', 'profile').all().order_by('-date_joined')
+        template_name = 'hr/hr_employeelist.html'
+
+    # 2. SD: institution-wide read-only list (non-admin staff)
+    elif user.role == 'SD':
+        employees = User.objects.select_related('department', 'profile').exclude(role='ADMIN').order_by('-date_joined')
+        template_name = 'sd/sd_employeelist.html'
+
+    # 3. If Department Head: See ONLY their department
+    elif user.role == 'HEAD' or user.role == 'Department Head':
+        employees = User.objects.select_related('department', 'profile').filter(department=user.department).order_by('-date_joined')
+        template_name = 'hr/hr_employeelist.html'
+
+    # 4. Regular employees see only themselves
     else:
-        employees = User.objects.filter(id=user.id) # They only see themselves
-        
-    return render(request, 'hr/hr_employeelist.html', {'employees': employees})
+        employees = User.objects.select_related('department', 'profile').filter(id=user.id)
+        template_name = 'hr/hr_employeelist.html'
+
+    if search_term:
+        employees = employees.filter(
+            Q(first_name__icontains=search_term)
+            | Q(last_name__icontains=search_term)
+            | Q(username__icontains=search_term)
+            | Q(profile__employee_id__icontains=search_term)
+            | Q(department__name__icontains=search_term)
+        )
+
+    employees = list(employees)
+    for employee in employees:
+        EmployeeProfile.objects.get_or_create(user=employee)
+
+    return render(request, template_name, {'employees': employees, 'search_term': search_term})
+
+
+@login_required
+@user_passes_test(is_sd_only)
+def sd_employee_profile_view(request, user_id):
+    target_employee = get_object_or_404(
+        User.objects.select_related('department', 'profile'),
+        id=user_id,
+    )
+    target_profile, _ = EmployeeProfile.objects.get_or_create(user=target_employee)
+    documents = Document.objects.filter(employee=target_profile).select_related('employee').order_by('-upload_date')
+    history_entries = target_employee.employment_history.all().order_by('-date')
+
+    context = {
+        'employee': target_employee,
+        'target_employee': target_employee,
+        'documents': documents,
+        'history_entries': history_entries,
+        'employee_profile': target_profile,
+    }
+    return render(request, 'sd/sd_employee_view.html', context)
 
 
 @login_required

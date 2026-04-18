@@ -32,7 +32,7 @@
             <li><a href="{% url 'sd_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
             <li><a href="{% url 'history:sd_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="#" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="{% url 'sd_application_overview' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
             <li><a href="{% url 'employee_list' %}" class="menu-item active"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
             <li><a href="{% url 'attendance:sd_attendance_monitoring' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
             <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
@@ -49,7 +49,9 @@
             <div class="header">
                 <h1>Employee Records</h1>
                 <div class="search-add">
-                    <input type="text" id="searchInput" placeholder="Search by Name / ID / Dept / Position">
+                    <form method="get" action="{% url 'employee_list' %}">
+                        <input type="text" id="searchInput" name="search" value="{{ search_term|default:'' }}" placeholder="Search by Name / ID / Dept / Position">
+                    </form>
                 </div>
             </div>
             
@@ -62,38 +64,32 @@
                             <th>Department</th>
                             <th>
                                 Position
-                                <select id="filterPosition" class="table-filter">
-                                    <option value="">All</option>
-                                    <option value="HR">HR</option>
-                                    <option value="Admin Staff">Admin Staff</option>
-                                    <option value="Instructor">Instructor</option>
-                                    <option value="School Director">School Director</option>
-                                    <option value="Dean">Dean</option>
-                                    <option value="Head">Head</option>
-                                </select>
+                                <select id="filterPosition" class="table-filter"><option value="">All</option></select>
                             </th>
                             <th>
                                 Status
-                                <select id="filterStatus" class="table-filter">
-                                    <option value="">All</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
-                                </select>
+                                <select id="filterStatus" class="table-filter"><option value="">All</option></select>
                             </th>
                             <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="employeeTableBody">
+                        {% for emp in employees %}
                         <tr>
-                            <td>HEAD-001</td>
-                            <td>John Head</td>
-                            <td>Administration</td>
-                            <td>Head</td>
-                            <td>Active</td>
+                            <td>{{ emp.profile.employee_id|default:'---' }}</td>
+                            <td>{{ emp.get_full_name|default:emp.username }}</td>
+                            <td>{{ emp.department.name|default:'Unassigned' }}</td>
+                            <td>{{ emp.get_role_display }}</td>
+                            <td>{% if emp.is_active %}Active{% else %}Inactive{% endif %}</td>
                             <td class="action-cell">
-                                <a href="../sd/sd_employee_view.html" class="action-link" title="View"><i class="fas fa-eye"></i></a>
+                                <a href="{% url 'sd_employee_profile_view' emp.id %}" class="action-link" title="View"><i class="fas fa-eye"></i></a>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:#888; padding:20px;">No employee records found.</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

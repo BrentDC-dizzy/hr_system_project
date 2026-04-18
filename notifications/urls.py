@@ -5,6 +5,7 @@ app_name = 'notifications'
 
 urlpatterns = [
     path('list/', views.notification_list, name='notification_list'),
+    path('open/<int:pk>/', views.open_notification, name='open_notification'),
     path('mark-read/<int:pk>/', views.mark_as_read, name='mark_as_read'),
     path('mark-all-read/', views.mark_all_as_read, name='mark_all_as_read'),
     path('unread-count/', views.unread_count, name='unread_count'),

@@ -32,6 +32,7 @@ class TrainingSession(models.Model):
 		blank=True,
 		related_name='training_sessions_led',
 	)
+	trainer_name = models.CharField(max_length=200, blank=True)
 	status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)

@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import user_passes_test
 
 
-# SD acts as elevated executive approver, with ADMIN retaining override access.
-SD_ELEVATED_APPROVER_ROLES = ('SD', 'ADMIN')
+# SD-only access for executive approver endpoints.
+SD_ELEVATED_APPROVER_ROLES = ('SD',)
 
 def role_required(*allowed_roles):
     """

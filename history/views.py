@@ -19,7 +19,7 @@ def is_head(user):
     return user.is_authenticated and user.role == 'HEAD'
 
 def is_sd(user):
-    return user.is_authenticated and user.role in ['SD', 'ADMIN']
+    return user.is_authenticated and user.role == 'SD'
 
 @login_required
 def employee_timeline(request, employee_id=None):

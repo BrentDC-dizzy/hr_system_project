@@ -94,3 +94,57 @@ class AddEmployeeForm(forms.ModelForm):
             'emergency_contact_name': forms.TextInput(attrs={'class': 'form-control'}),
             'emergency_contact_num': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+
+class SdProfileEditForm(forms.Form):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField(required=True)
+    middle_name = forms.CharField(max_length=100, required=False)
+    contact_number = forms.CharField(max_length=15, required=False)
+    address = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 2}))
+    birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    emergency_contact_name = forms.CharField(max_length=255, required=False)
+    emergency_contact_num = forms.CharField(max_length=15, required=False)
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        if user is not None and not self.is_bound:
+            profile = getattr(user, 'profile', None)
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+            self.fields['middle_name'].initial = getattr(profile, 'middle_name', '')
+            self.fields['contact_number'].initial = getattr(profile, 'contact_number', '')
+            self.fields['address'].initial = getattr(profile, 'address', '')
+            self.fields['birth_date'].initial = getattr(profile, 'birth_date', None)
+            self.fields['emergency_contact_name'].initial = getattr(profile, 'emergency_contact_name', '')
+            self.fields['emergency_contact_num'].initial = getattr(profile, 'emergency_contact_num', '')
+
+    def save(self):
+        if self.user is None:
+            raise ValueError('User is required to save SD profile edits.')
+
+        profile, _ = EmployeeProfile.objects.get_or_create(user=self.user)
+        self.user.first_name = self.cleaned_data['first_name']
+        self.user.last_name = self.cleaned_data['last_name']
+        self.user.email = self.cleaned_data['email']
+        self.user.save(update_fields=['first_name', 'last_name', 'email'])
+
+        profile.middle_name = self.cleaned_data['middle_name']
+        profile.contact_number = self.cleaned_data['contact_number']
+        profile.address = self.cleaned_data['address']
+        profile.birth_date = self.cleaned_data['birth_date']
+        profile.emergency_contact_name = self.cleaned_data['emergency_contact_name']
+        profile.emergency_contact_num = self.cleaned_data['emergency_contact_num']
+        profile.save(update_fields=[
+            'middle_name',
+            'contact_number',
+            'address',
+            'birth_date',
+            'emergency_contact_name',
+            'emergency_contact_num',
+        ])
+
+        return self.user

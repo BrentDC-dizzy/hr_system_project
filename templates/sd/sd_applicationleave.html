@@ -43,42 +43,65 @@
         <main class="main-content">
             <div class="leave-card">
                 <h1>Leave Management</h1>
+
+                {% if messages %}
+                <div style="margin-bottom: 12px;">
+                    {% for message in messages %}
+                    <div style="padding: 10px; margin-bottom: 8px; border-radius: 8px; background: #f8f8f8; color: #333;">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 
                 <div class="form-body">
-                    <form id="leaveRequestForm" data-history-url="{% url 'leaves:sd_leave_history' %}">
-                        <label class="section-label">Select Leave</label>
-                        <div class="leave-type-grid">
-                            <button type="button" class="type-btn active">Sick Leave</button>
-                            <button type="button" class="type-btn">Emergency Leave</button>
-                            <button type="button" class="type-btn">Vacation Leave</button>
-                            <button type="button" class="type-btn">Personal Leave</button>
-                            <button type="button" class="type-btn">Maternity Leave</button>
-                            <button type="button" class="type-btn">Bereavement Leave</button>
+                    <form id="leaveRequestForm" method="post" enctype="multipart/form-data" action="{% url 'leaves:sd_apply_leave' %}">
+                        {% csrf_token %}
+
+                        <label class="section-label" for="id_leave_type">Select Leave</label>
+                        <div class="input-group" style="margin-bottom: 10px;">
+                            {{ form.leave_type }}
+                            {% if form.leave_type.errors %}
+                            <small style="color: #b00020;">{{ form.leave_type.errors|striptags }}</small>
+                            {% endif %}
                         </div>
 
                         <div class="date-container">
                             <div class="input-group">
-                                <label>Start Date</label>
-                                <input type="date" name="start_date" class="form-input" required>
+                                <label for="id_start_date">Start Date</label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                <small style="color: #b00020;">{{ form.start_date.errors|striptags }}</small>
+                                {% endif %}
                             </div>
                             <div class="input-group">
-                                <label>End Date</label>
-                                <input type="date" name="end_date" class="form-input" required>
+                                <label for="id_end_date">End Date</label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                <small style="color: #b00020;">{{ form.end_date.errors|striptags }}</small>
+                                {% endif %}
                             </div>
                         </div>
 
                         <div class="input-group">
-                            <label>Reason for Leave</label>
-                            <textarea class="form-textarea" placeholder="Please brief reason for your leave request..." required></textarea>
+                            <label for="id_reason">Reason for Leave</label>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}
+                            <small style="color: #b00020;">{{ form.reason.errors|striptags }}</small>
+                            {% endif %}
                         </div>
 
                         <label class="section-label">Attach Supporting Document(s)</label>
                         <div class="drop-zone" id="dropZone">
-                            <input type="file" id="fileInput" hidden>
+                            {{ form.attachment }}
                             <i class="fas fa-cloud-upload-alt"></i>
                             <p>Drag and Drop or <span>browse files</span></p>
                             <small>PDF, JPG, PNG - Max 10MB each</small>
                         </div>
+                        {% if form.attachment.errors %}
+                        <small style="color: #b00020;">{{ form.attachment.errors|striptags }}</small>
+                        {% endif %}
+                        {% if form.non_field_errors %}
+                        <div style="margin-top: 10px; color: #b00020;">{{ form.non_field_errors|striptags }}</div>
+                        {% endif %}
                     </form>
                 </div>
 

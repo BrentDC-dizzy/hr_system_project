@@ -7,11 +7,12 @@ from django.utils.dateparse import parse_date
 import calendar
 import csv
 from django.http import HttpResponse, HttpResponseForbidden
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .models import AttendanceLog
 from .forms import AttendanceEditForm
 from accounts.models import User, Department, ReportExportHistory
+from leaves.models import LeaveRequest
 from utils.pdf_generator import generate_pdf
 from utils.excel_generator import generate_excel
 
@@ -25,7 +26,7 @@ def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
 
 def is_sd(user):
-    return user.is_authenticated and user.role in ['SD', 'ADMIN']
+    return user.is_authenticated and user.role == 'SD'
 
 
 @login_required
@@ -293,7 +294,111 @@ def sd_attendance_monitoring(request):
     """
     Displays the attendance monitoring grid view for the School Director.
     """
-    context = {'page_title': 'Attendance Monitoring'}
+    today = timezone.localdate()
+    sunday_offset = (today.weekday() + 1) % 7
+    week_start = today - timedelta(days=sunday_offset)
+    week_dates = [week_start + timedelta(days=idx) for idx in range(7)]
+    week_end = week_dates[-1]
+
+    employees = (
+        User.objects
+        .exclude(role='ADMIN')
+        .select_related('department', 'profile')
+        .order_by('last_name', 'first_name')
+    )
+
+    week_logs = (
+        AttendanceLog.objects
+        .filter(date__range=(week_start, week_end), employee__in=employees)
+        .select_related('employee')
+    )
+    log_map = {(log.employee_id, log.date): log for log in week_logs}
+
+    def _render_duration(log):
+        if not log.time_in or not log.time_out:
+            return None
+        start_dt = datetime.combine(log.date, log.time_in)
+        end_dt = datetime.combine(log.date, log.time_out)
+        if end_dt <= start_dt:
+            return None
+        duration_seconds = int((end_dt - start_dt).total_seconds())
+        hours = duration_seconds // 3600
+        minutes = (duration_seconds % 3600) // 60
+        return f"{hours}h {minutes:02d}m"
+
+    def _build_day_cell(log, current_date):
+        cell = {
+            'day_num': current_date.day,
+            'pill_class': '',
+            'pill_icon': '',
+            'pill_text': '',
+        }
+        if not log:
+            return cell
+
+        duration_label = _render_duration(log)
+        if log.status == AttendanceLog.Status.PRESENT:
+            cell.update(
+                {
+                    'pill_class': 'pill-green',
+                    'pill_icon': 'far fa-check-circle',
+                    'pill_text': duration_label or 'Present',
+                }
+            )
+        elif log.status in {AttendanceLog.Status.LATE, AttendanceLog.Status.UNDERTIME}:
+            cell.update(
+                {
+                    'pill_class': 'pill-tan',
+                    'pill_icon': 'far fa-clock',
+                    'pill_text': duration_label or log.get_status_display(),
+                }
+            )
+        else:
+            cell.update(
+                {
+                    'pill_class': 'pill-red',
+                    'pill_icon': 'fas fa-times-circle',
+                    'pill_text': 'Absent',
+                }
+            )
+        return cell
+
+    monitoring_rows = []
+    for employee in employees:
+        monitoring_rows.append(
+            {
+                'id': employee.profile.employee_id if hasattr(employee, 'profile') else '',
+                'full_name': employee.get_full_name() or employee.username,
+                'role': employee.get_role_display(),
+                'department': employee.department.get_name_display() if employee.department else 'Unassigned',
+                'days': [
+                    _build_day_cell(log_map.get((employee.id, day)), day)
+                    for day in week_dates
+                ],
+            }
+        )
+
+    today_logs = AttendanceLog.objects.filter(date=today)
+    present_today = today_logs.filter(
+        status__in=[AttendanceLog.Status.PRESENT, AttendanceLog.Status.LATE, AttendanceLog.Status.UNDERTIME]
+    ).values('employee').distinct().count()
+    absent_today = today_logs.filter(status=AttendanceLog.Status.ABSENT).values('employee').distinct().count()
+    late_today = today_logs.filter(status=AttendanceLog.Status.LATE).values('employee').distinct().count()
+    on_leave_today = LeaveRequest.objects.filter(
+        status=LeaveRequest.Status.APPROVED,
+        start_date__lte=today,
+        end_date__gte=today,
+    ).values('user').distinct().count()
+
+    context = {
+        'page_title': 'Attendance Monitoring',
+        'monitoring_rows': monitoring_rows,
+        'total_employees': employees.count(),
+        'present_today': present_today,
+        'absent_today': absent_today,
+        'on_leave_today': on_leave_today,
+        'late_today': late_today,
+    }
     return render(request, 'sd/sd_attendancemonitoring.html', context)
 
 @login_required

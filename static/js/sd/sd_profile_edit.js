@@ -2,6 +2,7 @@ const sidebar = document.getElementById('sidebar');
 const logoToggle = document.getElementById('logoToggle');
 const closeBtn = document.getElementById('closeBtn');
 const menuItems = document.querySelectorAll('.menu-item');
+const cancelBtn = document.getElementById('cancelSDEditBtn');
 
 menuItems.forEach(item => {
     const span = item.querySelector('span');
@@ -17,51 +18,28 @@ if (closeBtn) {
     closeBtn.addEventListener('click', () => sidebar.classList.add('close'));
 }
 
-function updateSDProfile() {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 1800,
-        timerProgressBar: true,
-        width: '450px',
-        background: '#fff',
-        color: '#4a1d1d',
-        iconColor: '#4a1d1d',
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    });
-
-    Toast.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'School Director profile has been updated.' 
-    }).then(() => {
-        window.location.href = 'sd_profile_view.html';
-    });
-}
-
-function cancelSDEdit() { 
-    Swal.fire({
-        title: 'Discard changes?',
-        text: "Any unsaved information will be lost.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#4a1d1d',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, discard',
-        cancelButtonText: 'No',
-        width: '400px',
-        padding: '1rem',
-        customClass: {
-            title: 'small-swal-title',
-            htmlContainer: 'small-swal-text'
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'sd_profile_view.html';
-        }
+if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+        const cancelUrl = cancelBtn.dataset.cancelUrl || '/history/profile/sd/';
+        Swal.fire({
+            title: 'Discard changes?',
+            text: 'Any unsaved information will be lost.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#4a1d1d',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, discard',
+            cancelButtonText: 'No',
+            width: '400px',
+            padding: '1rem',
+            customClass: {
+                title: 'small-swal-title',
+                htmlContainer: 'small-swal-text',
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = cancelUrl;
+            }
+        });
     });
 }

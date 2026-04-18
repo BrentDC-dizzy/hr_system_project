@@ -97,13 +97,13 @@
                 data-provider="{{ training.trainer }}"
                 data-location="{{ training.mode }} session"
                 data-contact="HR Office"
-                data-slots="{{ training.slots_text }}"
+                data-slots="{{ training.slots_left_text }}"
                 data-register-url="{% url 'trainings:employee_register_training' training.id %}">
                 <h3>{{ training.name }}</h3>
                 <div class="category">{{ training.category }}</div>
                 <div class="date">{{ training.date_display }}</div>
                 <span class="badge{% if training.mode|lower == 'online' %} badge-online{% endif %}">{{ training.mode }}</span>
-                <div class="slots">{{ training.slots_text }} registered</div>
+                <div class="slots">Slots Left: {{ training.slots_left }}</div>
                 <button class="register-btn" data-register-url="{% url 'trainings:employee_register_training' training.id %}">Register</button>
             </div>
             {% empty %}
@@ -118,7 +118,15 @@
                 <div class="my-training-item">
                     <div class="t-name">{{ participation.training_session.name }}</div>
                     <div class="t-date">{{ participation.training_session.date|date:'M d, Y' }}</div>
-                    <span class="status-badge registered">{{ participation.get_status_display }}</span>
+                    {% if participation.training_session.status == 'CANCELLED' %}
+                    <span class="status-badge cancelled">Cancelled</span>
+                    {% elif participation.status == 'COMPLETED' %}
+                    <span class="status-badge completed">Completed</span>
+                    {% elif participation.status == 'NO_SHOW' %}
+                    <span class="status-badge no-show">No Show</span>
+                    {% else %}
+                    <span class="status-badge registered">Registered</span>
+                    {% endif %}
                 </div>
                 {% empty %}
                 <div class="empty-state">No registered trainings yet.</div>

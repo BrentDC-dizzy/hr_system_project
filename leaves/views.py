@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.urls import reverse
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
@@ -22,14 +23,14 @@ def is_head(user):
 def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
 
-ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD', 'SD', 'EMP'}
+ADMINISTRATIVE_LEAVE_ROLES = {'ADMIN', 'HR', 'HEAD'}
 User = get_user_model()
 
 
-def _notify_recipients(recipients, message, notification_type):
+def _notify_recipients(recipients, message, notification_type, target_url=None):
     for recipient in recipients:
         if recipient and recipient.is_active:
-            send_notification(recipient, message, notification_type)
+            send_notification(recipient, message, notification_type, target_url=target_url)
 
 
 def _notify_pending_leave_approval(leave_request):
@@ -38,37 +39,43 @@ def _notify_pending_leave_approval(leave_request):
     message = f"Pending approval: {requester_name} requested {leave_label} leave."
 
     if leave_request.status == LeaveRequest.Status.PENDING_HEAD_APPROVAL:
+        target_url = reverse('leaves:head_leave_history')
         department = getattr(leave_request.user, 'department', None)
         head_user = getattr(department, 'head', None) if department else None
         if head_user and head_user != leave_request.user:
-            _notify_recipients([head_user], message, 'Pending Approval')
+            _notify_recipients([head_user], message, 'Pending Approval', target_url=target_url)
             return
         hr_users = User.objects.filter(role='HR', is_active=True)
-        _notify_recipients(hr_users, message, 'Pending Approval')
+        _notify_recipients(hr_users, message, 'Pending Approval', target_url=target_url)
         return
 
     if leave_request.status == LeaveRequest.Status.PENDING_HR_APPROVAL:
+        target_url = reverse('leaves:hr_leave_history')
         hr_users = User.objects.filter(role='HR', is_active=True)
-        _notify_recipients(hr_users, message, 'Pending Approval')
+        _notify_recipients(hr_users, message, 'Pending Approval', target_url=target_url)
         return
 
     if leave_request.status == LeaveRequest.Status.PENDING_SD_APPROVAL:
+        target_url = reverse('leaves:sd_leave_overview')
         sd_users = User.objects.filter(role='SD', is_active=True)
-        _notify_recipients(sd_users, message, 'Pending Approval')
+        _notify_recipients(sd_users, message, 'Pending Approval', target_url=target_url)
 
 
 def _notify_leave_status_update(leave_request):
+    target_url = reverse('leaves:leave_history')
     if leave_request.status == LeaveRequest.Status.APPROVED:
         send_notification(
             leave_request.user,
             f"Your leave request ({leave_request.leave_type.name}) has been approved.",
             'Leave Update',
+            target_url=target_url,
         )
     elif leave_request.status == LeaveRequest.Status.REJECTED:
         send_notification(
             leave_request.user,
             f"Your leave request ({leave_request.leave_type.name}) has been rejected.",
             'Leave Update',
+            target_url=target_url,
         )
 
 

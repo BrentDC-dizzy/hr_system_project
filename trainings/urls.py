@@ -11,6 +11,11 @@ urlpatterns = [
 	path('hr/trainings/<int:training_id>/edit/', views.hr_training_edit, name='hr_training_edit'),
 	path('hr/trainings/<int:training_id>/status/', views.hr_training_update_status, name='hr_training_update_status'),
 	path('hr/trainings/<int:training_id>/participants/', views.hr_training_participants, name='hr_training_participants'),
+	path(
+		'hr/trainings/<int:training_id>/participants/<int:participant_id>/status/',
+		views.hr_training_update_participant_status,
+		name='hr_training_update_participant_status',
+	),
 
 	# Employee routes
 	path('employee/trainings/', views.employee_trainings, name='employee_trainings'),

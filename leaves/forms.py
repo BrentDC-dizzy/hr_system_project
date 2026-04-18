@@ -18,9 +18,11 @@ class LeaveRequestForm(forms.ModelForm):
         model = LeaveRequest
         fields = ['leave_type', 'start_date', 'end_date', 'reason', 'attachment']
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-            'reason': forms.Textarea(attrs={'rows': 3}),
+            'leave_type': forms.Select(attrs={'class': 'form-input'}),
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
+            'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
+            'reason': forms.Textarea(attrs={'rows': 3, 'class': 'form-textarea', 'placeholder': 'Please brief reason for your leave request...'}),
+            'attachment': forms.ClearableFileInput(attrs={'id': 'fileInput', 'hidden': 'hidden'}),
         }
 
     def __init__(self, *args, **kwargs):

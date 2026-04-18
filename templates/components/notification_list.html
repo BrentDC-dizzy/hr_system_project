@@ -13,6 +13,11 @@
             <span class="badge bg-secondary mb-1">{{ notif.notification_type }}</span>
             <p class="mb-1 small">{{ notif.message }}</p>
             <small class="text-muted">{{ notif.created_at|date:"M d, Y H:i" }}</small>
+            {% if notif.target_url %}
+            <div class="mt-2">
+              <a href="{% url 'notifications:open_notification' notif.id %}" class="btn btn-sm btn-outline-secondary">Open</a>
+            </div>
+            {% endif %}
           </div>
           {% if not notif.is_read %}
             <button class="btn btn-sm btn-outline-primary ms-2 rounded-circle border-0" onclick="markAsRead({{ notif.id }})" title="Mark as read">

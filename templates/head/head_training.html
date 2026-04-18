@@ -87,6 +87,7 @@
                 <thead>
                     <tr>
                         <th style="text-align:left; padding:12px;">Employee</th>
+                        <th style="text-align:left; padding:12px;">Department</th>
                         <th style="text-align:left; padding:12px;">Training</th>
                         <th style="text-align:left; padding:12px;">Date</th>
                         <th style="text-align:left; padding:12px;">Mode</th>
@@ -97,14 +98,25 @@
                     {% for participation in subordinate_participations %}
                     <tr>
                         <td style="padding:12px;">{{ participation.employee.get_full_name|default:participation.employee.username }}</td>
+                        <td style="padding:12px;">{{ participation.employee.department.get_name_display|default:'Unassigned' }}</td>
                         <td style="padding:12px;">{{ participation.training_session.name }}</td>
                         <td style="padding:12px;">{{ participation.training_session.date|date:'M d, Y' }}</td>
                         <td style="padding:12px;">{{ participation.training_session.get_mode_display }}</td>
-                        <td style="padding:12px;"><span class="status-badge registered">{{ participation.get_status_display }}</span></td>
+                        <td style="padding:12px;">
+                            {% if participation.training_session.status == 'CANCELLED' %}
+                            <span class="status-badge cancelled">Cancelled</span>
+                            {% elif participation.status == 'COMPLETED' %}
+                            <span class="status-badge completed">Completed</span>
+                            {% elif participation.status == 'NO_SHOW' %}
+                            <span class="status-badge no-show">No Show</span>
+                            {% else %}
+                            <span class="status-badge registered">Registered</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="padding:16px;">No subordinate training records found.</td>
+                        <td colspan="6" style="padding:16px;">No subordinate training records found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -1,14 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Profile | SD</title>
-    <link rel="shortcut icon" href="../../../static/img/general/uph.png">
-    <link rel="stylesheet" href="../../../static/css/sd/sd_employee_view.css">
+    <link rel="shortcut icon" href="{% static 'img/general/uph.png' %}">
+    <link rel="stylesheet" href="{% static 'css/sd/sd_employee_view.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body>
 
 <div class="background"></div>
@@ -18,38 +18,26 @@
     <div class="sidebar" id="sidebar">
         <div class="top-section">
             <div class="logo-wrapper" id="logoToggle">
-                <img src="../../../static/img/general/uph.png" class="logo">
+                <img src="{% static 'img/general/uph.png' %}" class="logo">
                 <div class="open-icon"><i class="fas fa-chevron-right"></i></div>
             </div>
             <button class="close-btn" id="closeBtn"><i class="fas fa-chevron-left"></i></button>
         </div>
 
         <ul class="menu">
-            <li><a href="../sd_dash.html" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
-            <li><a href="../sd_profile_view.html" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
+            <li><a href="{% url 'sd_dashboard' %}" class="menu-item"><i class="fas fa-border-all"></i><span>Dashboard</span></a></li>
+            <li><a href="{% url 'history:sd_profile' %}" class="menu-item"><i class="fas fa-user"></i><span>Profile</span></a></li>
             <hr>
-            <li><a href="../sd_appmanagement.html" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
-            <li><a href="../sd_employeelist.html" class="menu-item active"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
-            <li><a href="../sd_attendancemonitoring.html" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
-            <li><a href="../sd_leaveselect.html" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
+            <li><a href="{% url 'sd_application_overview' %}" class="menu-item"><i class="fas fa-file"></i><span>Application Management</span></a></li>
+            <li><a href="{% url 'employee_list' %}" class="menu-item active"><i class="fas fa-database"></i><span>Employee Records</span></a></li>
+            <li><a href="{% url 'attendance:sd_attendance_monitoring' %}" class="menu-item"><i class="fas fa-calendar"></i><span>Attendance Monitoring</span></a></li>
+            <li><a href="{% url 'leaves:sd_leave_select' %}" class="menu-item"><i class="fas fa-briefcase"></i><span>Leave Management</span></a></li>
             <li><a href="#" class="menu-item"><i class="fas fa-star"></i><span>Performance Evaluation</span></a></li>
-            <li><a href="../sd_reports.html" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
-        </ul>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-star"></i>
-                    <span>Performance Evaluation</span>
-                </a>
-            </li>
-            <li>
-                <a href="sd_reports.html" class="menu-item">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Reports / Analytics</span>
-                </a>
-            </li>
+            <li><a href="{% url 'sd_reports' %}" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports / Analytics</span></a></li>
         </ul>
 
         <div class="bottom-section">
-            <a href="../../login/login.html" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
+            <a href="{% url 'logout' %}" class="menu-item logout"><i class="fas fa-sign-out-alt"></i> <span>Log Out</span></a>
         </div>
     </div>
 
@@ -58,18 +46,22 @@
 
             <div class="profile-card">
                 <div class="profile-left">
-                    <img src="../../../static/img/sample-profile-pic.jfif" class="profile-img">
+                    {% if employee.profile_pic %}
+                    <img src="{{ employee.profile_pic.url }}" class="profile-img">
+                    {% else %}
+                    <img src="{% static 'img/sample-profile-pic.jfif' %}" class="profile-img">
+                    {% endif %}
                     <div class="profile-info">
-                        <h2>John Smith</h2>
-                        <p class="role">School Head</p>
-                        <p class="employee-id">Employee ID: HEAD-001</p>
+                        <h2>{{ employee.get_full_name|default:employee.username }}</h2>
+                        <p class="role">{{ employee.get_role_display }}</p>
+                        <p class="employee-id">Employee ID: {{ employee_profile.employee_id|default:'N/A' }}</p>
 
                         <div class="employment-details">
-                            <p><strong>Status</strong> <span class="status-dot" style="background:#8ddf9b"></span> Active</p>
-                            <p><strong>Position</strong> School Head</p>
-                            <p><strong>Department</strong> Administration</p>
-                            <p><strong>Employment Type</strong> Full-time</p>
-                            <p><strong>Date Hired</strong> 2015-06-01</p>
+                            <p><strong>Status</strong> <span class="status-dot" style="background:{% if employee.is_active %}#8ddf9b{% else %}#ff6b6b{% endif %}"></span> {% if employee.is_active %}Active{% else %}Inactive{% endif %}</p>
+                            <p><strong>Position</strong> {{ employee.get_role_display }}</p>
+                            <p><strong>Department</strong> {{ employee.department.name|default:'Unassigned' }}</p>
+                            <p><strong>Employment Type</strong> {{ employee_profile.get_employment_type_display|default:'N/A' }}</p>
+                            <p><strong>Date Hired</strong> {{ employee_profile.date_hired|date:'M d, Y'|default:'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -77,9 +69,12 @@
                 <div class="profile-right">
                     <div class="contact-info">
                         <h4>Contact Information</h4>
-                        <p><i class="fas fa-envelope"></i> john.head@school.edu.ph</p>
-                        <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
-                        <p><i class="fas fa-location-dot"></i> Manila, Philippines</p>
+                        <p><i class="fas fa-envelope"></i> {{ employee.email|default:'N/A' }}</p>
+                        <p><i class="fas fa-phone"></i> {{ employee_profile.contact_number|default:'N/A' }}</p>
+                        <p><i class="fas fa-location-dot"></i> {{ employee_profile.address|default:'N/A' }}</p>
+                    </div>
+                    <div style="margin-top: 14px;">
+                        <a href="{% url 'employee_list' %}" class="edit-btn" style="text-decoration:none;">Back to Employee List</a>
                     </div>
                 </div>
             </div>
@@ -95,16 +90,14 @@
                 <div class="tab-content-item active" id="dept">
                     <div class="info-card">
                         <h4>Department Information</h4>
-                        <div class="info-row"><span>Department</span><span>Administration</span></div>
-                        <div class="info-row"><span>Code</span><span>ADM-001</span></div>
-                        <div class="info-row"><span>Location</span><span>2nd Floor, Admin Building</span></div>
-                        <div class="info-row"><span>Email</span><span>admin@school.edu.ph</span></div>
-                        <div class="info-row"><span>Contact</span><span>(02) 123-4567</span></div>
+                        <div class="info-row"><span>Department</span><span>{{ employee.department.name|default:'Unassigned' }}</span></div>
+                        <div class="info-row"><span>Head</span><span>{{ employee.department.head.get_full_name|default:'N/A' }}</span></div>
+                        <div class="info-row"><span>Office</span><span>{{ employee.department.college|default:'N/A' }}</span></div>
                     </div>
                 </div>
 
                 <div class="tab-content-item" id="docs">
-                    <div class="doc-header"><span>2 of 3 uploaded</span></div>
+                    <div class="doc-header"><span>{{ documents|length }} uploaded</span></div>
                     <table class="doc-table">
                         <thead>
                             <tr>
@@ -116,56 +109,63 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for doc in documents %}
                             <tr>
-                                <td>Transcript of Records</td>
-                                <td>PDF</td>
-                                <td class="status-cell" style="color: #28a745; font-weight: bold;">Valid</td>
-                                <td class="date-cell">March 1, 2025</td>
-                                <td class="action-cell">
-                                    <a href="../../../static/docs/tor_sample.pdf" target="_blank" title="View Document">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="#" download title="Download Document"><i class="fas fa-download"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Licenses / Certification</td>
-                                <td>PDF</td>
+                                <td>{% if doc.file %}{{ doc.file.name }}{% else %}N/A{% endif %}</td>
+                                <td>{{ doc.document_type }}</td>
+                                {% if doc.is_expired %}
+                                <td class="status-cell" style="color: #dc3545; font-weight: bold;">Expired</td>
+                                {% elif doc.is_approaching_expiry %}
                                 <td class="status-cell" style="color: #ffc107; font-weight: bold;">Needs Update</td>
-                                <td class="date-cell">February 10, 2025</td>
+                                {% else %}
+                                <td class="status-cell" style="color: #28a745; font-weight: bold;">Valid</td>
+                                {% endif %}
+                                <td class="date-cell">{{ doc.upload_date|date:'M d, Y' }}</td>
                                 <td class="action-cell">
-                                    <a href="#" target="_blank" title="View Document">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="#" download title="Download Document"><i class="fas fa-download"></i></a>
+                                    {% if doc.file %}
+                                    <a href="{% url 'documents:view_document_inline' doc.id %}" target="_blank" title="View"><i class="fas fa-eye"></i></a>
+                                    {% endif %}
+                                    <a href="{% url 'documents:download_document' doc.id %}" title="Download"><i class="fas fa-download"></i></a>
                                 </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td>NBI Clearance</td>
-                                <td>JPG</td>
-                                <td class="status-cell" style="color: #dc3545; font-weight: bold;">Missing</td>
-                                <td class="date-cell">------</td>
-                                <td class="action-cell">
-                                    <span>---</span>
-                                </td>
+                                <td colspan="5" style="text-align:center; color:#888;">No documents available.</td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
                 <div class="tab-content-item" id="history">
-                    <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="info-card">
                         <h4>Employment History</h4>
-                        </div>
-
-                    <div class="timeline" id="timelineContainer">
-                        <div class="timeline-item">
-                            <div class="timeline-date">2015</div>
-                            <div class="timeline-content">
-                                <h4>Hired</h4>
-                                <p>Joined as School Head</p>
-                            </div>
-                        </div>
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Change</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Recorded By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in history_entries %}
+                                <tr>
+                                    <td>{{ entry.date|date:'M d, Y' }}</td>
+                                    <td>{{ entry.change_type }}</td>
+                                    <td>{{ entry.from_value|default:'-' }}</td>
+                                    <td>{{ entry.to_value|default:'-' }}</td>
+                                    <td>{{ entry.recorded_by.get_full_name|default:entry.recorded_by.username|default:'System' }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align:center; color:#888;">No employment history records found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -176,30 +176,6 @@
 
 </div>
 
-<div id="historyModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New History Event</h3>
-            <span class="close-modal" id="closeHistoryModal">&times;</span>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label>Date (Year)</label>
-                <input type="text" id="eventDate" placeholder="e.g. 2024">
-            </div>
-            <div class="form-group">
-                <label>Title</label>
-                <input type="text" id="eventTitle" placeholder="e.g. Major Promotion">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="eventDesc" rows="3" placeholder="Describe the event..."></textarea>
-            </div>
-            <button id="saveEventBtn" class="save-btn">Save Event</button>
-        </div>
-    </div>
-</div>
-
-<script src="../../../static/js/sd/sd_employee_view.js"></script>
+<script src="{% static 'js/sd/sd_employee_view.js' %}"></script>
 </body>
 </html>

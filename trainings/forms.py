@@ -14,6 +14,7 @@ class TrainingForm(forms.ModelForm):
             'mode',
             'max_participants',
             'trainer',
+            'trainer_name',
             'status',
         ]
         widgets = {

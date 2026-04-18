@@ -131,8 +131,28 @@
                     <p id="modalRemarks" class="modal-text-unified">&mdash;</p>
                 </div>
                 <div class="modal-footer" id="modalActions">
-                    <button class="btn-approve" id="modalCompleteBtn">Mark Completed</button>
+                    <button class="btn-approve" id="modalCompleteBtn">Close Registration</button>
                     <button class="btn-reject" id="modalCancelBtn">Cancel Training</button>
+                </div>
+                <div class="info-item">
+                    <label>Participants</label>
+                    <div class="form-body" style="max-height: 220px; overflow: auto;">
+                        <table id="participantsTable" style="width:100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Employee Name</th>
+                                    <th style="text-align:left;">Department</th>
+                                    <th style="text-align:left;">Status</th>
+                                    <th style="text-align:left;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantsTableBody">
+                                <tr>
+                                    <td colspan="4" class="no-records">No participants yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <button class="modal-close-btn" id="modalCloseBtn">Close View</button>
             </div>
@@ -143,10 +163,11 @@
 <div id="addTrainingModal" class="modal-overlay">
     <div class="view-modal-content modal-sm">
         <div class="modal-header">
-            <h3>Add New Training</h3>
+            <h3 id="trainingModalTitle">Add New Training</h3>
         </div>
         <div class="modal-body-form">
             <div class="log-request-grid">
+                <input type="hidden" id="tTrainingId">
                 <div class="form-group full-width">
                     <label>Training Name</label>
                     <input type="text" id="tName" placeholder="e.g. Faculty Development Workshop">
@@ -221,7 +242,8 @@
     <input type="hidden" name="date" id="formDate">
     <input type="hidden" name="mode" id="formMode">
     <input type="hidden" name="max_participants" id="formMaxParticipants">
-    <input type="hidden" name="status" value="ACTIVE">
+    <input type="hidden" name="trainer_name" id="formTrainerName">
+    <input type="hidden" name="status" value="ACTIVE" id="formStatus">
 </form>
 
 <form id="statusTrainingForm" method="post" style="display: none;">
@@ -229,11 +251,20 @@
     <input type="hidden" name="status" id="statusValue">
 </form>
 
+<form id="participantStatusForm" method="post" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="status" id="participantStatusValue">
+</form>
+
 {{ training_rows|json_script:"hr-training-data" }}
+{{ participant_status_choices|json_script:"hr-participant-status-choices" }}
 <script>
 window.hrTrainingData = JSON.parse(document.getElementById('hr-training-data').textContent || '[]');
+window.hrParticipantStatusChoices = JSON.parse(document.getElementById('hr-participant-status-choices').textContent || '[]');
+window.hrTrainingEditUrlTemplate = "{% url 'trainings:hr_training_edit' 0 %}";
 window.hrTrainingStatusUrlTemplate = "{% url 'trainings:hr_training_update_status' 0 %}";
 window.hrTrainingParticipantsUrlTemplate = "{% url 'trainings:hr_training_participants' 0 %}";
+window.hrParticipantStatusUrlTemplate = "{% url 'trainings:hr_training_update_participant_status' 0 0 %}";
 </script>
 
 <script src="{% static 'js/training_management/hr_training.js' %}"></script>

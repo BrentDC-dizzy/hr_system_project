@@ -3,7 +3,7 @@ from .models import Notification, NotificationPreference
 
 logger = logging.getLogger(__name__)
 
-def send_notification(user, message, notification_type):
+def send_notification(user, message, notification_type, target_url=None):
     # Mapping notification types to their preference field names
     type_to_preference_map = {
         'Leave Update': 'receive_leave_updates',
@@ -30,7 +30,8 @@ def send_notification(user, message, notification_type):
             Notification.objects.create(
                 user=user,
                 message=message,
-                notification_type=notification_type
+                notification_type=notification_type,
+                target_url=target_url,
             )
     except Exception as e:
         # Log the error but don't crash the main process

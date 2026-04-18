@@ -1,8 +1,9 @@
 import json
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Notification, NotificationPreference
 
 @login_required
@@ -17,6 +18,25 @@ def notification_list(request):
             'preference': preference,
         },
     )
+
+
+@login_required
+def open_notification(request, pk):
+    """Mark a notification as read and redirect to its safe in-app target URL."""
+    notification = get_object_or_404(Notification, pk=pk, user=request.user)
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save(update_fields=['is_read'])
+
+    target_url = notification.target_url or ''
+    if target_url and url_has_allowed_host_and_scheme(
+        target_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(target_url)
+
+    return redirect('notifications:notification_list')
 
 @login_required
 @require_POST

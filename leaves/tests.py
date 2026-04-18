@@ -114,7 +114,7 @@ class LeaveRoutingAndQueueTests(TestCase):
 		self.assertIn(self.subordinate_pending_head.id, history_ids)
 		self.assertNotIn(self.head_own_request.id, history_ids)
 
-	def test_hr_approval_routes_employee_leave_to_sd_pending_queue(self):
+	def test_hr_approval_auto_approves_employee_leave_without_sd_queue(self):
 		self.client.force_login(self.hr_user)
 
 		response = self.client.post(
@@ -124,7 +124,7 @@ class LeaveRoutingAndQueueTests(TestCase):
 
 		self.assertEqual(response.status_code, 302)
 		self.employee_pending_hr.refresh_from_db()
-		self.assertEqual(self.employee_pending_hr.status, LeaveRequest.Status.PENDING_SD_APPROVAL)
+		self.assertEqual(self.employee_pending_hr.status, LeaveRequest.Status.APPROVED)
 
 	def test_sd_overview_shows_employee_leave_in_pending_section(self):
 		self.employee_pending_hr.status = LeaveRequest.Status.PENDING_SD_APPROVAL

@@ -26,6 +26,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const filterStatus = document.getElementById('filterStatus');
     const tableBody = document.getElementById('employeeTableBody');
 
+    function populateSelectOptions(selectEl, values) {
+        if (!selectEl) return;
+        const existing = new Set(Array.from(selectEl.options).map((opt) => opt.value));
+        values.forEach((value) => {
+            if (!value || existing.has(value)) return;
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            selectEl.appendChild(option);
+            existing.add(value);
+        });
+    }
+
+    const positions = [];
+    const statuses = [];
+    Array.from(tableBody.rows).forEach((row) => {
+        const cells = row.cells;
+        if (cells.length >= 5) {
+            positions.push(cells[3].textContent.trim());
+            statuses.push(cells[4].textContent.trim());
+        }
+    });
+    populateSelectOptions(filterPosition, Array.from(new Set(positions)));
+    populateSelectOptions(filterStatus, Array.from(new Set(statuses)));
+
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedPosition = filterPosition.value;
@@ -45,7 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    searchInput.addEventListener('input', filterTable);
-    filterPosition.addEventListener('change', filterTable);
-    filterStatus.addEventListener('change', filterTable);
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTable);
+    }
+    if (filterPosition) {
+        filterPosition.addEventListener('change', filterTable);
+    }
+    if (filterStatus) {
+        filterStatus.addEventListener('change', filterTable);
+    }
 });

@@ -52,6 +52,11 @@
           </div>
           <p style="margin: 0 0 6px 0; color: #242424;">{{ notif.message }}</p>
           <small style="color: #7a7a7a;">{{ notif.created_at|date:"M d, Y H:i" }}</small>
+          {% if notif.target_url %}
+          <div style="margin-top: 8px;">
+            <a href="{% url 'notifications:open_notification' notif.id %}" style="font-size: 0.82rem; color: #800000; font-weight: 600; text-decoration: none;">Open</a>
+          </div>
+          {% endif %}
         </div>
         <div>
           {% if not notif.is_read %}
