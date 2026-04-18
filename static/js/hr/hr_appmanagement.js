@@ -1,6 +1,6 @@
 /* hr_appmanagement.js */
 
-const HR_ACTIONABLE_STATUSES = new Set(['Pending', 'Head Approved']);
+const HR_ACTIONABLE_STATUSES = new Set(['PENDING_HR']);
 let activeMainTab = 'new';
 
 function getCookie(name) {

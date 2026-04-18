@@ -3,9 +3,18 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from utils.decorators import role_required
 from .forms import ApplicationActionForm, PositionChangeRequestForm
 from .models import Application, ApplicationStatusHistory
+
+
+ALLOWED_APPLICATION_ROLES = {'HEAD', 'HR', 'SD'}
+DASHBOARD_BY_ROLE = {
+    'ADMIN': 'admin_dashboard',
+    'HR': 'hr_dashboard',
+    'HEAD': 'head_dashboard',
+    'SD': 'sd_dashboard',
+    'EMP': 'employee_dashboard',
+}
 
 
 def _get_head_department_scope_ids(user):
@@ -33,7 +42,15 @@ def _normalize_decision(raw_decision):
         return 'APPROVE'
     if decision in {'REJECT', 'REJECTED'}:
         return 'REJECT'
+    if decision in {'FORWARD', 'FORWARDED'}:
+        return 'FORWARD'
     return None
+
+
+def _redirect_to_role_dashboard_with_error(request, message_text='You do not have permission to view that module.'):
+    role = (request.user.role or '').upper()
+    messages.error(request, message_text)
+    return redirect(DASHBOARD_BY_ROLE.get(role, 'login'))
 
 
 def _record_status_change(application, actor, new_status, remarks=''):
@@ -50,9 +67,12 @@ def _record_status_change(application, actor, new_status, remarks=''):
 
 
 @login_required
-@role_required('SD', 'ADMIN')
 def sd_application_overview(request):
     """SD view restricted to final-stage application approvals only."""
+    role = (request.user.role or '').upper()
+    if role != 'SD':
+        return _redirect_to_role_dashboard_with_error(request)
+
     pending_sd_apps = (
         Application.objects
         .filter(status=Application.Status.PENDING_SD)
@@ -72,7 +92,10 @@ def application_list(request):
     """Role-based application list router."""
     role = (request.user.role or '').upper()
 
-    if role in {'SD', 'ADMIN'}:
+    if role not in ALLOWED_APPLICATION_ROLES:
+        return _redirect_to_role_dashboard_with_error(request)
+
+    if role == 'SD':
         return redirect('sd_application_overview')
 
     applications = Application.objects.select_related('target_department').order_by('-id')
@@ -112,12 +135,15 @@ def application_list(request):
 @login_required
 def application_detail(request, pk):
     """View to inspect a single application and status history."""
+    role = (request.user.role or '').upper()
+    if role not in ALLOWED_APPLICATION_ROLES:
+        return _redirect_to_role_dashboard_with_error(request)
+
     application = get_object_or_404(
         Application.objects.select_related('target_department').prefetch_related('history__actor'),
         pk=pk,
     )
 
-    role = (request.user.role or '').upper()
     if role == 'HEAD' and not _head_can_access_application(request.user, application):
         # FIX: Prevent HEAD users from reading cross-department application details.
         messages.error(request, 'You are not authorized to view this application.')
@@ -128,25 +154,27 @@ def application_detail(request, pk):
         'application/application_info.html',
         {
             'application': application,
-            'form': ApplicationActionForm(),
+            'form': ApplicationActionForm(user_role=role),
         },
     )
 
 
 @login_required
-@role_required('HEAD', 'HR', 'SD', 'ADMIN')
 @require_POST
 def process_application_action(request, pk):
     """Process application actions by workflow stage and actor role."""
     application = get_object_or_404(Application, pk=pk)
     role = (request.user.role or '').upper()
 
+    if role not in ALLOWED_APPLICATION_ROLES:
+        return _redirect_to_role_dashboard_with_error(request)
+
     if role == 'HEAD' and not _head_can_access_application(request.user, application):
         # FIX: Prevent HEAD users from updating applications outside their department scope.
         messages.error(request, 'You are not authorized to update this application.')
         return redirect('application_list')
 
-    form = ApplicationActionForm(request.POST)
+    form = ApplicationActionForm(request.POST, user_role=role)
 
     if not form.is_valid():
         messages.error(request, 'Invalid action submission.')
@@ -160,24 +188,24 @@ def process_application_action(request, pk):
         return redirect('application_detail', pk=pk)
 
     if role == 'HEAD':
-        if application.status != Application.Status.PENDING:
+        if application.status != Application.Status.PENDING_HEAD:
             messages.error(request, 'This application is no longer pending Head review.')
             return redirect('application_detail', pk=pk)
 
         new_status = (
-            Application.Status.HEAD_APPROVED
-            if decision == 'APPROVE'
+            Application.Status.PENDING_HR
+            if decision in {'APPROVE', 'FORWARD'}
             else Application.Status.REJECTED
         )
 
     elif role == 'HR':
-        if application.status not in {Application.Status.PENDING, Application.Status.HEAD_APPROVED}:
+        if application.status != Application.Status.PENDING_HR:
             messages.error(request, 'This application is not currently actionable by HR.')
             return redirect('application_detail', pk=pk)
 
         new_status = (
             Application.Status.PENDING_SD
-            if decision == 'APPROVE'
+            if decision in {'APPROVE', 'FORWARD'}
             else Application.Status.REJECTED
         )
 
@@ -185,6 +213,10 @@ def process_application_action(request, pk):
         if application.status != Application.Status.PENDING_SD:
             messages.error(request, 'Only Pending SD applications can be decided at this stage.')
             return redirect('sd_application_overview')
+
+        if decision == 'FORWARD':
+            messages.error(request, 'Forward is not allowed at SD final review stage.')
+            return redirect('application_detail', pk=pk)
 
         new_status = (
             Application.Status.APPROVED
@@ -211,7 +243,7 @@ def create_position_change(request):
             position_change = form.save(commit=False)
             position_change.type = 'Position Change Request'
             position_change.applicant_name = request.user.get_full_name() or request.user.username
-            position_change.status = Application.Status.PENDING
+            position_change.status = Application.Status.PENDING_HEAD
             position_change.save()
             messages.success(request, 'Position change request submitted.')
             return redirect('create_position_change')

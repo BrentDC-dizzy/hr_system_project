@@ -97,23 +97,68 @@
                 </div>
 
                 <div class="tab-content-item" id="docs">
-                    <div class="doc-header"><span>Employee Document Repository</span></div>
+                    <div class="doc-header" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <span>{{ documents|length }} uploaded</span>
+
+                        {% if can_toggle_self_upload %}
+                        <form method="POST" action="{% url 'update_employee_self_upload' employee.id %}" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+                            {% csrf_token %}
+                            <label for="self-upload-toggle" style="font-size: 14px; font-weight: 600;">Allow Employee Self-Upload</label>
+                            <input id="self-upload-toggle" type="checkbox" name="can_self_upload" {% if is_self_upload_enabled %}checked{% endif %} onchange="this.form.submit()">
+                        </form>
+                        {% endif %}
+
+                        {% if request.user.role == 'HR' %}
+                        <button type="button" id="openUploadModal" class="edit-btn" style="margin-left:auto;">Upload Document</button>
+                        {% endif %}
+                    </div>
                     <table class="doc-table">
                         <thead>
                             <tr>
                                 <th>Document Name</th>
-                                <th>Format</th>
+                                <th>Type</th>
+                                <th>Date Uploaded</th>
+                                <th>Expiry Date</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {% for doc in documents %}
                             <tr>
-                                <td>Employee Information Form</td>
-                                <td>System Gen</td>
-                                <td style="color: #28a745; font-weight: bold;">Verified</td>
-                                <td><a href="#"><i class="fas fa-eye"></i></a></td>
+                                <td>{% if doc.file %}{{ doc.file.name }}{% else %}N/A{% endif %}</td>
+                                <td>{{ doc.document_type }}</td>
+                                <td>{{ doc.upload_date|date:"M d, Y" }}</td>
+                                <td>{{ doc.expiry_date|default:"N/A" }}</td>
+                                <td>
+                                    {% if doc.is_expired %}
+                                    <span style="color: red; font-weight: bold;">Expired</span>
+                                    {% elif doc.is_approaching_expiry %}
+                                    <span style="color: orange; font-weight: bold;">Needs Update</span>
+                                    {% else %}
+                                    <span style="color: #28a745; font-weight: bold;">Valid</span>
+                                    {% endif %}
+                                </td>
+                                <td style="display:flex; gap:10px; align-items:center;">
+                                    {% if doc.file %}
+                                    <a href="{% url 'documents:view_document_inline' doc.id %}" target="_blank" title="View"><i class="fas fa-eye"></i></a>
+                                    {% endif %}
+                                    <a href="{% url 'documents:download_document' doc.id %}" title="Download"><i class="fas fa-download"></i></a>
+                                    {% if request.user.role == 'HR' %}
+                                    <form method="POST" action="{% url 'documents:delete_document' doc.id %}" style="display:inline; margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" style="border:none; background:none; color:#d62828; cursor:pointer;" title="Delete" onclick="return confirm('Delete this document?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align:center;">No documents found for this profile.</td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -156,7 +201,51 @@
     </div>
 </div>
 
+{% if request.user.role == 'HR' %}
+<div id="uploadModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Upload Document</h3>
+            <span class="close-modal" id="closeUploadModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form action="{% url 'documents:upload_document' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ upload_form.as_p }}
+                <input type="hidden" name="employee_id" value="{{ employee_profile.id }}">
+                <button type="submit" class="save-btn">Upload</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <script src="{% static 'js/hr/hr_profile_view.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var uploadModal = document.getElementById('uploadModal');
+        var openUploadBtn = document.getElementById('openUploadModal');
+        var closeUploadBtn = document.getElementById('closeUploadModal');
+
+        if (openUploadBtn && uploadModal) {
+            openUploadBtn.addEventListener('click', function() {
+                uploadModal.style.display = 'block';
+            });
+        }
+
+        if (closeUploadBtn && uploadModal) {
+            closeUploadBtn.addEventListener('click', function() {
+                uploadModal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function(event) {
+            if (uploadModal && event.target === uploadModal) {
+                uploadModal.style.display = 'none';
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

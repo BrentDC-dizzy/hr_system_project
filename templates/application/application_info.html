@@ -89,7 +89,11 @@
                         {% for history in application.history.all %}
                             <li style="margin-bottom: 1rem; list-style-type: none; border-left: 3px solid #005b9f; padding-left: 1rem;">
                                 <strong>{{ history.timestamp|date:"Y-m-d H:i" }}</strong> - 
-                                {{ history.actor.first_name }} {{ history.actor.last_name }} ({{ history.actor.role }})<br>
+                                {% if history.actor %}
+                                    {{ history.actor.first_name }} {{ history.actor.last_name }} ({{ history.actor.role }})
+                                {% else %}
+                                    System
+                                {% endif %}<br>
                                 Changed status from <em>{{ history.previous_status }}</em> to <strong>{{ history.new_status }}</strong>.<br>
                                 <em>Remarks:</em> {{ history.remarks|default:"None" }}
                             </li>
@@ -101,7 +105,7 @@
                 </div>
 
                 <!-- Review Section -->
-                {% if request.user.role == 'HR' or request.user.role == 'HEAD' or request.user.role == 'SD' or request.user.role == 'ADMIN' %}
+                {% if request.user.role == 'HR' or request.user.role == 'HEAD' or request.user.role == 'SD' %}
                 <div class="review-section" style="margin-top: 2rem; border-top: 1px solid #ccc; padding-top: 1.5rem;">
                     <h3 class="section-title">Review Application</h3>
                     <form method="POST" action="{% url 'process_application_action' application.pk %}">
@@ -125,7 +129,6 @@
         </div>
     </main>
 
-    <script src="{% static 'js/application employee/application_info.js' %}"></script>
 </body>
 </html>
 {% endblock %}

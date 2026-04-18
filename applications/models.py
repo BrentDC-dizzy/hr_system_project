@@ -7,12 +7,11 @@ class Application(models.Model):
         POSITION_CHANGE = 'Position Change Request', 'Position Change Request'
 
     class Status(models.TextChoices):
-        PENDING = 'Pending', 'Pending'
-        HEAD_APPROVED = 'Head Approved', 'Head Approved'
-        HR_APPROVED = 'HR Approved', 'HR Approved'
-        PENDING_SD = 'Pending SD', 'Pending SD'
-        APPROVED = 'Approved', 'Approved'
-        REJECTED = 'Rejected', 'Rejected'
+        PENDING_HEAD = 'PENDING_HEAD', 'Pending Head'
+        PENDING_HR = 'PENDING_HR', 'Pending HR'
+        PENDING_SD = 'PENDING_SD', 'Pending SD'
+        APPROVED = 'APPROVED', 'Approved'
+        REJECTED = 'REJECTED', 'Rejected'
 
     APPLICATION_TYPES = (
         ('New Employee Application', 'New Employee Application'),
@@ -20,12 +19,11 @@ class Application(models.Model):
     )
     
     APPLICATION_STATUS = (
-        ('Pending', 'Pending'),
-        ('Head Approved', 'Head Approved'),
-        ('HR Approved', 'HR Approved'),
-        ('Pending SD', 'Pending SD'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
+        (Status.PENDING_HEAD, 'Pending Head'),
+        (Status.PENDING_HR, 'Pending HR'),
+        (Status.PENDING_SD, 'Pending SD'),
+        (Status.APPROVED, 'Approved'),
+        (Status.REJECTED, 'Rejected'),
     )
     
     type = models.CharField(max_length=50, choices=APPLICATION_TYPES)
@@ -33,8 +31,22 @@ class Application(models.Model):
     applicant_info = models.TextField(blank=True, null=True)
     target_position = models.CharField(max_length=255)
     target_department = models.ForeignKey('accounts.Department', on_delete=models.SET_NULL, null=True)
-    status = models.CharField(max_length=50, choices=APPLICATION_STATUS, default=Status.PENDING)
+    status = models.CharField(max_length=50, choices=APPLICATION_STATUS, default=Status.PENDING_HEAD)
     attached_documents = models.FileField(upload_to='application_documents/', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        # Ensure all newly created records have an initial timeline row.
+        if is_new:
+            ApplicationStatusHistory.objects.create(
+                application=self,
+                previous_status='Submitted',
+                new_status=self.status,
+                remarks='Application submitted.',
+                actor=None,
+            )
 
     def __str__(self):
         return f"{self.applicant_name} - {self.type}"

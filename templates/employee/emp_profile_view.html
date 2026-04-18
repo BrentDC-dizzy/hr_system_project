@@ -128,8 +128,8 @@
                         <tbody>
                             {% for doc in documents %}
                             <tr>
+                                <td>{% if doc.file %}{{ doc.file.name }}{% else %}N/A{% endif %}</td>
                                 <td>{{ doc.document_type }}</td>
-                                <td>{{ doc.file.name|slice:"-4:"|cut:"."|upper }}</td>
                                 {% if doc.is_expired %}
                                 <td class="missing" style="color: red; font-weight: bold;">Expired</td>
                                 {% elif doc.is_approaching_expiry %}

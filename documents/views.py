@@ -9,19 +9,36 @@ from .models import Document
 from .forms import DocumentUploadForm
 from accounts.models import EmployeeProfile
 
+
+def _redirect_to_origin(request, user, fallback=None):
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    if fallback:
+        return redirect(fallback)
+
+    role_fallback = {
+        'HR': 'history:hr_profile',
+        'EMP': 'employee_profile',
+        'HEAD': 'history:head_profile',
+        'SD': 'history:sd_profile',
+    }
+    return redirect(role_fallback.get(user.role, 'login'))
+
 @login_required
 def upload_document(request):
     user = request.user
-    
-    # Strict role-based access for upload
+
+    # HR can upload for any selected employee. Self-upload is for EMP only.
     if user.role != 'HR':
+        if user.role != 'EMP':
+            raise PermissionDenied("Only employees with self-upload permission can upload documents.")
         try:
             profile = user.profile
-            can_upload = getattr(profile, 'can_self_upload', False)
-        except getattr(EmployeeProfile.DoesNotExist, "DoesNotExist", Exception):
-            can_upload = False
-            
-        if not can_upload:
+        except EmployeeProfile.DoesNotExist:
+            raise PermissionDenied("You do not have permission to upload documents.")
+
+        if not getattr(profile, 'can_self_upload', False):
             raise PermissionDenied("You do not have permission to upload documents.")
 
     if request.method == 'POST':
@@ -29,26 +46,24 @@ def upload_document(request):
         if form.is_valid():
             document = form.save(commit=False)
             document.uploaded_by = user
-            if user.role != 'HR':
-                document.employee = user.profile
-            else:
+            if user.role == 'HR':
                 employee_id = request.POST.get('employee_id')
-                if employee_id:
-                    document.employee = get_object_or_404(EmployeeProfile, id=employee_id)
+                if not employee_id:
+                    messages.error(request, "No employee target was provided for this upload.")
+                    return _redirect_to_origin(request, user, fallback='documents:view_documents')
+                document.employee = get_object_or_404(EmployeeProfile, id=employee_id)
+            else:
+                document.employee = user.profile
+
             document.save()
             messages.success(request, "Document uploaded successfully.")
-            
-            # DYNAMIC REDIRECT: Returns the user to the exact page they were on (SD, Head, Emp, or HR views)
-            referer = request.META.get('HTTP_REFERER')
-            if referer:
-                return redirect(referer)
-            return redirect('employee_profile') # Fallback just in case
-    else:
-        form = DocumentUploadForm(user=user)
+            return _redirect_to_origin(request, user)
 
-    # Note: If the frontend team didn't make an upload page, this will throw a TemplateDoesNotExist error. 
-    # You may need to create templates/documents/upload_document.html later!
-    return render(request, 'documents/upload_document.html', {'form': form})
+        messages.error(request, "Upload failed. Please check the selected file and fields.")
+        return _redirect_to_origin(request, user, fallback='documents:view_documents')
+
+    messages.info(request, "Use the profile documents tab to upload files.")
+    return _redirect_to_origin(request, user, fallback='documents:view_documents')
 
 @login_required
 def view_documents(request):
@@ -64,7 +79,7 @@ def view_documents(request):
             return render(request, 'hr/hr_documents_employee.html', {'documents': documents, 'employee': employee, 'upload_form': upload_form})
         else:
             documents = Document.objects.all()
-            return render(request, 'hr/hr_documents_employee.html', {'documents': documents, 'upload_form': upload_form})
+            return render(request, 'hr/hr_documents_employee.html', {'documents': documents, 'employee': None, 'upload_form': upload_form})
             
     elif user.role == 'EMP':
         documents = Document.objects.filter(employee__user=user)
@@ -121,10 +136,11 @@ def delete_document(request, document_id):
             document.file.delete(save=False)
         document.delete()
         messages.success(request, "Document deleted successfully.")
-        
+
         referer = request.META.get('HTTP_REFERER')
         if referer:
             return redirect(referer)
         return redirect('documents:view_documents')
-        
-    return render(request, 'documents/confirm_delete.html', {'document': document})
+
+    messages.error(request, "Invalid request method for document deletion.")
+    return _redirect_to_origin(request, request.user, fallback='documents:view_documents')

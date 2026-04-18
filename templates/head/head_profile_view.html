@@ -123,9 +123,6 @@
 
                     <div class="doc-header">
                         <span>{{ documents|length }} uploaded</span>
-                        {% if user.profile.can_self_upload %}
-                        <button type="button" id="openUploadModal" class="btn btn-primary" style="margin-left: auto;">Upload Document</button>
-                        {% endif %}
                     </div>
 
                     <table class="doc-table">
@@ -142,8 +139,8 @@
                         <tbody>
                             {% for doc in documents %}
                             <tr>
+                                <td>{% if doc.file %}{{ doc.file.name }}{% else %}N/A{% endif %}</td>
                                 <td>{{ doc.document_type }}</td>
-                                <td>{{ doc.file.name|slice:"-4:"|cut:"."|upper }}</td>
                                 {% if doc.is_expired %}
                                 <td class="missing" style="color: red; font-weight: bold;">Expired</td>
                                 {% elif doc.is_approaching_expiry %}
@@ -182,44 +179,7 @@
     </main>
 </div>
 
-<div id="uploadModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px;">
-        <span class="close-modal" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-        <h2>Upload Document</h2>
-        <form action="{% url 'documents:upload_document' %}" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ upload_form.as_p }}
-            <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Upload</button>
-        </form>
-    </div>
-</div>
-
 <script src="{% static 'js/head/head_profile_view.js' %}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var modal = document.getElementById("uploadModal");
-        var btn = document.getElementById("openUploadModal");
-        var span = document.getElementsByClassName("close-modal")[0];
-
-        if (btn) {
-            btn.onclick = function() {
-                modal.style.display = "block";
-            }
-        }
-
-        if (span) {
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    });
-</script>
 
 </body>
 </html>

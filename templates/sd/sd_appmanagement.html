@@ -158,7 +158,7 @@
                                 <td>{{ app.applicant_name }}</td>
                                 <td>{{ app.target_department.name|default:'N/A' }}</td>
                                 <td>{{ app.target_position|default:'-' }}</td>
-                                <td><span class="status-pill pending-sd">{{ app.status }}</span></td>
+                                <td><span class="status-pill pending-sd">{{ app.get_status_display }}</span></td>
                                 <td>
                                     <form method="post" action="{% url 'process_application_action' app.id %}" class="action-form">
                                         {% csrf_token %}
@@ -199,7 +199,7 @@
                                 <td>{{ app.applicant_name }}</td>
                                 <td>{{ app.target_department.name|default:'N/A' }}</td>
                                 <td>{{ app.target_position|default:'-' }}</td>
-                                <td><span class="status-pill pending-sd">{{ app.status }}</span></td>
+                                <td><span class="status-pill pending-sd">{{ app.get_status_display }}</span></td>
                                 <td>
                                     <form method="post" action="{% url 'process_application_action' app.id %}" class="action-form">
                                         {% csrf_token %}

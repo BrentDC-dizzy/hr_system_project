@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from accounts.models import User
+from accounts.models import User, EmployeeProfile
 from .models import EmploymentHistory
 from documents.models import Document
 from documents.forms import DocumentUploadForm
@@ -58,47 +58,63 @@ def employee_timeline(request, employee_id=None):
 @login_required
 @user_passes_test(is_employee)
 def employee_profile(request):
+    employee_profile_obj, _ = EmployeeProfile.objects.get_or_create(user=request.user)
     history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
-    context = {
-        'employee': request.user,
-        'target_employee': request.user,
-        'history_entries': history_entries
-    }
-    return render(request, 'employee/emp_profile_view.html', context)
-
-@login_required
-@user_passes_test(is_hr)
-def hr_profile(request):
-    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
-    context = {
-        'employee': request.user,
-        'target_employee': request.user,
-        'history_entries': history_entries
-    }
-    return render(request, 'hr/hr_profile_view.html', context)
-
-@login_required
-@user_passes_test(is_head)
-def head_profile(request):
-    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
-    context = {
-        'employee': request.user,
-        'target_employee': request.user,
-        'history_entries': history_entries
-    }
-    return render(request, 'head/head_profile_view.html', context)
-
-@login_required
-@user_passes_test(is_sd)
-def sd_profile(request):
-    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
-    documents = Document.objects.filter(employee__user=request.user).select_related('employee')
+    documents = Document.objects.filter(employee=employee_profile_obj).select_related('employee').order_by('-upload_date')
     context = {
         'employee': request.user,
         'target_employee': request.user,
         'history_entries': history_entries,
         'documents': documents,
         'upload_form': DocumentUploadForm(user=request.user),
+        'employee_profile': employee_profile_obj,
+    }
+    return render(request, 'employee/emp_profile_view.html', context)
+
+@login_required
+@user_passes_test(is_hr)
+def hr_profile(request):
+    employee_profile_obj, _ = EmployeeProfile.objects.get_or_create(user=request.user)
+    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
+    documents = Document.objects.filter(employee=employee_profile_obj).select_related('employee').order_by('-upload_date')
+    context = {
+        'employee': request.user,
+        'target_employee': request.user,
+        'history_entries': history_entries,
+        'documents': documents,
+        'upload_form': DocumentUploadForm(user=request.user),
+        'employee_profile': employee_profile_obj,
+        'can_toggle_self_upload': False,
+        'is_self_upload_enabled': employee_profile_obj.can_self_upload,
+        'is_self_profile': True,
+    }
+    return render(request, 'hr/hr_profile_view.html', context)
+
+@login_required
+@user_passes_test(is_head)
+def head_profile(request):
+    employee_profile_obj, _ = EmployeeProfile.objects.get_or_create(user=request.user)
+    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
+    documents = Document.objects.filter(employee=employee_profile_obj).select_related('employee').order_by('-upload_date')
+    context = {
+        'employee': request.user,
+        'target_employee': request.user,
+        'history_entries': history_entries,
+        'documents': documents,
+    }
+    return render(request, 'head/head_profile_view.html', context)
+
+@login_required
+@user_passes_test(is_sd)
+def sd_profile(request):
+    employee_profile_obj, _ = EmployeeProfile.objects.get_or_create(user=request.user)
+    history_entries = EmploymentHistory.objects.filter(employee=request.user).order_by('-date')
+    documents = Document.objects.filter(employee=employee_profile_obj).select_related('employee').order_by('-upload_date')
+    context = {
+        'employee': request.user,
+        'target_employee': request.user,
+        'history_entries': history_entries,
+        'documents': documents,
     }
     return render(request, 'sd/sd_profile_view.html', context)
 

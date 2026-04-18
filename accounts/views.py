@@ -1223,9 +1223,45 @@ def employee_profile_view(request, user_id):
             messages.error(request, "Access Denied.")
             return redirect('employee_dashboard')
 
-    # 3. If they pass the check, show the profile!
-    # (If you had document-fetching logic here, keep it, then return the render)
-    return render(request, 'hr/hr_profile_view.html', {'employee': target_employee})
+    target_profile, _ = EmployeeProfile.objects.get_or_create(user=target_employee)
+    documents = Document.objects.filter(employee=target_profile).select_related('employee').order_by('-upload_date')
+    upload_form = DocumentUploadForm(user=viewer)
+
+    context = {
+        'employee': target_employee,
+        'target_employee': target_employee,
+        'documents': documents,
+        'upload_form': upload_form,
+        'employee_profile': target_profile,
+        'can_toggle_self_upload': viewer.role in ['HR', 'ADMIN'] and target_employee.role == 'EMP',
+        'is_self_upload_enabled': target_profile.can_self_upload,
+        'is_self_profile': viewer.id == target_employee.id,
+    }
+
+    # 3. If they pass the check, show the profile with document management context.
+    return render(request, 'hr/hr_profile_view.html', context)
+
+
+@login_required
+@user_passes_test(is_hr_or_admin)
+@require_POST
+def update_employee_self_upload(request, user_id):
+    target_employee = get_object_or_404(User, id=user_id)
+    target_profile, _ = EmployeeProfile.objects.get_or_create(user=target_employee)
+
+    if target_employee.role != 'EMP':
+        messages.error(request, "Self-upload permission can only be configured for employees.")
+        return redirect('employee_profile_view', user_id=target_employee.id)
+
+    target_profile.can_self_upload = request.POST.get('can_self_upload') == 'on'
+    target_profile.save(update_fields=['can_self_upload'])
+
+    if target_profile.can_self_upload:
+        messages.success(request, f"Self-upload enabled for {target_employee.get_full_name()}.")
+    else:
+        messages.success(request, f"Self-upload disabled for {target_employee.get_full_name()}.")
+
+    return redirect('employee_profile_view', user_id=target_employee.id)
 
 @login_required
 @user_passes_test(is_hr_or_admin)

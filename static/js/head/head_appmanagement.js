@@ -1,6 +1,6 @@
 /* head_appmanagement.js */
 
-const HEAD_ACTIONABLE_STATUS = 'Pending';
+const HEAD_ACTIONABLE_STATUS = 'PENDING_HEAD';
 
 function getCookie(name) {
     const cookieValue = document.cookie

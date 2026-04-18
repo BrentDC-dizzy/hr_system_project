@@ -6,6 +6,7 @@
 <table>
     <thead>
         <tr>
+            <th>Name</th>
             <th>Type</th>
             <th>Upload Date</th>
             <th>Expiry Date</th>
@@ -15,6 +16,7 @@
     <tbody>
         {% for document in documents %}
         <tr {% if document.is_expired %}style="color: red;"{% elif document.is_approaching_expiry %}style="color: orange;"{% endif %}>
+            <td>{% if document.file %}{{ document.file.name }}{% else %}N/A{% endif %}</td>
             <td>{{ document.document_type }}</td>
             <td>{{ document.upload_date|date:"M d, Y" }}</td>
             <td>
@@ -22,12 +24,15 @@
                 {% if document.is_expired %}<strong>(Expired)</strong>{% elif document.is_approaching_expiry %}<strong>(Expiring)</strong>{% endif %}
             </td>
             <td>
+                {% if document.file %}
+                <a href="{% url 'documents:view_document_inline' document.id %}" target="_blank">View</a>
+                {% endif %}
                 <a href="{% url 'documents:download_document' document.id %}">Download</a>
             </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="4">No documents found.</td>
+            <td colspan="5">No documents found.</td>
         </tr>
         {% endfor %}
     </tbody>
