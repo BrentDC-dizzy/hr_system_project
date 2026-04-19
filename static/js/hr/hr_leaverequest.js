@@ -41,20 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUserId = data.current_user_id;
             }
             leaveData = (data.history || []).map(item => {
-                let rawStatusUpper = (item.status || "").toUpperCase();
+                let rawStatusUpper = (item.status || "").toUpperCase().replace(/_/g, ' ');
                 let displayStatus = item.status;
                 if (rawStatusUpper === 'APPROVED') displayStatus = 'Approved';
                 else if (rawStatusUpper === 'REJECTED') displayStatus = 'Rejected';
                 else if (rawStatusUpper === 'CANCELLED') displayStatus = 'Cancelled';
-                else if (rawStatusUpper.includes('PENDING_SD')) displayStatus = 'Pending SD Approval';
-                else if (rawStatusUpper.includes('PENDING_HEAD')) displayStatus = 'Pending Head Approval';
+                else if (rawStatusUpper.includes('PENDING SD')) displayStatus = 'Pending SD Approval';
+                else if (rawStatusUpper.includes('PENDING HEAD')) displayStatus = 'Pending Head Approval';
+                else if (rawStatusUpper.includes('PENDING HR')) displayStatus = 'Pending HR Approval';
                 else displayStatus = 'Pending';
                 
                 let dynamicRemarks = item.hr_remarks;
                 if (!dynamicRemarks) {
-                    if (rawStatusUpper.includes('PENDING_HEAD')) dynamicRemarks = "Awaiting Department Head review";
-                    else if (rawStatusUpper.includes('PENDING_HR')) dynamicRemarks = "Awaiting HR review";
-                    else if (rawStatusUpper.includes('PENDING_SD')) dynamicRemarks = "Awaiting School Director review";
+                    if (rawStatusUpper.includes('PENDING HEAD')) dynamicRemarks = "Awaiting Department Head review";
+                    else if (rawStatusUpper.includes('PENDING HR')) dynamicRemarks = "Awaiting HR review";
+                    else if (rawStatusUpper.includes('PENDING SD')) dynamicRemarks = "Awaiting School Director review";
                     else dynamicRemarks = "Awaiting response";
                 }
 
@@ -102,7 +103,7 @@ function renderHRTable(mode) {
     leaveData.forEach((leave) => {
         // HR's "Final Approval" queue processes PENDING_HR.
         // It also catches PENDING_HEAD requests from HEAD/HR users since they don't have a standard Head approver.
-        const isActionable = leave.rawStatus && (leave.rawStatus.includes("PENDING_HR") || (leave.rawStatus.includes("PENDING_HEAD") && leave.role !== "EMP" && leave.role !== "Employee"));
+        const isActionable = leave.rawStatus && (leave.rawStatus.includes("PENDING HR") || (leave.rawStatus.includes("PENDING HEAD") && leave.role !== "EMP" && leave.role !== "Employee"));
         let shouldShow = (mode === "Active") ? isActionable : !isActionable;
 
         if (shouldShow) {
@@ -110,15 +111,24 @@ function renderHRTable(mode) {
             let statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
             if (statusClass.includes('pending')) statusClass = 'pending';
             
-            clone.querySelector('.col-emp').innerHTML = `<strong>${leave.name}</strong><br><small>${leave.role}</small>`;
-            clone.querySelector('.col-type').innerText = leave.leaveType;
-            clone.querySelector('.col-start').innerText = leave.startDate;
-            clone.querySelector('.col-end').innerText = leave.endDate;
-            clone.querySelector('.col-days').innerText = leave.numDays;
-            clone.querySelector('.col-status').innerHTML = `<span class="status-pill ${statusClass}">${leave.status}</span>`;
-            clone.querySelector('.col-reviewer').innerText = leave.reviewedBy || '---';
+            // Safe injection to prevent silent JS crashes if HTML template classes are missing
+            const setEl = (sel, val, isHTML) => {
+                const el = clone.querySelector(sel);
+                if (el) isHTML ? el.innerHTML = val : el.innerText = val;
+            };
+
+            setEl('.col-emp', `<strong>${leave.name}</strong><br><small>${leave.role}</small>`, true);
+            setEl('.col-type', leave.leaveType, false);
+            setEl('.col-start', leave.startDate, false);
+            setEl('.col-end', leave.endDate, false);
+            setEl('.col-days', leave.numDays, false);
+            setEl('.col-status', `<span class="status-pill ${statusClass}">${leave.status}</span>`, true);
+            setEl('.col-reviewer', leave.reviewedBy || '---', false);
             
-            clone.querySelector('.action-link').onclick = () => openHRModal(leave.id);
+            const actionBtn = clone.querySelector('.action-link') || clone.querySelector('button') || clone.querySelector('a');
+            if (actionBtn) {
+                actionBtn.onclick = (e) => { e.preventDefault(); openHRModal(leave.id); };
+            }
             body.appendChild(clone);
         }
     });
@@ -133,9 +143,9 @@ function openHRModal(id) {
     const data = leaveData.find(l => l.id === id);
     if (!data) return;
 
-    const isOwnRequest = (data.userId === currentUserId);
+    const isOwnRequest = (String(data.userId).trim() === String(currentUserId).trim());
     const isSDRequest = (data.role === "SD" || data.role === "School Director");
-    const isActionable = data.rawStatus && (data.rawStatus.includes("PENDING_HR") || (data.rawStatus.includes("PENDING_HEAD") && data.role !== "EMP" && data.role !== "Employee"));
+    const isActionable = data.rawStatus && (data.rawStatus.includes("PENDING HR") || (data.rawStatus.includes("PENDING HEAD") && data.role !== "EMP" && data.role !== "Employee"));
     let statusClass = data.status.toLowerCase().replace(/\s+/g, '-');
     if (statusClass.includes('pending')) statusClass = 'pending';
 
@@ -159,10 +169,28 @@ function openHRModal(id) {
 
     // Toggle Action Buttons
     const actions = document.getElementById('modalActions');
-    if (!isActionable || isOwnRequest || isSDRequest) {
-        actions.style.display = "none";
-    } else {
-        actions.style.display = "flex";
+    if (actions) {
+        actions.style.display = "flex"; // Ensure container is visible for the Close button
+        
+        let acceptBtn = document.getElementById('hrAcceptBtn');
+        let rejectBtn = document.getElementById('hrRejectBtn');
+        
+        if (!acceptBtn) {
+            actions.insertAdjacentHTML('afterbegin', `
+                <button id="hrAcceptBtn" class="btn btn-success" style="margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="processRequest('APPROVED')">Accept</button>
+                <button id="hrRejectBtn" class="btn btn-danger" style="margin-left: 10px; background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="processRequest('REJECTED')">Reject</button>
+            `);
+            acceptBtn = document.getElementById('hrAcceptBtn');
+            rejectBtn = document.getElementById('hrRejectBtn');
+        }
+        
+        if (!isActionable || isOwnRequest || isSDRequest) {
+            acceptBtn.style.display = "none";
+            rejectBtn.style.display = "none";
+        } else {
+            acceptBtn.style.display = "inline-block";
+            rejectBtn.style.display = "inline-block";
+        }
     }
 
     const preview = document.querySelector('.pdf-placeholder');
@@ -176,13 +204,8 @@ function processRequest(status) {
 
     // Map status "Approved" or "Rejected" to the expected backend action
     let actionStr = status.trim().toUpperCase(); 
-    if (actionStr === 'APPROVED') actionStr = 'APPROVE';
-    if (actionStr === 'REJECTED') actionStr = 'REJECT';
-
-    // Build a form dynamically to submit to the Django backend
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/leaves/hr/approve/${activeRowId}/`;
+    if (actionStr === 'APPROVED') actionStr = 'Approve';
+    if (actionStr === 'REJECTED') actionStr = 'Reject';
 
     let csrfToken = '';
     const csrfTokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -208,25 +231,54 @@ function processRequest(status) {
         return;
     }
 
-    // Append required fields (csrf_token, action, and remarks) to the form
-    form.innerHTML = `
-        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-        <input type="hidden" name="action" value="${actionStr}">
-        <input type="hidden" name="remarks" value="Processed by HR via Dashboard">
-    `;
-
-    document.body.appendChild(form);
-
-    // Show the notification, then actually submit to the database!
     Swal.fire({
-        icon: 'success',
-        title: `Request ${status}`,
-        text: `Saving decision to database...`,
+        title: `Confirm ${status}`,
+        input: 'textarea',
+        inputLabel: 'Review Remarks (Optional)',
+        inputPlaceholder: 'Type your remarks here...',
+        showCancelButton: true,
         confirmButtonColor: '#4a1d1d',
-        timer: 1500,
-        showConfirmButton: false
-    }).then(() => {
-        form.submit();
+        confirmButtonText: 'Submit Decision'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const acceptBtn = document.getElementById('hrAcceptBtn');
+            const rejectBtn = document.getElementById('hrRejectBtn');
+            if (acceptBtn) acceptBtn.disabled = true;
+            if (rejectBtn) rejectBtn.disabled = true;
+
+            fetch(`/leaves/api/process-action/${activeRowId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ action: actionStr, remarks: result.value || "Processed by HR via Dashboard" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let newStatusClass = data.new_status.toLowerCase().replace(/\s+/g, '-');
+                    if (newStatusClass.includes('pending')) newStatusClass = 'pending';
+                    
+                    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${newStatusClass}">${data.new_status}</span>`;
+                    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewed_by}</small>`;
+                    
+                    if (acceptBtn) acceptBtn.style.display = 'none';
+                    if (rejectBtn) rejectBtn.style.display = 'none';
+                    Swal.fire('Success!', `Request has been ${status.toLowerCase()}.`, 'success');
+                } else {
+                    Swal.fire('Error', `Action Failed: ${data.error}`, 'error');
+                    if (acceptBtn) acceptBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                Swal.fire('Error', 'A network error occurred.', 'error');
+                if (acceptBtn) acceptBtn.disabled = false;
+                if (rejectBtn) rejectBtn.disabled = false;
+            });
+        }
     });
 }
 

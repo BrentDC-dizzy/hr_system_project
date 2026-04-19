@@ -42,22 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Map Django's JSON format to match our table logic
             headSampleData = (data.history || []).map(item => {
-                let rawStatusUpper = (item.status || "").toUpperCase();
+                let rawStatusUpper = (item.status || "").toUpperCase().replace(/_/g, ' ');
                 let displayStatus = item.status;
                 
                 if (rawStatusUpper === 'APPROVED') displayStatus = 'Approved';
                 else if (rawStatusUpper === 'REJECTED') displayStatus = 'Rejected';
                 else if (rawStatusUpper === 'CANCELLED') displayStatus = 'Cancelled';
-                else if (rawStatusUpper.includes('PENDING_HR')) displayStatus = 'Pending HR Approval';
-                else if (rawStatusUpper.includes('PENDING_SD')) displayStatus = 'Pending SD Approval';
-                else if (rawStatusUpper.includes('PENDING_HEAD')) displayStatus = 'Pending Head Approval';
+                else if (rawStatusUpper.includes('PENDING HR')) displayStatus = 'Pending HR Approval';
+                else if (rawStatusUpper.includes('PENDING SD')) displayStatus = 'Pending SD Approval';
+                else if (rawStatusUpper.includes('PENDING HEAD')) displayStatus = 'Pending Head Approval';
                 else displayStatus = 'Pending';
                 
                 let dynamicRemarks = item.head_remarks;
                 if (!dynamicRemarks) {
-                    if (rawStatusUpper.includes('PENDING_HEAD')) dynamicRemarks = "Awaiting Department Head review";
-                    else if (rawStatusUpper.includes('PENDING_HR')) dynamicRemarks = "Awaiting HR review";
-                    else if (rawStatusUpper.includes('PENDING_SD')) dynamicRemarks = "Awaiting School Director review";
+                    if (rawStatusUpper.includes('PENDING HEAD')) dynamicRemarks = "Awaiting Department Head review";
+                    else if (rawStatusUpper.includes('PENDING HR')) dynamicRemarks = "Awaiting HR review";
+                    else if (rawStatusUpper.includes('PENDING SD')) dynamicRemarks = "Awaiting School Director review";
                     else dynamicRemarks = "Awaiting response";
                 }
                 
@@ -100,7 +100,7 @@ function renderHeadTable(mode) {
     body.innerHTML = "";
 
     headSampleData.forEach((leave) => {
-        const isActionable = leave.rawStatus && leave.rawStatus.includes("PENDING_HEAD") && leave.userId !== currentUserId;
+        const isActionable = leave.rawStatus && leave.rawStatus.includes("PENDING HEAD");
         let shouldShow = (mode === "Active") ? isActionable : !isActionable;
 
         if (shouldShow) {
@@ -108,15 +108,24 @@ function renderHeadTable(mode) {
             let statusClass = leave.status.toLowerCase().replace(/\s+/g, '-');
             if (statusClass.includes('pending')) statusClass = 'pending';
 
-            clone.querySelector('.col-emp').innerHTML = `<strong>${leave.name}</strong><br><small>${leave.role}</small>`;
-            clone.querySelector('.col-type').innerText = leave.leaveType;
-            clone.querySelector('.col-start').innerText = leave.startDate;
-            clone.querySelector('.col-end').innerText = leave.endDate;
-            clone.querySelector('.col-days').innerText = leave.numDays;
-            clone.querySelector('.col-status').innerHTML = `<span class="status-pill ${statusClass}">${leave.status}</span>`;
-            clone.querySelector('.col-reviewer').innerText = leave.reviewedBy || '---';
+            // Safe injection to prevent silent JS crashes if HTML template classes are missing
+            const setEl = (sel, val, isHTML) => {
+                const el = clone.querySelector(sel);
+                if (el) isHTML ? el.innerHTML = val : el.innerText = val;
+            };
+
+            setEl('.col-emp', `<strong>${leave.name}</strong><br><small>${leave.role}</small>`, true);
+            setEl('.col-type', leave.leaveType, false);
+            setEl('.col-start', leave.startDate, false);
+            setEl('.col-end', leave.endDate, false);
+            setEl('.col-days', leave.numDays, false);
+            setEl('.col-status', `<span class="status-pill ${statusClass}">${leave.status}</span>`, true);
+            setEl('.col-reviewer', leave.reviewedBy || '---', false);
             
-            clone.querySelector('.action-link').onclick = () => openHeadModal(leave.id);
+            const actionBtn = clone.querySelector('.action-link') || clone.querySelector('button') || clone.querySelector('a');
+            if (actionBtn) {
+                actionBtn.onclick = (e) => { e.preventDefault(); openHeadModal(leave.id); };
+            }
             body.appendChild(clone);
         }
     });
@@ -131,8 +140,7 @@ function openHeadModal(id) {
     const data = headSampleData.find(l => l.id === id);
     if (!data) return;
 
-    const isOwnRequest = (data.userId === currentUserId);
-    const isActionable = data.rawStatus && data.rawStatus.includes("PENDING_HEAD");
+    const isActionable = data.rawStatus && data.rawStatus.includes("PENDING HEAD");
     
     document.getElementById('modalFileName').innerText = data.fileName;
     document.getElementById('modalSubmitDate').innerText = `${data.dateFiled} at ${data.submitTime}`;
@@ -144,8 +152,15 @@ function openHeadModal(id) {
     document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${statusClass}">${data.status}</span>`;
     document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewedBy}</small>`;
 
-    // Reset visibility
-    document.getElementById('modalActions').style.display = (!isOwnRequest && isActionable) ? "flex" : "none";
+    // Toggle Action Buttons
+    const actions = document.getElementById('modalActions');
+    if (actions) {
+        if (isActionable) {
+            actions.style.setProperty('display', 'flex', 'important');
+        } else {
+            actions.style.setProperty('display', 'none', 'important');
+        }
+    }
     document.getElementById('viewModal').style.display = 'flex';
 }
 
@@ -153,12 +168,8 @@ function processHeadRequest(decision) {
     if (!activeRowId) return;
 
     let actionStr = decision.trim().toUpperCase(); 
-    if (actionStr === 'APPROVED') actionStr = 'APPROVE';
-    if (actionStr === 'REJECTED') actionStr = 'REJECT';
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/leaves/head/approve/${activeRowId}/`;
+    if (actionStr === 'APPROVED') actionStr = 'Approve';
+    if (actionStr === 'REJECTED') actionStr = 'Reject';
 
     let csrfToken = '';
     const csrfTokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -184,24 +195,55 @@ function processHeadRequest(decision) {
         return;
     }
 
-    form.innerHTML = `
-        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-        <input type="hidden" name="action" value="${actionStr}">
-        <input type="hidden" name="remarks" value="Processed by Head via Dashboard">
-    `;
+    Swal.fire({
+        title: `Confirm ${decision}`,
+        input: 'textarea',
+        inputLabel: 'Review Remarks (Optional)',
+        inputPlaceholder: 'Type your remarks here...',
+        showCancelButton: true,
+        confirmButtonColor: '#4a1d1d',
+        confirmButtonText: 'Submit Decision'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const acceptBtn = document.querySelector('.btn-approve');
+            const rejectBtn = document.querySelector('.btn-reject');
+            if (acceptBtn) acceptBtn.disabled = true;
+            if (rejectBtn) rejectBtn.disabled = true;
 
-    document.body.appendChild(form);
-
-        Swal.fire({
-            icon: 'success',
-            title: `Request ${decision}`,
-            text: `Saving decision to database...`,
-            confirmButtonColor: '#4a1d1d',
-            timer: 1500,
-            showConfirmButton: false
-        }).then(() => {
-            form.submit();
-        });
+            fetch(`/leaves/api/process-action/${activeRowId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ action: actionStr, remarks: result.value || "Processed by Head via Dashboard" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let newStatusClass = data.new_status.toLowerCase().replace(/\s+/g, '-');
+                    if (newStatusClass.includes('pending')) newStatusClass = 'pending';
+                    
+                    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${newStatusClass}">${data.new_status}</span>`;
+                    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewed_by}</small>`;
+                    
+                    if (acceptBtn) acceptBtn.style.display = 'none';
+                    if (rejectBtn) rejectBtn.style.display = 'none';
+                    Swal.fire('Success!', `Request has been ${decision.toLowerCase()}.`, 'success');
+                } else {
+                    Swal.fire('Error', `Action Failed: ${data.error}`, 'error');
+                    if (acceptBtn) acceptBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                Swal.fire('Error', 'A network error occurred.', 'error');
+                if (acceptBtn) acceptBtn.disabled = false;
+                if (rejectBtn) rejectBtn.disabled = false;
+            });
+        }
+    });
 }
 
 function closeViewModal() { 

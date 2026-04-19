@@ -74,7 +74,7 @@
         </main>
     </div>
 
-    <div id="viewModal" class="modal-overlay">
+    <div id="viewModal" class="modal-overlay" data-approve-url="{% url 'leaves:head_approve' 0 %}">
         <div class="view-modal-content">
             <div class="modal-header">
                 <h3>Leave Application Detail</h3>
@@ -129,6 +129,6 @@
             <td><span class="action-link" style="cursor:pointer; color:blue; text-decoration:underline;">View Details</span></td>
         </tr>
     </template>
-    <script src="{% static 'js/head/head_leaverequest.js' %}?v=1.0"></script>
+    <script src="{% static 'js/head/head_leaverequest.js' %}?v=5.0"></script>
 </body>
 </html>

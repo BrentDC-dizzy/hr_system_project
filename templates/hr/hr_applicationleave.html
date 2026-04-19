@@ -45,6 +45,7 @@
                 
                 <div class="form-body">
                     <form id="leaveRequestForm" data-history-url="{% url 'leaves:hr_leave_history' %}">
+                        {% csrf_token %}
                         <label class="section-label">Select Leave</label>
                         <div class="leave-type-grid">
                             <button type="button" class="type-btn active">Sick Leave</button>
@@ -91,6 +92,28 @@
         </main>
     </div>
     
+    <!-- Leave Application Review Modal -->
+    <div id="viewModal" class="modal" data-approve-url="{% url 'leaves:hr_final_approve' 0 %}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div class="modal-content" style="background: #fff; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%;">
+            <h2>Leave Application Detail</h2>
+            <hr>
+            <div id="creditsBlock" style="display:none; color: #b30000; font-weight: bold; margin-bottom: 10px;"><span id="modalCredits"></span></div>
+            <div class="pdf-placeholder" style="display:none;"></div>
+            <p><strong>Status:</strong> <span id="modalStatusContainer"></span></p>
+            <p><strong>Submission Date:</strong> <span id="modalSubmitDate"></span></p>
+            <p><strong>Document:</strong> <span id="modalFileName"></span></p>
+            <p><strong>Reason:</strong> <span id="modalReason"></span></p>
+            <p><strong>Remarks:</strong> <span id="modalRemarks"></span></p>
+            <div id="modalReviewerText" style="margin-bottom: 15px;"></div>
+
+            <!-- Target Container for Dynamic JS Buttons -->
+            <div class="modal-footer mt-4" id="modalActions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Close View</button>
+                <!-- hr_leaverequest.js will inject Accept/Reject buttons conditionally here -->
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/hr/hr_applicationleave.js' %}?v=1.0"></script>
 </body>
 </html>

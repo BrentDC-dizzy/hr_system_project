@@ -9,6 +9,7 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils.timezone import localtime
 from datetime import datetime
+from django.db.models import Q
 
 from .models import LeaveRequest, LeaveBalance
 from .forms import LeaveRequestForm, LeaveActionForm
@@ -102,10 +103,14 @@ def _get_head_department_scope_ids(user):
     if getattr(user, 'department_id', None):
         department_ids.add(user.department_id)
 
+    # Ensure we explicitly catch departments assigned via the related_name
+    if hasattr(user, 'headed_department'):
+        department_ids.update(user.headed_department.values_list('id', flat=True))
+
     headed_department_ids = Department.objects.filter(head=user).values_list('id', flat=True)
     department_ids.update(headed_department_ids)
 
-    return department_ids
+    return list(department_ids)
 
 @login_required
 def leave_select_view(request):
@@ -219,12 +224,15 @@ def head_leave_history(request):
     department_scope_ids = _get_head_department_scope_ids(request.user)
     queue_mode = str(request.GET.get('queue', '')).lower() in {'1', 'true', 'yes'}
 
+    # Always include the head's own requests, plus any requests from their department scope
     if department_scope_ids:
-        leave_requests = LeaveRequest.objects.filter(user__department_id__in=department_scope_ids).select_related(
-            'user', 'leave_type'
-        ).order_by('-created_at')
+        leave_requests = LeaveRequest.objects.filter(
+            Q(user__department_id__in=department_scope_ids) | Q(user=request.user)
+        ).select_related('user', 'leave_type').order_by('-created_at')
     else:
-        leave_requests = LeaveRequest.objects.none()
+        leave_requests = LeaveRequest.objects.filter(
+            user=request.user
+        ).select_related('user', 'leave_type').order_by('-created_at')
 
     if queue_mode:
         leave_requests = leave_requests.filter(
@@ -295,7 +303,17 @@ def hr_apply_leave(request):
 @user_passes_test(is_hr)
 def hr_leave_history(request):
     """View for HR to see all leave requests for approval and history."""
+    queue_mode = str(request.GET.get('queue', '')).lower() in {'1', 'true', 'yes'}
+    
     leave_requests = LeaveRequest.objects.all().select_related('user', 'leave_type').order_by('-created_at')
+    
+    if queue_mode:
+        # Filter for requests already approved by Head (PENDING_HR),
+        # plus requests from HEAD/HR users that go straight to HR
+        leave_requests = leave_requests.filter(
+            Q(status=LeaveRequest.Status.PENDING_HR_APPROVAL) |
+            Q(status=LeaveRequest.Status.PENDING_HEAD_APPROVAL, user__role__in=['HEAD', 'HR', 'ADMIN'])
+        ).exclude(user=request.user)
     
     is_json = (
         'application/json' in request.headers.get('Accept', '') or
@@ -440,14 +458,18 @@ def head_approve(request, request_id):
     form = LeaveActionForm(request.POST)
     if form.is_valid():
         action = form.cleaned_data['action']
+        
         leave_request.reviewed_by_head = request.user
         leave_request.head_remarks = form.cleaned_data['remarks']
         leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL if action == 'APPROVE' else LeaveRequest.Status.REJECTED
-        leave_request.save()
+        leave_request.save() # Persist Head action
+        
         if action == 'APPROVE':
             _notify_pending_leave_approval(leave_request)
+            messages.success(request, f"Leave request for {leave_request.user.get_full_name()} approved. Status updated to Pending HR Approval.")
         else:
             _notify_leave_status_update(leave_request)
+            messages.success(request, f"Leave request for {leave_request.user.get_full_name()} has been Rejected by Head.")
     else:
         messages.error(request, "Failed to process request: Invalid action submitted.")
     return redirect('leaves:head_leave_history')
@@ -473,6 +495,25 @@ def hr_final_approve(request, request_id):
     form = LeaveActionForm(request.POST)
     if form.is_valid():
         action = form.cleaned_data['action']
+        
+        # Ensure HR cannot approve a leave if the balance is insufficient
+        if action == 'APPROVE':
+            try:
+                balance = LeaveBalance.objects.get(
+                    user=leave_request.user,
+                    leave_type=leave_request.leave_type
+                )
+                if balance.remaining_days < leave_request.days_requested:
+                    messages.error(
+                        request, 
+                        f"Failed to process request: Insufficient leave balance. "
+                        f"Remaining: {balance.remaining_days} days. Requested: {leave_request.days_requested} days."
+                    )
+                    return redirect('leaves:hr_leave_history')
+            except LeaveBalance.DoesNotExist:
+                messages.error(request, "Failed to process request: Leave balance not found.")
+                return redirect('leaves:hr_leave_history')
+                
         leave_request.reviewed_by_hr = request.user
         leave_request.hr_remarks = form.cleaned_data['remarks']
         if action == 'APPROVE':
@@ -481,9 +522,13 @@ def hr_final_approve(request, request_id):
                 if _requires_sd_final_review(leave_request)
                 else LeaveRequest.Status.APPROVED
             )
+            messages.success(request, f"Leave request for {leave_request.user.get_full_name() or leave_request.user.username} has been Approved.")
         else:
             leave_request.status = LeaveRequest.Status.REJECTED
-        leave_request.save() # This triggers the post_save signal
+            messages.success(request, f"Leave request for {leave_request.user.get_full_name() or leave_request.user.username} has been Rejected by HR.")
+        
+        leave_request.save() # Database persist, explicitly triggers post_save deduction signal in signals.py
+        
         if leave_request.status in {LeaveRequest.Status.PENDING_SD_APPROVAL, LeaveRequest.Status.PENDING_HR_APPROVAL, LeaveRequest.Status.PENDING_HEAD_APPROVAL}:
             _notify_pending_leave_approval(leave_request)
         else:
@@ -537,3 +582,60 @@ def leave_summary(request):
         'start_date', 'end_date', 'status'
     ))
     return JsonResponse({'summary': summary_data})
+
+@login_required
+@require_POST
+@transaction.atomic
+def process_leave_action(request, leave_id):
+    """
+    Unified API endpoint for processing multi-step leave approvals via Fetch API.
+    Handles Employee -> Head -> HR workflow.
+    """
+    import json
+    try:
+        data = json.loads(request.body)
+        action = data.get('action')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data payload.'}, status=400)
+
+    leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+    role = (request.user.role or '').upper()
+    reviewer_name = request.user.get_full_name() or request.user.username
+
+    if role == 'HEAD':
+        if leave_request.status != LeaveRequest.Status.PENDING_HEAD_APPROVAL:
+            return JsonResponse({'error': 'Application is not pending Head approval.'}, status=400)
+        
+        if action == 'Approve':
+            leave_request.status = LeaveRequest.Status.PENDING_HR_APPROVAL
+        elif action == 'Reject':
+            leave_request.status = LeaveRequest.Status.REJECTED
+            leave_request.head_remarks = 'Rejected by Head'
+        else:
+            return JsonResponse({'error': 'Invalid action.'}, status=400)
+            
+        leave_request.reviewed_by_head = request.user
+
+    elif role == 'HR':
+        if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
+            return JsonResponse({'error': 'Application is not pending HR approval.'}, status=400)
+            
+        if action == 'Approve':
+            leave_request.status = LeaveRequest.Status.APPROVED
+        elif action == 'Reject':
+            leave_request.status = LeaveRequest.Status.REJECTED
+            leave_request.hr_remarks = 'Rejected by HR'
+        else:
+            return JsonResponse({'error': 'Invalid action.'}, status=400)
+            
+        leave_request.reviewed_by_hr = request.user
+    else:
+        return JsonResponse({'error': 'Unauthorized role for this action.'}, status=403)
+
+    leave_request.save()
+
+    return JsonResponse({
+        'success': True,
+        'new_status': leave_request.get_status_display() if hasattr(leave_request, 'get_status_display') else leave_request.status,
+        'reviewed_by': reviewer_name
+    })

@@ -7,8 +7,12 @@
     <link rel="shortcut icon" type="image/png" href="{% static 'img/general/uph.png' %}">
     <link rel="stylesheet" href="{% static 'css/hr/hr_leaverequest.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
+    <div style="display: none;">
+        {% csrf_token %}
+    </div>
     <div class="background"></div>
     <div class="dashboard-viewport">
         <div class="sidebar" id="sidebar">
@@ -70,7 +74,7 @@
         </main>
     </div>
 
-    <div id="viewModal" class="modal-overlay">
+    <div id="viewModal" class="modal-overlay" data-approve-url="{% url 'leaves:hr_final_approve' 0 %}">
         <div class="view-modal-content">
             <div class="modal-header">
                 <h3>Leave Application Detail</h3>
@@ -109,12 +113,9 @@
                         <p id="modalRemarks" class="modal-text-unified">---</p>
                     </div>
 
-                    <div class="modal-footer" id="modalActions">
-                        <button class="btn-approve" onclick="processRequest('Approved')">Approve Request</button>
-                        <button class="btn-reject" onclick="processRequest('Rejected')">Reject Request</button>
+                    <div class="modal-footer" id="modalActions" style="display: flex; justify-content: flex-end; gap: 10px; align-items: center; margin-top: 20px;">
+                        <button class="modal-close-btn" style="margin: 0;" onclick="closeViewModal()">Close View</button>
                     </div>
-
-                    <button class="modal-close-btn" onclick="closeViewModal()">Close View</button>
                 </div>
             </div>
         </div>
@@ -133,6 +134,6 @@
         </tr>
     </template>
 
-    <script src="{% static 'js/hr/hr_leaverequest.js' %}"></script>
+    <script src="{% static 'js/hr/hr_leaverequest.js' %}?v=5.0"></script>
 </body>
 </html>
