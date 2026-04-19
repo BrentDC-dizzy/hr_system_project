@@ -12,7 +12,7 @@ from .forms import ApplicationActionForm, PositionChangeRequestForm
 from .models import Application, ApplicationStatusHistory
 
 
-ALLOWED_APPLICATION_ROLES = {'HEAD', 'HR', 'SD'}
+ALLOWED_APPLICATION_ROLES = {'HEAD', 'HR', 'SD', 'ADMIN'}
 DASHBOARD_BY_ROLE = {
     'ADMIN': 'admin_dashboard',
     'HR': 'hr_dashboard',
@@ -147,7 +147,7 @@ def _serialize_position_change_records(queryset):
 def sd_application_overview(request):
     """SD view restricted to final-stage application approvals only."""
     role = (request.user.role or '').upper()
-    if role != 'SD':
+    if role not in ('SD', 'ADMIN'):
         return _redirect_to_role_dashboard_with_error(request)
 
     pending_sd_apps = (
@@ -178,7 +178,7 @@ def application_list(request):
     applications = Application.objects.select_related('target_department').order_by('-id')
     context = {'applications': applications}
 
-    if role == 'HR':
+    if role in ('HR', 'ADMIN'):
         template_name = 'hr/hr_appmanagement.html'
     elif role == 'HEAD':
         template_name = 'head/head_appmanagement.html'
@@ -264,7 +264,7 @@ def process_application_action(request, pk):
         messages.error(request, 'Unsupported decision value.')
         return redirect('application_detail', pk=pk)
 
-    if role == 'HEAD':
+    if role == 'HEAD' or (role == 'ADMIN' and application.status == Application.Status.PENDING_HEAD):
         if application.status != Application.Status.PENDING_HEAD:
             messages.error(request, 'This application is no longer pending Head review.')
             return redirect('application_detail', pk=pk)
@@ -275,7 +275,7 @@ def process_application_action(request, pk):
             else Application.Status.REJECTED
         )
 
-    elif role == 'HR':
+    elif role == 'HR' or (role == 'ADMIN' and application.status == Application.Status.PENDING_HR):
         if application.status != Application.Status.PENDING_HR:
             messages.error(request, 'This application is not currently actionable by HR.')
             return redirect('application_detail', pk=pk)
@@ -286,7 +286,7 @@ def process_application_action(request, pk):
             else Application.Status.REJECTED
         )
 
-    else:
+    elif role in ('SD', 'ADMIN'):
         if application.status != Application.Status.PENDING_SD:
             messages.error(request, 'Only Pending SD applications can be decided at this stage.')
             return redirect('sd_application_overview')

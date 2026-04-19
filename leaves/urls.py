@@ -29,10 +29,14 @@ urlpatterns = [
     path('sd/history/', views.sd_leave_history, name='sd_leave_history'),
 
     # Approval URLs
+    path('hr/api/approve/<int:request_id>/', views.hr_process_leave_action, name='hr_process_leave_action'),
     path('head/approve/<int:request_id>/', views.head_approve, name='head_approve'),
     path('hr/approve/<int:request_id>/', views.hr_final_approve, name='hr_final_approve'),
     path('sd/approve/<int:request_id>/', views.sd_approve, name='sd_approve'),
     path('sd/forward/<int:request_id>/', views.sd_forward_leave, name='sd_forward_leave'),
+    
+    # Unified API Endpoint for Fetch JS
+    path('api/process-action/<int:leave_id>/', views.process_leave_action, name='process_leave_action'),
 
     # Summary URL
     path('summary/', views.leave_summary, name='leave_summary'),

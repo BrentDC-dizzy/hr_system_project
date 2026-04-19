@@ -639,3 +639,41 @@ def process_leave_action(request, leave_id):
         'new_status': leave_request.get_status_display() if hasattr(leave_request, 'get_status_display') else leave_request.status,
         'reviewed_by': reviewer_name
     })
+
+@login_required
+@require_POST
+@transaction.atomic
+def hr_process_leave_action(request, request_id):
+    """
+    Specific API endpoint for processing HR leave approvals via Fetch API.
+    Only accepts POST requests from HR or Superusers.
+    """
+    if request.user.role not in ['HR', 'ADMIN'] and not request.user.is_superuser:
+        return JsonResponse({'error': 'Forbidden. Only HR and Admins can perform this action.'}, status=403)
+        
+    leave_request = get_object_or_404(LeaveRequest, id=request_id)
+    
+    if leave_request.status != LeaveRequest.Status.PENDING_HR_APPROVAL:
+        return JsonResponse({'error': 'Application is not pending HR approval.'}, status=400)
+    
+    import json
+    try:
+        data = json.loads(request.body)
+        action = data.get('action')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data payload.'}, status=400)
+
+    if action == 'Approve':
+        leave_request.status = LeaveRequest.Status.APPROVED
+        leave_request.hr_remarks = data.get('remarks', 'Approved by HR')
+    elif action == 'Reject':
+        leave_request.status = LeaveRequest.Status.REJECTED
+        leave_request.hr_remarks = data.get('remarks', 'Rejected by HR')
+    else:
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+    leave_request.reviewed_by_hr = request.user
+    leave_request.save()
+
+    reviewer_name = request.user.get_full_name() or request.user.username
+    return JsonResponse({'success': True, 'new_status': leave_request.get_status_display() if hasattr(leave_request, 'get_status_display') else leave_request.status, 'reviewed_by': reviewer_name})

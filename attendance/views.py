@@ -20,13 +20,13 @@ from utils.excel_generator import generate_excel
 
 # --- Role Check Helpers ---
 def is_head(user):
-    return user.is_authenticated and user.role == 'HEAD'
+    return user.is_authenticated and user.role in ['HEAD', 'ADMIN']
 
 def is_hr(user):
-    return user.is_authenticated and user.role == 'HR'
+    return user.is_authenticated and user.role in ['HR', 'ADMIN']
 
 def is_sd(user):
-    return user.is_authenticated and user.role == 'SD'
+    return user.is_authenticated and user.role in ['SD', 'ADMIN']
 
 
 @login_required

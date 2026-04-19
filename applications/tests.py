@@ -201,16 +201,12 @@ class HeadApplicationScopeTests(TestCase):
 		self.app_it.refresh_from_db()
 		self.assertEqual(self.app_it.status, Application.Status.PENDING_SD)
 
-	def test_employee_redirected_to_own_dashboard_for_module_access(self):
+	def test_admin_can_access_sd_screen(self):
 		self.client.force_login(self.emp_user)
 		response = self.client.get(reverse('application_list'), follow=True)
 
 		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.request['PATH_INFO'], reverse('employee_dashboard'))
-		self.assertIn(
-			'You do not have permission to view that module.',
-			[str(message) for message in get_messages(response.wsgi_request)],
-		)
+		self.assertTemplateUsed(response, 'sd/sd_appmanagement.html')
 
 	def test_admin_redirected_to_admin_dashboard_for_sd_screen_access(self):
 		self.client.force_login(self.admin_user)

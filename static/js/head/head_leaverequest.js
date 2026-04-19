@@ -155,10 +155,30 @@ function openHeadModal(id) {
     // Toggle Action Buttons
     const actions = document.getElementById('modalActions');
     if (actions) {
+        actions.style.display = "flex"; // Ensure container is visible for the Close button
+        
+        let acceptBtn = document.getElementById('headAcceptBtn') || document.querySelector('.btn-approve');
+        let rejectBtn = document.getElementById('headRejectBtn') || document.querySelector('.btn-reject');
+        
+        if (!acceptBtn) {
+            actions.insertAdjacentHTML('afterbegin', `
+                <button type="button" id="headAcceptBtn" class="btn btn-success btn-approve" style="margin-left: 10px; background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Accept</button>
+                <button type="button" id="headRejectBtn" class="btn btn-danger btn-reject" style="margin-left: 10px; background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Reject</button>
+            `);
+            acceptBtn = document.getElementById('headAcceptBtn');
+            rejectBtn = document.getElementById('headRejectBtn');
+        }
+
+        // Force prevent default HTML behaviors and assign click cleanly
+        acceptBtn.onclick = (e) => { e.preventDefault(); processHeadRequest('APPROVED'); };
+        rejectBtn.onclick = (e) => { e.preventDefault(); processHeadRequest('REJECTED'); };
+
         if (isActionable) {
-            actions.style.setProperty('display', 'flex', 'important');
+            acceptBtn.style.display = 'inline-block';
+            rejectBtn.style.display = 'inline-block';
         } else {
-            actions.style.setProperty('display', 'none', 'important');
+            acceptBtn.style.setProperty('display', 'none', 'important');
+            rejectBtn.style.setProperty('display', 'none', 'important');
         }
     }
     document.getElementById('viewModal').style.display = 'flex';
@@ -195,55 +215,70 @@ function processHeadRequest(decision) {
         return;
     }
 
-    Swal.fire({
-        title: `Confirm ${decision}`,
-        input: 'textarea',
-        inputLabel: 'Review Remarks (Optional)',
-        inputPlaceholder: 'Type your remarks here...',
-        showCancelButton: true,
-        confirmButtonColor: '#4a1d1d',
-        confirmButtonText: 'Submit Decision'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const acceptBtn = document.querySelector('.btn-approve');
-            const rejectBtn = document.querySelector('.btn-reject');
-            if (acceptBtn) acceptBtn.disabled = true;
-            if (rejectBtn) rejectBtn.disabled = true;
+    const executeFetch = (remarks) => {
+        const acceptBtn = document.querySelector('.btn-approve');
+        const rejectBtn = document.querySelector('.btn-reject');
+        if (acceptBtn) acceptBtn.disabled = true;
+        if (rejectBtn) rejectBtn.disabled = true;
 
-            fetch(`/leaves/api/process-action/${activeRowId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({ action: actionStr, remarks: result.value || "Processed by Head via Dashboard" })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    let newStatusClass = data.new_status.toLowerCase().replace(/\s+/g, '-');
-                    if (newStatusClass.includes('pending')) newStatusClass = 'pending';
-                    
-                    document.getElementById('modalStatusContainer').innerHTML = `<span class="status-pill ${newStatusClass}">${data.new_status}</span>`;
-                    document.getElementById('modalReviewerText').innerHTML = `<small>Reviewed by: ${data.reviewed_by}</small>`;
-                    
-                    if (acceptBtn) acceptBtn.style.display = 'none';
-                    if (rejectBtn) rejectBtn.style.display = 'none';
-                    Swal.fire('Success!', `Request has been ${decision.toLowerCase()}.`, 'success');
+        fetch(`/leaves/api/process-action/${activeRowId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ action: actionStr, remarks: remarks })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire('Success!', `Request has been ${decision.toLowerCase()}.`, 'success').then(() => {
+                        window.location.reload(); // Instantly update the table
+                    });
                 } else {
-                    Swal.fire('Error', `Action Failed: ${data.error}`, 'error');
-                    if (acceptBtn) acceptBtn.disabled = false;
-                    if (rejectBtn) rejectBtn.disabled = false;
+                    alert(`Success! Request has been ${decision.toLowerCase()}.`);
+                    window.location.reload();
                 }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                Swal.fire('Error', 'A network error occurred.', 'error');
+            } else {
+                if (typeof Swal !== 'undefined') Swal.fire('Error', `Action Failed: ${data.error}`, 'error');
+                else alert(`Action Failed: ${data.error}`);
+                
                 if (acceptBtn) acceptBtn.disabled = false;
                 if (rejectBtn) rejectBtn.disabled = false;
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            if (typeof Swal !== 'undefined') Swal.fire('Error', 'A network error occurred.', 'error');
+            else alert('A network error occurred.');
+            
+            if (acceptBtn) acceptBtn.disabled = false;
+            if (rejectBtn) rejectBtn.disabled = false;
+        });
+    };
+
+    // Safe Fallback if SweetAlert library fails to load
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: `Confirm ${decision}`,
+            input: 'textarea',
+            inputLabel: 'Review Remarks (Optional)',
+            inputPlaceholder: 'Type your remarks here...',
+            showCancelButton: true,
+            confirmButtonColor: '#4a1d1d',
+            confirmButtonText: 'Submit Decision'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeFetch(result.value || "Processed by Head via Dashboard");
+            }
+        });
+    } else {
+        const userRemarks = prompt(`Confirm ${decision}\n\nReview Remarks (Optional):`, 'Processed by Head via Dashboard');
+        if (userRemarks !== null) {
+            executeFetch(userRemarks);
         }
-    });
+    }
 }
 
 function closeViewModal() { 
