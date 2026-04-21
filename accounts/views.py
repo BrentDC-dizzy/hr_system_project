@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 import json 
+import datetime
 from datetime import timedelta
 from django.db import models, transaction # Correctly added here
 from django.db.models import Q, Count
@@ -34,7 +35,7 @@ from .forms import (
 
 # Helper function for admin check
 def is_admin(user):
-    return user.is_authenticated and user.role == 'ADMIN'
+    return user.is_authenticated and (user.is_superuser or user.role == 'ADMIN')
 
 def is_hr(user):
     return user.is_authenticated and user.role == 'HR'
@@ -64,6 +65,18 @@ def _get_security_config():
     config, _ = SystemConfig.objects.get_or_create(pk=1)
     return config
 
+
+def _dashboard_name_for_user(user):
+    if is_admin(user):
+        return 'admin_dashboard'
+    if user.role == 'HR':
+        return 'hr_dashboard'
+    if user.role == 'HEAD':
+        return 'head_dashboard'
+    if user.role == 'SD':
+        return 'sd_dashboard'
+    return 'employee_dashboard'
+
 def login_view(request):
     # If a user is already logged in, redirect them from the login page.
     if request.user.is_authenticated:
@@ -71,15 +84,7 @@ def login_view(request):
         if getattr(request.user, 'must_change_password', False):
             return redirect('password_change')
         # Otherwise, send them to their respective dashboard.
-        if request.user.role == 'ADMIN':
-            return redirect('admin_dashboard')
-        if request.user.role == 'HR':
-            return redirect('hr_dashboard')
-        if request.user.role == 'HEAD':
-            return redirect('head_dashboard')
-        if request.user.role == 'SD':
-            return redirect('sd_dashboard')
-        return redirect('employee_dashboard')
+        return redirect(_dashboard_name_for_user(request.user))
 
     if request.method == 'POST':
         username_or_email = request.POST.get('username')
@@ -109,6 +114,8 @@ def login_view(request):
 
             if authenticated_user is not None:
                 login(request, authenticated_user)
+                # Reset activity timer on fresh login to avoid immediate timeout logout.
+                request.session['last_activity'] = datetime.datetime.now().timestamp()
                 # Reset failed login attempts on successful login
                 authenticated_user.failed_login_attempts = 0
                 authenticated_user.save()
@@ -117,16 +124,7 @@ def login_view(request):
                     messages.info(request, "You must change your password before proceeding.")
                     return redirect('password_change') # Assuming a password change URL exists
                 
-                if authenticated_user.role == 'ADMIN':
-                    return redirect('admin_dashboard')
-                elif authenticated_user.role == 'HR':
-                    return redirect('hr_dashboard')
-                elif authenticated_user.role == 'HEAD':
-                    return redirect('head_dashboard')
-                elif authenticated_user.role == 'SD':
-                    return redirect('sd_dashboard')
-                else:
-                    return redirect('employee_dashboard')
+                return redirect(_dashboard_name_for_user(authenticated_user))
             else:
                 # Increment failed login attempts
                 user.failed_login_attempts += 1
@@ -1310,7 +1308,7 @@ def employee_list(request):
     status_filter = (request.GET.get('status') or '').strip().lower()
     
     # 1. If Admin or HR: See everyone
-    if user.role in ['ADMIN', 'HR']:
+    if is_admin(user) or user.role == 'HR':
         employees = User.objects.select_related('department', 'profile').all().order_by('-date_joined')
         template_name = 'hr/hr_employeelist.html'
 

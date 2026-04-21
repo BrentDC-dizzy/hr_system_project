@@ -38,7 +38,7 @@ class SessionTimeoutMiddleware:
                 elapsed = (now - last_activity) / 60
                 if elapsed > timeout_minutes:
                     logout(request)
-                    return self.get_response(request) # Redirect happens on next load
+                    return redirect('login')
 
             # 2. Update the timestamp for this click
             request.session['last_activity'] = now
