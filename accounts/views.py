@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 import json 
+import datetime
 from datetime import timedelta
 from django.db import models, transaction # Correctly added here
 from django.db.models import Q, Count
@@ -113,6 +114,8 @@ def login_view(request):
 
             if authenticated_user is not None:
                 login(request, authenticated_user)
+                # Reset activity timer on fresh login to avoid immediate timeout logout.
+                request.session['last_activity'] = datetime.datetime.now().timestamp()
                 # Reset failed login attempts on successful login
                 authenticated_user.failed_login_attempts = 0
                 authenticated_user.save()
